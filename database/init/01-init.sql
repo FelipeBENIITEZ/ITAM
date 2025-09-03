@@ -1,0 +1,20 @@
+CREATE TABLE Persona (
+    per_id SERIAL PRIMARY KEY,
+    per_nomb_1 VARCHAR(100) NOT NULL,
+    per_nom_2 VARCHAR(100),
+    per_ape_1 VARCHAR(100) NOT NULL,
+    per_ape_2 VARCHAR(100),
+    per_ci VARCHAR(20) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Usuario (
+    usu_id SERIAL PRIMARY KEY,
+    usu_login VARCHAR(50) UNIQUE NOT NULL,
+    usu_password VARCHAR(255) NOT NULL,
+    usu_mail VARCHAR(50) UNIQUE NOT NULL, 
+    per_id INT REFERENCES Persona(per_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

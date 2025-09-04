@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITASSET - Gestión de Activos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .dropdown-menu {
+            min-width: 250px;
+        }
+        .dropdown-header {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .btn-action {
+            margin: 0 2px;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <!-- Logo/Brand con menú desplegable -->
+            <div class="nav-item dropdown">
+                <a class="navbar-brand dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-laptop-code me-2"></i>
+                    ITASSET
+                </a>
+                <ul class="dropdown-menu">
+                    <!-- Dashboard -->
+                    <li><h6 class="dropdown-header"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h6></li>
+                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-home me-2"></i>Resumen general</a></li>
+                    <li><a class="dropdown-item" href="/dashboard/indicadores"><i class="fas fa-chart-line me-2"></i>Indicadores</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    
+                    <!-- Activos -->
+                    <li><h6 class="dropdown-header"><i class="fas fa-boxes me-2"></i>Activos</h6></li>
+                    <li><a class="dropdown-item active" href="/activos"><i class="fas fa-list me-2"></i>Ver activos</a></li>
+                    <li><a class="dropdown-item" href="/activos/nuevo"><i class="fas fa-plus me-2"></i>Registrar activo</a></li>
+                    <li><a class="dropdown-item" href="/activos/categorias"><i class="fas fa-tags me-2"></i>Categorías</a></li>
+                    <li><a class="dropdown-item" href="/activos/estados"><i class="fas fa-flag me-2"></i>Estados</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    
+                    <!-- Hardware -->
+                    <li><h6 class="dropdown-header"><i class="fas fa-microchip me-2"></i>Hardware</h6></li>
+                    <li><a class="dropdown-item" href="/hardware/equipos"><i class="fas fa-desktop me-2"></i>Equipos</a></li>
+                    <li><a class="dropdown-item" href="/hardware/modelos"><i class="fas fa-cogs me-2"></i>Modelos</a></li>
+                    <li><a class="dropdown-item" href="/hardware/marcas"><i class="fas fa-trademark me-2"></i>Marcas</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    
+                    <!-- Software -->
+                    <li><h6 class="dropdown-header"><i class="fas fa-code me-2"></i>Software</h6></li>
+                    <li><a class="dropdown-item" href="/software/aplicaciones"><i class="fas fa-window-restore me-2"></i>Aplicaciones</a></li>
+                    <li><a class="dropdown-item" href="/software/licencias"><i class="fas fa-key me-2"></i>Licencias</a></li>
+                    <li><a class="dropdown-item" href="/software/instalaciones"><i class="fas fa-download me-2"></i>Instalaciones</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    
+                    <!-- Proveedores -->
+                    <li><h6 class="dropdown-header"><i class="fas fa-handshake me-2"></i>Proveedores</h6></li>
+                    <li><a class="dropdown-item" href="/proveedores"><i class="fas fa-truck me-2"></i>Lista de proveedores</a></li>
+                    <li><a class="dropdown-item" href="/proveedores/contratos"><i class="fas fa-file-contract me-2"></i>Contratos</a></li>
+                </ul>
+            </div>
+            
+            <!-- Usuario logueado -->
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span sec:authentication="name">admin</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/perfil"><i class="fas fa-user-edit me-2"></i>Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="/configuracion"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" style="display: inline; width: 100%;">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0">
+                        <i class="fas fa-boxes me-3"></i>
+                        Gestión de Activos
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75">Administra todos los activos de TI de la organización</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="/activos/nuevo" class="btn btn-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>
+                        Nuevo Activo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <!-- Filtros y Busqueda -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="GET" th:action="@{/activos}">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="buscar" class="form-label">Buscar activo</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                        <input type="text" class="form-control" id="buscar" name="buscar" 
+                                               placeholder="Nombre del activo..." th:value="${buscar}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="categoria" class="form-label">Categoría</label>
+                                    <select class="form-select" id="categoria" name="categoria">
+                                        <option value="">Todas las categorías</option>
+                                        <option th:each="cat : ${categorias}" 
+                                                th:value="${cat.catId}" 
+                                                th:text="${cat.catNom}"
+                                                th:selected="${categoria == cat.catId}">
+                                            Categoria
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="estado" class="form-label">Estado</label>
+                                    <select class="form-select" id="estado" name="estado">
+                                        <option value="">Todos los estados</option>
+                                        <option th:each="est : ${estados}" 
+                                                th:value="${est.estadoId}" 
+                                                th:text="${est.estadoNom}"
+                                                th:selected="${estado == est.estadoId}">
+                                            Estado
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-filter me-1"></i>Filtrar
+                                    </button>
+                                    <a href="/activos" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Activos -->
+        <div class="row">
+            <div class="col-12">
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre del Activo</th>
+                                    <th>Categoría</th>
+                                    <th>Departamento</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Ingreso</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Ejemplo de datos - esto se reemplazará con Thymeleaf -->
+                                <tr th:each="activo : ${activos}" th:if="${activos != null and !activos.empty}">
+                                    <td th:text="${activo.activoId}">#001</td>
+                                    <td>
+                                        <div class="fw-bold" th:text="${activo.activoNom}">Laptop Dell Latitude 5520</div>
+                                        <small class="text-muted" th:text="${activo.contrato?.contratNom ?: 'Sin contrato'}">Contrato ABC-2024</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary" th:text="${activo.categoria?.catNom ?: 'Sin categoría'}">
+                                            Equipos de Cómputo
+                                        </span>
+                                    </td>
+                                    <td th:text="${activo.departamento?.deptNom ?: 'Sin departamento'}">IT</td>
+                                    <td>
+                                        <span class="badge status-badge bg-success" 
+                                              th:text="${activo.estado?.estadoNom ?: 'Sin estado'}"
+                                              th:classappend="${activo.estado?.estadoNom == 'Activo' ? 'bg-success' : 
+                                                             activo.estado?.estadoNom == 'En Mantenimiento' ? 'bg-warning' : 
+                                                             activo.estado?.estadoNom == 'Fuera de Servicio' ? 'bg-danger' : 'bg-secondary'}">
+                                            Activo
+                                        </span>
+                                    </td>
+                                    <td th:text="${#temporals.format(activo.activoFechaIngreso, 'dd/MM/yyyy')}">15/03/2024</td>
+                                    <td class="text-center">
+                                        <a th:href="@{/activos/{id}(id=${activo.activoId})}" class="btn btn-sm btn-outline-info btn-action" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/activos/{id}/editar(id=${activo.activoId})}" class="btn btn-sm btn-outline-warning btn-action" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-action" 
+                                                title="Eliminar" onclick="confirmarEliminacion(this)" 
+                                                th:data-id="${activo.activoId}" th:data-nombre="${activo.activoNom}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Mensaje si no hay activos -->
+                                <tr th:if="${activos == null or activos.empty}">
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <p class="mb-0">No se encontraron activos</p>
+                                            <small>Utiliza los filtros o <a href="/activos/nuevo">registra un nuevo activo</a></small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Paginación (opcional) -->
+                <nav aria-label="Paginación de activos" th:if="${totalPaginas > 1}">
+                    <ul class="pagination justify-content-center mt-3">
+                        <li class="page-item" th:classappend="${paginaActual == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/activos(pagina=${paginaActual - 1}, buscar=${buscar}, categoria=${categoria}, estado=${estado})}">
+                                Anterior
+                            </a>
+                        </li>
+                        <li class="page-item" th:each="pagina : ${#numbers.sequence(0, totalPaginas - 1)}" 
+                            th:classappend="${pagina == paginaActual} ? 'active'">
+                            <a class="page-link" th:href="@{/activos(pagina=${pagina}, buscar=${buscar}, categoria=${categoria}, estado=${estado})}" 
+                               th:text="${pagina + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${paginaActual == totalPaginas - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/activos(pagina=${paginaActual + 1}, buscar=${buscar}, categoria=${categoria}, estado=${estado})}">
+                                Siguiente
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para confirmar eliminación -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar el activo <strong id="nombreActivo"></strong>?</p>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="formEliminar" method="post" style="display: inline;">
+                        <input type="hidden" name="_method" value="delete">
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmarEliminacion(button) {
+            const id = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+            
+            document.getElementById('nombreActivo').textContent = nombre;
+            document.getElementById('formEliminar').action = `/activos/${id}`;
+            
+            new bootstrap.Modal(document.getElementById('modalEliminar')).show();
+        }
+    </script>
+</body>
+</html>

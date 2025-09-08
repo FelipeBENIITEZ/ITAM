@@ -92,3 +92,33 @@ CREATE TABLE activo (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE hardware_info (
+    hw_id SERIAL PRIMARY KEY,
+    activo_id INT NOT NULL REFERENCES activo(activo_id) ON DELETE CASCADE,
+    model_id INT NOT NULL REFERENCES modelo(model_id),
+    hw_serial_num VARCHAR(100) UNIQUE NOT NULL,
+    hw_descri TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE garantias (
+    garan_id SERIAL PRIMARY KEY,
+    hw_id INT NOT NULL REFERENCES hardware_info(hw_id) ON DELETE CASCADE,
+    contrat_id INT REFERENCES contrato_info(contrat_id),
+    garan_fecha_inicio DATE NOT NULL,
+    garan_fecha_fin DATE NOT NULL,
+    garan_vigencia VARCHAR(20), -- Ej: 'Activa', 'Expirada'
+    garan_descri TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE usuario_asignaciones (
+    usu_id INT NOT NULL REFERENCES usuario(usu_id) ON DELETE CASCADE,
+    activo_id INT NOT NULL REFERENCES activo(activo_id) ON DELETE CASCADE,
+    asignacion_fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+    asignacion_motivo VARCHAR(255),
+    PRIMARY KEY (usu_id, activo_id)
+);

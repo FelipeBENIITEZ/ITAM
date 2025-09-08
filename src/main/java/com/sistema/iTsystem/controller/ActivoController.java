@@ -1,5 +1,13 @@
 package com.sistema.iTsystem.controller;
 
+import com.sistema.iTsystem.model.Activo;
+import com.sistema.iTsystem.model.HardwareInfo;
+import com.sistema.iTsystem.model.UsuarioAsignacion;
+import com.sistema.iTsystem.repository.ActivoRepository;
+import com.sistema.iTsystem.repository.CategoriasActivoRepository;
+import com.sistema.iTsystem.repository.EstadoActivoRepository;
+import com.sistema.iTsystem.repository.HardwareInfoRepository;
+import com.sistema.iTsystem.repository.UsuarioAsignacionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -8,13 +16,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.sistema.iTsystem.model.Activo;
-import com.sistema.iTsystem.repository.ActivoRepository;
-import com.sistema.iTsystem.repository.CategoriasActivoRepository;
-import com.sistema.iTsystem.repository.EstadoActivoRepository;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/activos")
@@ -28,6 +35,12 @@ public class ActivoController {
 
     @Autowired
     private EstadoActivoRepository estadoRepository;
+
+    @Autowired
+    private HardwareInfoRepository hardwareInfoRepository;
+
+    @Autowired
+    private UsuarioAsignacionRepository usuarioAsignacionRepository;
 
     @GetMapping
     public String listarActivos(
@@ -81,6 +94,40 @@ public class ActivoController {
             model.addAttribute("error", "Error al cargar los activos");
             
             return "activos";
+        }
+    }
+
+    @GetMapping("/{id}")
+    public String verDetalleActivo(@PathVariable Long id, Model model) {
+        try {
+            // Buscar el activo por ID
+            Optional<Activo> activoOpt = activoRepository.findById(id);
+            
+            if (activoOpt.isEmpty()) {
+                model.addAttribute("error", "Activo no encontrado");
+                return "redirect:/activos";
+            }
+
+            Activo activo = activoOpt.get();
+            
+            // Obtener información de hardware con todas las relaciones
+            Optional<HardwareInfo> hardwareInfoOpt = hardwareInfoRepository.findByActivoIdWithDetails(id);
+            
+            // Obtener asignaciones de usuarios
+            List<UsuarioAsignacion> asignaciones = usuarioAsignacionRepository.findByActivoIdWithUserDetails(id);
+
+            // Agregar datos al modelo
+            model.addAttribute("activo", activo);
+            model.addAttribute("hardwareInfo", hardwareInfoOpt.orElse(null));
+            model.addAttribute("asignaciones", asignaciones);
+            
+            return "activo-detalle";
+            
+        } catch (Exception e) {
+            System.err.println("Error al cargar detalles del activo: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error al cargar los detalles del activo");
+            return "redirect:/activos";
         }
     }
 }

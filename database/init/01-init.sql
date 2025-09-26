@@ -122,3 +122,35 @@ CREATE TABLE usuario_asignaciones (
     asignacion_motivo VARCHAR(255),
     PRIMARY KEY (usu_id, activo_id)
 );
+
+CREATE TABLE presupuesto_areas (
+    pres_id SERIAL PRIMARY KEY,
+    dept_id INT NOT NULL,
+    pres_asignado NUMERIC(12,2) NOT NULL,
+    pres_usado NUMERIC(12,2) DEFAULT 0,
+    pres_ini_vigencia DATE NOT NULL,
+    pres_fin_vigencia DATE NOT NULL,
+
+    CONSTRAINT fk_pres_departamento
+        FOREIGN KEY (dept_id) 
+        REFERENCES departamentos_organizacion (dept_id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+CREATE TABLE hardware_costos (
+    hw_id INT NOT NULL,
+    pres_id INT NOT NULL,
+    hw_valor_compra NUMERIC(12,2) NOT NULL,
+    hw_valor_venta NUMERIC(12,2) DEFAULT 0,
+    CONSTRAINT fk_hw_costos_hardware
+        FOREIGN KEY (hw_id) 
+        REFERENCES hardware_info (hw_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_hw_costos_presupuesto
+        FOREIGN KEY (pres_id) 
+        REFERENCES presupuesto_areas (pres_id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);

@@ -28,11 +28,11 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        System.err.println("🔧 CONFIGURANDO DaoAuthenticationProvider - INICIANDO APP");
+        System.err.println("CONFIGURANDO DaoAuthenticationProvider - INICIANDO APP");
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
-        System.err.println("🔧 DaoAuthenticationProvider CONFIGURADO CORRECTAMENTE");
+        System.err.println("DaoAuthenticationProvider CONFIGURADO CORRECTAMENTE");
         return authProvider;
     }
 
@@ -43,7 +43,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        System.err.println("🚀 CONFIGURANDO SECURITY FILTER CHAIN");
+        System.err.println("CONFIGURANDO SECURITY FILTER CHAIN");
         
         http
             .authenticationProvider(authenticationProvider())
@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .permitAll()
             );
         
-        System.err.println("🚀 SECURITY FILTER CHAIN CONFIGURADO");
+        System.err.println("SECURITY FILTER CHAIN CONFIGURADO");
         return http.build();
     }
 }

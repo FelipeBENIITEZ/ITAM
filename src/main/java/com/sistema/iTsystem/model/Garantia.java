@@ -19,7 +19,7 @@ public class Garantia {
     @Column(name = "garant_id")
     private Long garantId;
 
-    @Column(name = "garant_inicio_fec", nullable = false)
+    @Column(name = "garant_fecha_inicio", nullable = false)
     private LocalDate garantInicioFec;
 
     @Column(name = "garant_fecha_fin", nullable = false)
@@ -28,7 +28,7 @@ public class Garantia {
     @Column(name = "garant_vigencia", length = 50)
     private String garantVigencia;
 
-    // Relación con HardwareInfo (se agregará después)
+    // Relacion con HardwareInfo (agregare despues)
     @OneToOne
     @JoinColumn(name = "hardware_info_hw_id")
     private HardwareInfo hardwareInfo;

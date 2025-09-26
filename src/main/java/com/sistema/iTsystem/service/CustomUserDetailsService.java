@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // Constructor con log
     public CustomUserDetailsService() {
-        System.err.println("🔥 CUSTOM USER DETAILS SERVICE CREADO");
+        System.err.println("CUSTOM USER DETAILS SERVICE CREADO");
     }
 
     @Override
@@ -34,9 +34,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findByUsuLogin(login)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + login));
 
-        System.err.println("✅ Usuario encontrado: " + usuario.getUsuLogin());
-        System.err.println("🔐 Password hash: " + usuario.getUsuPassword());
-        System.err.println("👤 Rol: " + (usuario.getRol() != null ? usuario.getRol().getRolNom() : "null"));
+        System.err.println("Usuario encontrado: " + usuario.getUsuLogin());
+        //System.err.println("Password hash: " + usuario.getUsuPassword());
+        System.err.println("Rol: " + (usuario.getRol() != null ? usuario.getRol().getRolNom() : "null"));
 
         // Determinar el rol
         String roleName = "USER"; // por defecto
@@ -47,7 +47,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .toUpperCase();
         }
 
-        System.err.println("🔑 Rol procesado: ROLE_" + roleName);
+        System.err.println("Rol procesado: ROLE_" + roleName);
 
         // Retornar UserDetails
         return User.builder()

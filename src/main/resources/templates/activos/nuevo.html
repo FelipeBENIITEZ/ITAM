@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Activo - ITASSET</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Header -->
+            <div class="col-12 bg-primary text-white p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2><i class="fas fa-plus-circle me-2"></i>Nuevo Activo</h2>
+                    <a href="/activos" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-1"></i>Volver a Activos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                
+                <!-- Informacion del Presupuesto -->
+                <div class="card mb-4 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Presupuesto Asignado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <strong>Departamento:</strong>
+                                <p th:text="${presupuestoActual.departamento.deptNom}" class="text-primary">Departamento</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Presupuesto Total:</strong>
+                                <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presAsignado, 1, 2)}" class="text-success">$0.00</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Usado:</strong>
+                                <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presUsado, 1, 2)}" class="text-warning">$0.00</p>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Disponible:</strong>
+                                <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}" class="text-info">$0.00</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Vigencia: </small>
+                                <span th:text="${presupuestoActual.presIniVigencia} + ' - ' + ${presupuestoActual.presFinVigencia}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario Principal -->
+                <form th:action="@{/activos/guardar}" method="post" id="formularioActivo">
+                    <input type="hidden" name="presupuestoId" th:value="${presupuestoActual.presId}">
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información General del Activo</h5>
+                        </div>
+                        <div class="card-body">
+                            
+                            <!-- Nombre del Activo -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label for="activoNom" class="form-label">Nombre del Activo *</label>
+                                    <input type="text" class="form-control" id="activoNom" name="activoNom" 
+                                           placeholder="Ej: Laptop Dell Latitude 5430" required>
+                                </div>
+                            </div>
+
+                            <!-- Categoria y Estado -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="categoriaId" class="form-label">Categoría *</label>
+                                    <select class="form-select" id="categoriaId" name="categoriaId" required onchange="mostrarCamposHardware()">
+                                        <option value="">Seleccionar categoría...</option>
+                                        <option th:each="categoria : ${categorias}" 
+                                                th:value="${categoria.catId}" 
+                                                th:text="${categoria.catNom}">Categoría</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="estadoId" class="form-label">Estado *</label>
+                                    <select class="form-select" id="estadoId" name="estadoId" required>
+                                        <option value="">Seleccionar estado...</option>
+                                        <option th:each="estado : ${estados}" 
+                                                th:value="${estado.estadoId}" 
+                                                th:text="${estado.estadoNom}">Estado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Campos especificos de Hardware (ocultos por defecto) -->
+                    <div class="card mt-3" id="camposHardware" style="display: none;">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Información de Hardware</h5>
+                        </div>
+                        <div class="card-body">
+                            
+                            <!-- Marca y Modelo -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="marcaId" class="form-label">Marca</label>
+                                    <select class="form-select" id="marcaId" name="marcaId" onchange="filtrarModelos()">
+                                        <option value="">Seleccionar marca...</option>
+                                        <option th:each="marca : ${marcas}" 
+                                                th:value="${marca.marcaId}" 
+                                                th:text="${marca.marcaNom}">Marca</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="modeloId" class="form-label">Modelo</label>
+                                    <select class="form-select" id="modeloId" name="modeloId">
+                                        <option value="">Seleccionar modelo...</option>
+                                        <option th:each="modelo : ${modelos}" 
+                                            th:value="${modelo.modelId}" 
+                                            th:text="${modelo.modelNom}" 
+                                            th:attr="data-marca=${modelo.marca.marcaId}">Modelo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Numero de Serie y Valor -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="numeroSerie" class="form-label">Número de Serie</label>
+                                    <input type="text" class="form-control" id="numeroSerie" name="numeroSerie" 
+                                           placeholder="Ej: ABC123456789">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="valorCompra" class="form-label">Valor de Compra *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="valorCompra" name="valorCompra" 
+                                               step="0.01" min="0" placeholder="0.00" required>
+                                    </div>
+                                    <small class="text-muted">Disponible: $<span th:text="${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}"></span></small>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="text-center mt-4 mb-5">
+                        <button type="submit" class="btn btn-success btn-lg me-2">
+                            <i class="fas fa-save me-2"></i>Guardar Activo
+                        </button>
+                        <a href="/activos" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Guardar todos los modelos al cargar la página
+    let todosLosModelos = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Capturar todos los modelos ANTES de que se eliminen del DOM
+        const modeloSelect = document.getElementById('modeloId');
+        const opciones = modeloSelect.querySelectorAll('option[data-marca]');
+        
+        opciones.forEach(option => {
+            todosLosModelos.push({
+                value: option.value,
+                text: option.textContent,
+                marcaId: option.getAttribute('data-marca')
+            });
+        });
+    });
+
+    function mostrarCamposHardware() {
+        const categoria = document.getElementById('categoriaId');
+        const camposHardware = document.getElementById('camposHardware');
+        const valorCompra = document.getElementById('valorCompra');
+        
+        if (categoria.selectedOptions[0] && categoria.selectedOptions[0].text.includes('Hardware')) {
+            camposHardware.style.display = 'block';
+            valorCompra.required = true;
+        } else {
+            camposHardware.style.display = 'none';
+            valorCompra.required = false;
+        }
+    }
+
+    function filtrarModelos() {
+        const marcaSelect = document.getElementById('marcaId');
+        const modeloSelect = document.getElementById('modeloId');
+        const marcaId = marcaSelect.value;
+        
+        // Limpiar opciones
+        modeloSelect.innerHTML = '<option value="">Seleccionar modelo...</option>';
+        
+        if (marcaId) {
+            // Usar el array guardado en lugar de buscar en el DOM
+            const modelosFiltrados = todosLosModelos.filter(modelo => modelo.marcaId === marcaId);
+            
+            modelosFiltrados.forEach(modelo => {
+                const option = document.createElement('option');
+                option.value = modelo.value;
+                option.textContent = modelo.text;
+                modeloSelect.appendChild(option);
+            });
+        }
+    }
+
+    // Validar presupuesto antes de enviar
+    document.getElementById('formularioActivo').addEventListener('submit', function(e) {
+        const valorCompra = parseFloat(document.getElementById('valorCompra').value || 0);
+        const disponible = parseFloat(document.querySelector('[th\\:text*="presupuestoDisponible"]').textContent.replace('$', '').replace(',', '') || 0);
+        
+        if (valorCompra > disponible) {
+            e.preventDefault();
+            alert('El valor de compra ($' + valorCompra + ') excede el presupuesto disponible ($' + disponible + ')');
+        }
+    });
+</script>
+</body>
+</html>

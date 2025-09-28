@@ -24,44 +24,87 @@
         <div class="row">
             <div class="col-md-8 offset-md-2">
                 
-                <!-- Informacion del Presupuesto -->
-                <div class="card mb-4 border-info">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Presupuesto Asignado</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <strong>Departamento:</strong>
-                                <p th:text="${presupuestoActual.departamento.deptNom}" class="text-primary">Departamento</p>
-                            </div>
-                            <div class="col-md-3">
-                                <strong>Presupuesto Total:</strong>
-                                <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presAsignado, 1, 2)}" class="text-success">$0.00</p>
-                            </div>
-                            <div class="col-md-3">
-                                <strong>Usado:</strong>
-                                <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presUsado, 1, 2)}" class="text-warning">$0.00</p>
-                            </div>
-                            <div class="col-md-3">
-                                <strong>Disponible:</strong>
-                                <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}" class="text-info">$0.00</p>
-                            </div>
+                <!-- INFORMACIÓN VISUAL PARA ADMINISTRADORES (fuera del formulario) -->
+                <div th:if="${esAdministrador}">
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fas fa-building me-2"></i>Asignación de Departamento</h5>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <small class="text-muted">Vigencia: </small>
-                                <span th:text="${presupuestoActual.presIniVigencia} + ' - ' + ${presupuestoActual.presFinVigencia}"></span>
+                        <div class="card-body">
+                            <p class="mb-0 text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Como administrador, puedes asignar este activo a cualquier departamento que tenga presupuesto vigente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INFORMACIÓN VISUAL PARA USUARIOS NORMALES (fuera del formulario) -->
+                <div th:unless="${esAdministrador}">
+                    <div class="card mb-4 border-info">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Presupuesto Asignado</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Departamento:</strong>
+                                    <p th:text="${presupuestoActual.departamento.deptNom}" class="text-primary">Departamento</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Presupuesto Total:</strong>
+                                    <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presAsignado, 1, 2)}" class="text-success">$0.00</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Usado:</strong>
+                                    <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presUsado, 1, 2)}" class="text-warning">$0.00</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Disponible:</strong>
+                                    <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}" class="text-info">$0.00</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Vigencia: </small>
+                                    <span th:text="${presupuestoActual.presIniVigencia} + ' - ' + ${presupuestoActual.presFinVigencia}"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Formulario Principal -->
+                <!-- FORMULARIO PRINCIPAL -->
                 <form th:action="@{/activos/guardar}" method="post" id="formularioActivo">
-                    <input type="hidden" name="presupuestoId" th:value="${presupuestoActual.presId}">
                     
-                    <div class="card">
+                    <!-- CAMPO DE DEPARTAMENTO PARA ADMINISTRADORES (dentro del formulario) -->
+                    <div th:if="${esAdministrador}" class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fas fa-building me-2"></i>Departamento de Destino</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="departamentoId" class="form-label">Departamento de destino *</label>
+                                <select name="departamentoId" id="departamentoId" class="form-control" required>
+                                    <option value="">Seleccionar departamento...</option>
+                                    <option th:each="pres : ${presupuestosInfo}" 
+                                            th:value="${pres.departamento.deptId}"
+                                            th:text="${pres.departamento.deptNom + ' - Disponible: $' + #numbers.formatDecimal(pres.presupuestoDisponible, 0, 'COMMA', 2, 'POINT')}">
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle text-primary"></i>
+                                    El sistema utilizará automáticamente el presupuesto vigente del departamento seleccionado.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- INPUT HIDDEN PARA USUARIOS NORMALES (dentro del formulario) -->
+                    <input th:unless="${esAdministrador}" type="hidden" name="departamentoId" th:value="${presupuestoActual.departamento.deptId}">
+                    
+                    <!-- INFORMACIÓN GENERAL DEL ACTIVO -->
+                    <div class="card mb-3">
                         <div class="card-header">
                             <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información General del Activo</h5>
                         </div>
@@ -76,9 +119,9 @@
                                 </div>
                             </div>
 
-                            <!-- Categoria y Estado -->
+                            <!-- Categoria, Estado y Contrato -->
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="categoriaId" class="form-label">Categoría *</label>
                                     <select class="form-select" id="categoriaId" name="categoriaId" required onchange="mostrarCamposHardware()">
                                         <option value="">Seleccionar categoría...</option>
@@ -87,7 +130,7 @@
                                                 th:text="${categoria.catNom}">Categoría</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="estadoId" class="form-label">Estado *</label>
                                     <select class="form-select" id="estadoId" name="estadoId" required>
                                         <option value="">Seleccionar estado...</option>
@@ -96,12 +139,29 @@
                                                 th:text="${estado.estadoNom}">Estado</option>
                                     </select>
                                 </div>
-                            </div>
-
+                                <div class="col-md-4">
+                                    <label for="contratoId" class="form-label">
+                                    Contrato <small class="text-muted">(opcional)</small>
+                                    </label>
+                                    <select class="form-select" id="contratoId" name="contratoId">
+                                        <option value="">Sin contrato</option>
+                                        <option th:each="contrato : ${contratos}" 
+                                                th:value="${contrato.contratId}"
+                                                th:text="${contrato.contratNom + ' - ' + contrato.proveedor.provNom}"
+                                                th:title="${'Vence: ' + (contrato.contratFechaFin != null ? #temporals.format(contrato.contratFechaFin, 'dd/MM/yyyy') : 'Sin fecha fin')}">
+                                                Contrato
+                                        </option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle text-primary"></i>
+                                        Solo para activos con servicios adicionales (soporte, mantenimiento, etc.)
+                                    </div>
+                                </div>
+                            </div>                                                          
                         </div>
                     </div>
 
-                    <!-- Campos especificos de Hardware (ocultos por defecto) -->
+                    <!-- CAMPOS ESPECÍFICOS DE HARDWARE (ocultos por defecto) -->
                     <div class="card mt-3" id="camposHardware" style="display: none;">
                         <div class="card-header bg-secondary text-white">
                             <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Información de Hardware</h5>
@@ -145,14 +205,17 @@
                                         <input type="number" class="form-control" id="valorCompra" name="valorCompra" 
                                                step="0.01" min="0" placeholder="0.00" required>
                                     </div>
-                                    <small class="text-muted">Disponible: $<span th:text="${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}"></span></small>
+                                    <!-- Mostrar disponible solo para usuarios normales -->
+                                    <small th:unless="${esAdministrador}" class="text-muted">
+                                        Disponible: $<span th:text="${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}"></span>
+                                    </small>
                                 </div>
                             </div>
 
                         </div>
                     </div>
 
-                    <!-- Botones -->
+                    <!-- BOTONES -->
                     <div class="text-center mt-4 mb-5">
                         <button type="submit" class="btn btn-success btn-lg me-2">
                             <i class="fas fa-save me-2"></i>Guardar Activo
@@ -221,16 +284,53 @@
         }
     }
 
-    // Validar presupuesto antes de enviar
+    // Validar presupuesto antes de enviar (solo usuarios normales)
     document.getElementById('formularioActivo').addEventListener('submit', function(e) {
         const valorCompra = parseFloat(document.getElementById('valorCompra').value || 0);
-        const disponible = parseFloat(document.querySelector('[th\\:text*="presupuestoDisponible"]').textContent.replace('$', '').replace(',', '') || 0);
+        const esAdmin = document.querySelector('input[name="departamentoId"][type="hidden"]') === null;
         
-        if (valorCompra > disponible) {
-            e.preventDefault();
-            alert('El valor de compra ($' + valorCompra + ') excede el presupuesto disponible ($' + disponible + ')');
+        if (!esAdmin) {
+            // Solo validar para usuarios normales
+            const disponibleElement = document.querySelector('[th\\:text*="presupuestoDisponible"]');
+            if (disponibleElement) {
+                const disponible = parseFloat(disponibleElement.textContent.replace('$', '').replace(',', '') || 0);
+                
+                if (valorCompra > disponible) {
+                    e.preventDefault();
+                    alert('El valor de compra ($' + valorCompra + ') excede el presupuesto disponible ($' + disponible + ')');
+                }
+            }
         }
     });
+</script>
+
+<script>
+// Script para información de contratos
+document.getElementById('contratoId').addEventListener('change', function() {
+    const select = this;
+    const contratoInfo = document.getElementById('contratoInfo');
+    
+    if (select.value) {
+        // Mostrar información del contrato seleccionado
+        const option = select.options[select.selectedIndex];
+        const titulo = option.getAttribute('title');
+        
+        if (!contratoInfo) {
+            const infoDiv = document.createElement('div');
+            infoDiv.id = 'contratoInfo';
+            infoDiv.className = 'alert alert-info mt-2';
+            infoDiv.innerHTML = '<small><i class="fas fa-contract me-1"></i>' + titulo + '</small>';
+            select.parentElement.appendChild(infoDiv);
+        } else {
+            contratoInfo.innerHTML = '<small><i class="fas fa-contract me-1"></i>' + titulo + '</small>';
+        }
+    } else {
+        // Ocultar información si no hay contrato
+        if (contratoInfo) {
+            contratoInfo.remove();
+        }
+    }
+});
 </script>
 </body>
 </html>

@@ -1,15 +1,16 @@
 package com.sistema.iTsystem.repository;
 
-import com.sistema.iTsystem.model.Departamentos;
-import com.sistema.iTsystem.model.PresupuestoAreas;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import com.sistema.iTsystem.model.Departamentos;
+import com.sistema.iTsystem.model.PresupuestoAreas;
 
 @Repository
 public interface PresupuestoAreasRepository extends JpaRepository<PresupuestoAreas, Long> {
@@ -49,4 +50,9 @@ public interface PresupuestoAreasRepository extends JpaRepository<PresupuestoAre
     
     // Obtener todos ordenados por departamento
     List<PresupuestoAreas> findAllByOrderByDepartamento_DeptNomAsc();
+    @Query("SELECT p FROM PresupuestoAreas p " +
+       "LEFT JOIN FETCH p.departamento d " +
+       "WHERE :fecha BETWEEN p.presIniVigencia AND p.presFinVigencia " +
+       "ORDER BY d.deptNom")
+       List<PresupuestoAreas> findPresupuestosVigentesConDepartamento(@Param("fecha") LocalDate fecha);
 }

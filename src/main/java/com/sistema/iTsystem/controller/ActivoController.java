@@ -142,6 +142,7 @@ public class ActivoController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public String verDetalleActivo(@PathVariable Long id, Model model) {
         try {
             // Buscar el activo por ID

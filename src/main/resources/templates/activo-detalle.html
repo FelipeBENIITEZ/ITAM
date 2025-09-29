@@ -290,7 +290,7 @@
                             </div>
 
                             <!-- Mensaje si no tiene garantía -->
-                            <div th:if="${hardwareInfo and garantia == null}" class="mt-4">
+                            <div th:if="${hardwareInfo != null && garantia == null}" class="mt-4">
                                 <div class="alert alert-info" role="alert">
                                     <i class="fas fa-info-circle me-2"></i>
                                     <strong>Sin Garantía:</strong> Este activo no tiene garantía registrada.

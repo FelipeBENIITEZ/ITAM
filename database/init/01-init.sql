@@ -106,7 +106,6 @@ CREATE TABLE hardware_info (
 CREATE TABLE garantias (
     garan_id SERIAL PRIMARY KEY,
     hw_id INT NOT NULL REFERENCES hardware_info(hw_id) ON DELETE CASCADE,
-    contrat_id INT REFERENCES contrato_info(contrat_id),
     garan_fecha_inicio DATE NOT NULL,
     garan_fecha_fin DATE NOT NULL,
     garan_vigencia VARCHAR(20), -- Ej: 'Activa', 'Expirada'

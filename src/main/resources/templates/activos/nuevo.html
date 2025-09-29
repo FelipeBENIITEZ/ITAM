@@ -211,10 +211,75 @@
                                     </small>
                                 </div>
                             </div>
+                            <hr class="my-4">
+
+                            <!-- SUBSECCIÓN: GARANTÍA -->
+                            <div class="mb-4">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-shield-alt me-2"></i>Información de Garantía (Opcional)
+                                </h6>
+                                
+                                <div class="row mb-3">
+                                    <!-- Fecha de Inicio -->
+                                    <div class="col-md-4">
+                                        <label for="garantFechaInicio" class="form-label">
+                                            Fecha de Inicio
+                                        </label>
+                                        <input type="date" 
+                                               class="form-control" 
+                                               id="garantFechaInicio" 
+                                               name="garantFechaInicio"
+                                               onchange="calcularFechaFin()">
+                                        <small class="form-text text-muted">
+                                            Fecha en que inicia la garantía
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Duración en Meses -->
+                                    <div class="col-md-4">
+                                        <label for="garantDuracionMeses" class="form-label">
+                                            Duración (meses)
+                                        </label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="garantDuracionMeses" 
+                                               name="garantDuracionMeses" 
+                                               min="1" 
+                                               max="120"
+                                               placeholder="12"
+                                               onchange="calcularFechaFin()">
+                                        <small class="form-text text-muted">
+                                            Duración de la garantía en meses
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Fecha Fin (Calculada) -->
+                                    <div class="col-md-4">
+                                        <label for="garantFechaFinCalculada" class="form-label">
+                                            Fecha de Fin (calculada)
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control bg-light" 
+                                               id="garantFechaFinCalculada" 
+                                               readonly
+                                               placeholder="Se calcula automáticamente">
+                                        <small class="form-text text-muted">
+                                            Fecha estimada de vencimiento
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Información adicional -->
+                                <div class="alert alert-info mb-0" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Nota:</strong> El estado de la garantía (Activa, Próxima a vencer, Expirada) 
+                                    se calculará automáticamente según las fechas ingresadas.
+                                </div>
+                            </div>
 
                         </div>
                     </div>
-
+                    
                     <!-- BOTONES -->
                     <div class="text-center mt-4 mb-5">
                         <button type="submit" class="btn btn-success btn-lg me-2">
@@ -332,5 +397,46 @@ document.getElementById('contratoId').addEventListener('change', function() {
     }
 });
 </script>
+<script>
+// Función para calcular la fecha fin de garantía
+function calcularFechaFin() {
+    const fechaInicio = document.getElementById('garantFechaInicio').value;
+    const duracionMeses = document.getElementById('garantDuracionMeses').value;
+    const fechaFinInput = document.getElementById('garantFechaFinCalculada');
+    
+    if (fechaInicio && duracionMeses && duracionMeses > 0) {
+        // Crear fecha de inicio
+        const inicio = new Date(fechaInicio + 'T00:00:00');
+        
+        // Calcular fecha fin sumando los meses
+        const fin = new Date(inicio);
+        fin.setMonth(fin.getMonth() + parseInt(duracionMeses));
+        
+        // Formatear fecha en formato legible
+        const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+        fechaFinInput.value = fin.toLocaleDateString('es-ES', opciones);
+    } else {
+        fechaFinInput.value = '';
+    }
+}
+
+// Inicializar fecha de inicio con la fecha actual cuando se muestre el formulario de hardware
+document.addEventListener('DOMContentLoaded', function() {
+    const categoriaSelect = document.getElementById('categoriaId');
+    if (categoriaSelect) {
+        categoriaSelect.addEventListener('change', function() {
+            // Si es hardware, inicializar fecha de garantía con hoy
+            const camposHardware = document.getElementById('camposHardware');
+            if (camposHardware.style.display !== 'none') {
+                const fechaInicioInput = document.getElementById('garantFechaInicio');
+                if (fechaInicioInput && !fechaInicioInput.value) {
+                    const hoy = new Date().toISOString().split('T')[0];
+                    fechaInicioInput.value = hoy;
+                }
+            }
+        });
+    }
+});
+</script>
 </body>
-</html>
+</html> 

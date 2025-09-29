@@ -27,6 +27,7 @@ import com.sistema.iTsystem.model.Activo;
 import com.sistema.iTsystem.model.CategoriasActivo;
 import com.sistema.iTsystem.model.ContratoInfo;
 import com.sistema.iTsystem.model.Departamentos;
+import com.sistema.iTsystem.model.Garantia;
 import com.sistema.iTsystem.model.HardwareCostos;
 import com.sistema.iTsystem.model.HardwareInfo;
 import com.sistema.iTsystem.model.PresupuestoAreas;
@@ -36,6 +37,7 @@ import com.sistema.iTsystem.repository.ActivoRepository;
 import com.sistema.iTsystem.repository.CategoriasActivoRepository;
 import com.sistema.iTsystem.repository.ContratoInfoRepository;
 import com.sistema.iTsystem.repository.EstadoActivoRepository;
+import com.sistema.iTsystem.repository.GarantiaRepository;
 import com.sistema.iTsystem.repository.HardwareCostosRepository;
 import com.sistema.iTsystem.repository.HardwareInfoRepository;
 import com.sistema.iTsystem.repository.MarcaRepository;
@@ -43,6 +45,7 @@ import com.sistema.iTsystem.repository.ModeloRepository;
 import com.sistema.iTsystem.repository.PresupuestoAreasRepository;
 import com.sistema.iTsystem.repository.UsuarioAsignacionRepository;
 import com.sistema.iTsystem.repository.UsuarioRepository;
+
 
 @Controller
 @RequestMapping("/activos")
@@ -79,6 +82,9 @@ public class ActivoController {
 
     @Autowired
     private ContratoInfoRepository contratoInfoRepository;
+
+    @Autowired
+    private GarantiaRepository garantiaRepository;
 
     @GetMapping
     public String listarActivos(
@@ -154,6 +160,10 @@ public class ActivoController {
             // Obtener asignaciones de usuarios
             List<UsuarioAsignacion> asignaciones = usuarioAsignacionRepository.findByActivoIdWithUserDetails(id);
 
+            if (hardwareInfoOpt.isPresent()) {
+                Optional<Garantia> garantiaOpt = garantiaRepository.findByHardwareInfoId(hardwareInfoOpt.get().getHwId());
+                model.addAttribute("garantia", garantiaOpt.orElse(null));
+            }
             // Agregar datos al modelo
             model.addAttribute("activo", activo);
             model.addAttribute("hardwareInfo", hardwareInfoOpt.orElse(null));
@@ -244,6 +254,8 @@ public class ActivoController {
     @RequestParam(required = false) Long modeloId,
     @RequestParam(required = false) String numeroSerie,
     @RequestParam(required = false) BigDecimal valorCompra,
+    @RequestParam(required = false) LocalDate garantFechaInicio,
+    @RequestParam(required = false) Integer garantDuracionMeses,
     Principal principal,
     RedirectAttributes redirectAttributes) {
 
@@ -309,6 +321,7 @@ public class ActivoController {
         Activo activoGuardado = activoRepository.save(activo);
         
         // PASO 7: Si tiene valor de compra, crear registro de costos
+        HardwareInfo hardwareGuardado = null;
         if (valorCompra != null && valorCompra.compareTo(BigDecimal.ZERO) > 0) {
             HardwareInfo hardwareInfo = new HardwareInfo();
             hardwareInfo.setActivo(activoGuardado);
@@ -319,19 +332,28 @@ public class ActivoController {
                 hardwareInfo.setHwSerialNum(numeroSerie.trim());
             }
             
-            HardwareInfo hardwareGuardado = hardwareInfoRepository.save(hardwareInfo);
+            hardwareGuardado = hardwareInfoRepository.save(hardwareInfo);
             
             HardwareCostos costos = new HardwareCostos();
             costos.setHardwareInfo(hardwareGuardado);
             costos.setPresupuesto(presupuesto);
             costos.setHwValorCompra(valorCompra);
-            
             hardwareCostosRepository.save(costos);
             
             presupuesto.setPresUsado(presupuesto.getPresUsado().add(valorCompra));
             presupuestoAreasRepository.save(presupuesto);
         }
-        
+        // PASO 8: NUEVO - Guardar Garantía si se proporcionaron datos
+        if (hardwareGuardado != null && garantFechaInicio != null && 
+            garantDuracionMeses != null && garantDuracionMeses > 0) {
+            
+            Garantia garantia = new Garantia();
+            garantia.setHardwareInfo(hardwareGuardado);
+            garantia.setGarantFechaInicio(garantFechaInicio);
+            garantia.setGarantFechaFin(garantFechaInicio.plusMonths(garantDuracionMeses));
+            
+            garantiaRepository.save(garantia);
+        }
         String mensaje = "Activo registrado exitosamente";
         if (contrato != null) {
             mensaje += " con contrato: " + contrato.getContratNom();
@@ -353,5 +375,5 @@ public class ActivoController {
     private boolean esHardware(Long categoriaId) {
     CategoriasActivo categoria = categoriasRepository.findById(categoriaId).orElse(null);
     return categoria != null && categoria.getCatNom().toLowerCase().contains("hardware");
-}
+    }
 }

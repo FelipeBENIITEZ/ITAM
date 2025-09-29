@@ -56,7 +56,7 @@
     </style>
 </head>
 <body>
-    <!-- Navbar (mismo que en activos.html) -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <!-- Logo/Brand con menú desplegable -->
@@ -235,23 +235,65 @@
                             </div>
                             
                             <!-- Información de Garantía -->
-                            <div th:if="${hardwareInfo.garantia}" class="mt-4">
+                            <div th:if="${garantia}" class="mt-4">
                                 <h6 class="section-title"><i class="fas fa-shield-alt me-2"></i>Garantía</h6>
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                         <div class="info-label">Fecha de Inicio</div>
-                                        <div class="info-value" th:text="${#temporals.format(hardwareInfo.garantia.garantInicioFec, 'dd/MM/yyyy')}"></div>
+                                        <div class="info-value" th:text="${#temporals.format(garantia.garantFechaInicio, 'dd/MM/yyyy')}"></div>
                                     </div>
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                         <div class="info-label">Fecha de Fin</div>
-                                        <div class="info-value" th:text="${#temporals.format(hardwareInfo.garantia.garantFechaFin, 'dd/MM/yyyy')}"></div>
+                                        <div class="info-value" th:text="${#temporals.format(garantia.garantFechaFin, 'dd/MM/yyyy')}"></div>
                                     </div>
-                                    <div class="col-md-12 mb-3" th:if="${hardwareInfo.garantia.garantVigencia}">
-                                        <div class="info-label">Estado de Vigencia</div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="info-label">Estado</div>
                                         <div class="info-value">
-                                            <span class="badge bg-info" th:text="${hardwareInfo.garantia.garantVigencia}"></span>
+                                            <span th:if="${garantia.garantVigencia == 'Activa'}" 
+                                                  class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Activa
+                                            </span>
+                                            <span th:if="${garantia.garantVigencia == 'Proxima a vencer'}" 
+                                                  class="badge bg-warning text-dark">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Próxima a vencer
+                                            </span>
+                                            <span th:if="${garantia.garantVigencia == 'Expirada'}" 
+                                                  class="badge bg-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Expirada
+                                            </span>
                                         </div>
                                     </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="info-label">Días Restantes</div>
+                                        <div class="info-value" th:text="${garantia.diasRestantes} + ' días'"></div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="info-label">Duración Total</div>
+                                        <div class="info-value" th:text="${garantia.duracionEnMeses} + ' meses'"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Alerta si está próxima a vencer -->
+                                <div th:if="${garantia.garantVigencia == 'Proxima a vencer'}" 
+                                     class="alert alert-warning mt-3" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Atención:</strong> Esta garantía vencerá en 
+                                    <span th:text="${garantia.diasRestantes}"></span> días.
+                                </div>
+                                
+                                <!-- Alerta si expiró -->
+                                <div th:if="${garantia.garantVigencia == 'Expirada'}" 
+                                     class="alert alert-danger mt-3" role="alert">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    <strong>Garantía Expirada:</strong> Este activo ya no está cubierto por garantía.
+                                </div>
+                            </div>
+
+                            <!-- Mensaje si no tiene garantía -->
+                            <div th:if="${hardwareInfo and garantia == null}" class="mt-4">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Sin Garantía:</strong> Este activo no tiene garantía registrada.
                                 </div>
                             </div>
                         </div>
@@ -265,6 +307,7 @@
                 </div>
             </div>
         </div>
+        
 
         <!-- Asignaciones de Usuarios -->
         <div class="row mt-4">

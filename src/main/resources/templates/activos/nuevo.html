@@ -147,9 +147,7 @@
                                         <option value="">Sin contrato</option>
                                         <option th:each="contrato : ${contratos}" 
                                                 th:value="${contrato.contratId}"
-                                                th:text="${contrato.contratNom + ' - ' + contrato.proveedor.provNom}"
-                                                th:title="${'Vence: ' + (contrato.contratFechaFin != null ? #temporals.format(contrato.contratFechaFin, 'dd/MM/yyyy') : 'Sin fecha fin')}">
-                                                Contrato
+                                                th:text="${contrato.contratNumero + ' - ' + contrato.proveedor.provNom}"></option>
                                         </option>
                                     </select>
                                     <div class="form-text">

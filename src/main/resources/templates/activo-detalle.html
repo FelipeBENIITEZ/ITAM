@@ -196,7 +196,12 @@
                             </div>
                             <div class="col-md-6 mb-3" th:if="${activo.contrato}">
                                 <div class="info-label">Contrato</div>
-                                <div class="info-value" th:text="${activo.contrato?.contratNom ?: 'Sin contrato'}"></div>
+                                    <div class="info-value">
+                                        <span th:if="${activo.contrato}" th:text="${activo.contrato.contratNumero}"></span>
+                                        <span th:if="${activo.contrato}" class="text-muted"> - </span>
+                                        <span th:if="${activo.contrato}" th:text="${activo.contrato.proveedor.provNom}"></span>
+                                        <span th:unless="${activo.contrato}" class="text-muted">Sin contrato</span>
+                                    </div>
                             </div>
                             <div class="col-md-6 mb-3" th:if="${activo.activoFechaEgreso}">
                                 <div class="info-label">Fecha de Egreso</div>

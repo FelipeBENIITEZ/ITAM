@@ -211,7 +211,7 @@
                                     <td th:text="${activo.activoId}">#001</td>
                                     <td>
                                         <div class="fw-bold" th:text="${activo.activoNom}">Laptop Dell Latitude 5520</div>
-                                        <small class="text-muted" th:text="${activo.contrato?.contratNom ?: 'Sin contrato'}">Contrato ABC-2024</small>
+                                        <small class="text-muted" th:text="${activo.contrato?.contratNumero ?: 'Sin contrato'}">
                                     </td>
                                     <td>
                                         <span class="badge bg-primary" th:text="${activo.categoria?.catNom ?: 'Sin categoría'}">

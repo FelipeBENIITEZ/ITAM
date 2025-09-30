@@ -1,7 +1,6 @@
+
 package com.sistema.iTsystem.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -30,27 +29,21 @@ public class ContratoInfo {
     @Column(name = "contrat_id")
     private Long contratId;
 
-    @Column(name = "contrat_nom", nullable = false, length = 100)
-    private String contratNom;
+    @Column(name = "contrat_numero", length = 100, unique = true, nullable = false)
+    private String contratNumero;
 
-    @Column(name = "contrat_descri", length = 255)
-    private String contratDescri;
+    @Column(name = "contrat_descripcion", columnDefinition = "TEXT", nullable = false)
+    private String contratDescripcion;
 
-    @Column(name = "contrat_fecha_inicio", nullable = false)
-    private LocalDate contratFechaInicio;
-
-    @Column(name = "contrat_fecha_fin")
-    private LocalDate contratFechaFin;
-
-    @Column(name = "contrat_monto", precision = 12, scale = 2)
-    private BigDecimal contratMonto;
-
-    // Relación con Proveedores
+    // Relación con Proveedor (OBLIGATORIO)
     @ManyToOne
     @JoinColumn(name = "prov_id", nullable = false)
     private Proveedores proveedor;
 
-    @Column(name = "created_at")
+    @Column(name = "contrat_archivo_path", length = 500)
+    private String contratArchivoPath;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -65,5 +58,14 @@ public class ContratoInfo {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    
+    // Métodos helper
+    public boolean tieneArchivo() {
+        return contratArchivoPath != null && !contratArchivoPath.isEmpty();
+    }
+    
+    public String getProveedorNombre() {
+        return proveedor != null ? proveedor.getProvNom() : "Sin proveedor";
     }
 }

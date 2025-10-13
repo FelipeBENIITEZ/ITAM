@@ -29,9 +29,9 @@ import com.sistema.iTsystem.model.CategoriasActivo;
 import com.sistema.iTsystem.model.ContratoInfo;
 import com.sistema.iTsystem.model.Departamentos;
 import com.sistema.iTsystem.model.Garantia;
-import com.sistema.iTsystem.model.HardwareCostos;
+
 import com.sistema.iTsystem.model.HardwareInfo;
-import com.sistema.iTsystem.model.PresupuestoAreas;
+
 import com.sistema.iTsystem.model.Usuario;
 import com.sistema.iTsystem.model.UsuarioAsignacion;
 import com.sistema.iTsystem.repository.ActivoRepository;
@@ -39,11 +39,11 @@ import com.sistema.iTsystem.repository.CategoriasActivoRepository;
 import com.sistema.iTsystem.repository.ContratoInfoRepository;
 import com.sistema.iTsystem.repository.EstadoActivoRepository;
 import com.sistema.iTsystem.repository.GarantiaRepository;
-import com.sistema.iTsystem.repository.HardwareCostosRepository;
+
 import com.sistema.iTsystem.repository.HardwareInfoRepository;
 import com.sistema.iTsystem.repository.MarcaRepository;
 import com.sistema.iTsystem.repository.ModeloRepository;
-import com.sistema.iTsystem.repository.PresupuestoAreasRepository;
+
 import com.sistema.iTsystem.repository.UsuarioAsignacionRepository;
 import com.sistema.iTsystem.repository.UsuarioRepository;
 

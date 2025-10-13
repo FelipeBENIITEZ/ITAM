@@ -40,12 +40,8 @@ public class Activo {
     @Column(name = "activo_fecha_egreso")
     private LocalDateTime activoFechaEgreso;
 
-    // Relacion opcional con ContratoInfo
-    @ManyToOne
-    @JoinColumn(name = "contrat_id")
-    private ContratoInfo contrato;
-
-    // Relación obligatoria con Departamentos
+    @Column(name = "activo_descri", columnDefinition = "TEXT", nullable = false)
+    private String activoDescri;
     @ManyToOne
     @JoinColumn(name = "dept_id", nullable = false)
     private Departamentos departamento;
@@ -55,12 +51,12 @@ public class Activo {
     @JoinColumn(name = "cat_id", nullable = false)
     private CategoriasActivo categoria;
 
-    // Relacion obligatoria con EstadoActivo
+    // Relación obligatoria con EstadoActivo
     @ManyToOne
     @JoinColumn(name = "estado_id", nullable = false)
     private EstadoActivo estado;
     
-    // Relacion uno a uno con HardwareInfo
+    // Relación uno a uno con HardwareInfo
     @OneToOne(mappedBy = "activo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private HardwareInfo hardwareInfo;
 
@@ -84,7 +80,7 @@ public class Activo {
         updatedAt = LocalDateTime.now();
     }
 
-    // Metodo helper para obtener el serial del hardware
+    //metodo para obtener la serial del hardware
     public String getSerial() {
         return hardwareInfo != null ? hardwareInfo.getHwSerialNum() : "Sin serial";
     }

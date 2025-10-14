@@ -1,8 +1,11 @@
 package com.sistema.iTsystem.service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -175,6 +178,83 @@ public class HardwareInfoService {
         return hardwareRepository.findByValorCompraBetween(min, max);
     }
 
+    // ==================== BÚSQUEDAS POR ESTADO DEL ACTIVO ====================
+
+    /**
+     * Buscar hardware disponible (estado del activo = "Activo")
+     * En tu BD el estado "disponible para usar" es "Activo"
+     */
+    public List<HardwareInfo> buscarDisponibles() {
+        return hardwareRepository.findAll().stream()
+            .filter(hw -> hw.getActivo() != null)
+            .filter(hw -> hw.getActivo().getEstado() != null)
+            .filter(hw -> "Activo".equalsIgnoreCase(hw.getActivo().getEstado().getEstadoNom()))
+            .toList();
+    }
+
+    /**
+     * Buscar hardware en uso
+     * Esto podría ser cualquier estado que no sea "Proyectado" ni "Baja"
+     * Asumimos que "en uso" = Activo + En Mantenimiento + Fuera de Servicio
+     */
+    public List<HardwareInfo> buscarEnUso() {
+        return hardwareRepository.findAll().stream()
+            .filter(hw -> hw.getActivo() != null)
+            .filter(hw -> hw.getActivo().getEstado() != null)
+            .filter(hw -> {
+                String estado = hw.getActivo().getEstado().getEstadoNom();
+                return "Activo".equalsIgnoreCase(estado) ||
+                       "En Mantenimiento".equalsIgnoreCase(estado) ||
+                       "Fuera de Servicio".equalsIgnoreCase(estado);
+            })
+            .toList();
+    }
+
+    /**
+     * Buscar hardware en mantenimiento (estado del activo = "En Mantenimiento")
+     */
+    public List<HardwareInfo> buscarEnMantenimiento() {
+        return hardwareRepository.findAll().stream()
+            .filter(hw -> hw.getActivo() != null)
+            .filter(hw -> hw.getActivo().getEstado() != null)
+            .filter(hw -> "En Mantenimiento".equalsIgnoreCase(hw.getActivo().getEstado().getEstadoNom()))
+            .toList();
+    }
+
+    /**
+     * Buscar hardware proyectado (planificado pero no adquirido aún)
+     */
+    public List<HardwareInfo> buscarProyectados() {
+        return hardwareRepository.findAll().stream()
+            .filter(hw -> hw.getActivo() != null)
+            .filter(hw -> hw.getActivo().getEstado() != null)
+            .filter(hw -> "Proyectado".equalsIgnoreCase(hw.getActivo().getEstado().getEstadoNom()))
+            .toList();
+    }
+
+    /**
+     * Buscar hardware dado de baja
+     */
+    public List<HardwareInfo> buscarDadosDeBaja() {
+        return hardwareRepository.findAll().stream()
+            .filter(hw -> hw.getActivo() != null)
+            .filter(hw -> hw.getActivo().getEstado() != null)
+            .filter(hw -> "Baja".equalsIgnoreCase(hw.getActivo().getEstado().getEstadoNom()) ||
+                          "Pendiente de Baja".equalsIgnoreCase(hw.getActivo().getEstado().getEstadoNom()))
+            .toList();
+    }
+
+    /**
+     * Buscar hardware fuera de servicio
+     */
+    public List<HardwareInfo> buscarFueraDeServicio() {
+        return hardwareRepository.findAll().stream()
+            .filter(hw -> hw.getActivo() != null)
+            .filter(hw -> hw.getActivo().getEstado() != null)
+            .filter(hw -> "Fuera de Servicio".equalsIgnoreCase(hw.getActivo().getEstado().getEstadoNom()))
+            .toList();
+    }
+
     // ==================== CÁLCULOS Y ESTADÍSTICAS ====================
 
     /**
@@ -212,6 +292,39 @@ public class HardwareInfoService {
      */
     public long contarSinValorCompra() {
         return hardwareRepository.countHardwareSinValorCompra();
+    }
+
+    /**
+     * Contar hardware por tipo (basado en el tipo del modelo)
+     */
+    public List<Object[]> contarPorTipo() {
+    Map<String, Long> conteo = new HashMap<>();
+    
+    for (HardwareInfo hw : hardwareRepository.findAll()) {
+        if (hw.getModelo() != null && hw.getModelo().getMarca() != null) {
+            String marcaNombre = hw.getModelo().getMarca().getMarcaNom();
+            conteo.put(marcaNombre, conteo.getOrDefault(marcaNombre, 0L) + 1);
+        }
+    }
+    
+    return conteo.entrySet().stream()
+        .map(entry -> new Object[]{entry.getKey(), entry.getValue()})
+        .collect(Collectors.toList());
+    }
+    /**
+     * Contar hardware por estado del activo
+     */
+    public List<Object[]> contarPorEstado() {
+        // Agrupa por estado del activo asociado
+        return hardwareRepository.findAll().stream()
+            .filter(hw -> hw.getActivo() != null && hw.getActivo().getEstado() != null)
+            .collect(java.util.stream.Collectors.groupingBy(
+                hw -> hw.getActivo().getEstado().getEstadoNom(),
+                java.util.stream.Collectors.counting()
+            ))
+            .entrySet().stream()
+            .map(entry -> new Object[]{entry.getKey(), entry.getValue()})
+            .toList();
     }
 
     // ==================== VERIFICACIONES ====================

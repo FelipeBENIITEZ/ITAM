@@ -34,11 +34,11 @@ public interface HardwareInfoRepository extends JpaRepository<HardwareInfo, Long
            "LEFT JOIN FETCH h.modelo m " +
            "LEFT JOIN FETCH m.marca " +
            "LEFT JOIN FETCH h.garantia " +
-           "LEFT JOIN FETCH h.proveedor " +  // ✅ NUEVO: agregar proveedor
+           "LEFT JOIN FETCH h.proveedor " +  //NUEVO: agregar proveedor
            "WHERE h.activo.activoId = :activoId")
     Optional<HardwareInfo> findByActivoIdWithDetails(@Param("activoId") Long activoId);
     
-    // ✅ NUEVO: Query optimizada para obtener hardware con ID
+    //NUEVO: Query optimizada para obtener hardware con ID
     @Query("SELECT h FROM HardwareInfo h " +
            "LEFT JOIN FETCH h.modelo m " +
            "LEFT JOIN FETCH m.marca " +
@@ -55,56 +55,56 @@ public interface HardwareInfoRepository extends JpaRepository<HardwareInfo, Long
     // Buscar por modelo ID
     List<HardwareInfo> findByModelo_ModelId(Long modeloId);
     
-    // ✅ NUEVO: Buscar por proveedor
+    //NUEVO: Buscar por proveedor
     List<HardwareInfo> findByProveedor(Proveedores proveedor);
     
-    // ✅ NUEVO: Buscar por proveedor ID
+    //NUEVO: Buscar por proveedor ID
     List<HardwareInfo> findByProveedor_ProvId(Long provId);
     
     // ==================== BÚSQUEDAS POR VALOR ====================
     
-    // ✅ NUEVO: Buscar hardware con valor de compra mayor a X
+    //NUEVO: Buscar hardware con valor de compra mayor a X
     @Query("SELECT h FROM HardwareInfo h WHERE h.hwValorCompra > :valorMinimo")
     List<HardwareInfo> findByValorCompraGreaterThan(@Param("valorMinimo") BigDecimal valorMinimo);
     
-    // ✅ NUEVO: Buscar hardware con valor de compra entre X y Y
+    //NUEVO: Buscar hardware con valor de compra entre X y Y
     @Query("SELECT h FROM HardwareInfo h WHERE h.hwValorCompra BETWEEN :valorMin AND :valorMax")
     List<HardwareInfo> findByValorCompraBetween(@Param("valorMin") BigDecimal valorMin, 
                                                   @Param("valorMax") BigDecimal valorMax);
     
-    // ✅ NUEVO: Buscar hardware sin valor de compra registrado
+    //NUEVO: Buscar hardware sin valor de compra registrado
     @Query("SELECT h FROM HardwareInfo h WHERE h.hwValorCompra IS NULL")
     List<HardwareInfo> findHardwareSinValorCompra();
     
     // ==================== ESTADÍSTICAS Y REPORTES ====================
     
-    // ✅ NUEVO: Obtener suma total de valores de compra
+    //NUEVO: Obtener suma total de valores de compra
     @Query("SELECT COALESCE(SUM(h.hwValorCompra), 0) FROM HardwareInfo h WHERE h.hwValorCompra IS NOT NULL")
     BigDecimal sumTotalValorCompra();
     
-    // ✅ NUEVO: Obtener valor promedio de compra
+    //NUEVO: Obtener valor promedio de compra
     @Query("SELECT AVG(h.hwValorCompra) FROM HardwareInfo h WHERE h.hwValorCompra IS NOT NULL")
     BigDecimal avgValorCompra();
     
-    // ✅ NUEVO: Contar hardware por proveedor
+    //NUEVO: Contar hardware por proveedor
     @Query("SELECT h.proveedor.provNom, COUNT(h) FROM HardwareInfo h " +
            "WHERE h.proveedor IS NOT NULL " +
            "GROUP BY h.proveedor.provNom " +
            "ORDER BY COUNT(h) DESC")
     List<Object[]> countHardwarePorProveedor();
     
-    // ✅ NUEVO: Contar hardware por modelo
+    //NUEVO: Contar hardware por modelo
     @Query("SELECT m.modelNom, COUNT(h) FROM HardwareInfo h " +
            "JOIN h.modelo m " +
            "GROUP BY m.modelNom " +
            "ORDER BY COUNT(h) DESC")
     List<Object[]> countHardwarePorModelo();
     
-    // ✅ NUEVO: Obtener hardware sin proveedor asignado
+    //NUEVO: Obtener hardware sin proveedor asignado
     @Query("SELECT h FROM HardwareInfo h WHERE h.proveedor IS NULL")
     List<HardwareInfo> findHardwareSinProveedor();
     
-    // ✅ NUEVO: Contar hardware sin valor de compra
+    //NUEVO: Contar hardware sin valor de compra
     @Query("SELECT COUNT(h) FROM HardwareInfo h WHERE h.hwValorCompra IS NULL")
     long countHardwareSinValorCompra();
 }

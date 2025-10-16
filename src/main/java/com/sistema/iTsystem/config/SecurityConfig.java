@@ -44,12 +44,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         System.err.println("CONFIGURANDO SECURITY FILTER CHAIN");
-        
+       
         http
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(authz -> authz
+                // Recursos estáticos (CSS, JS, imágenes)
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                
+                // Página de login
                 .requestMatchers("/login").permitAll()
+                
+                // ==================== ENDPOINTS DE API PARA PRUEBAS ====================
+                // Permitir acceso sin autenticación a la API de catálogos (para Postman)
+                .requestMatchers("/api/catalogos/**").permitAll()
+                
+                // Endpoint de test (opcional, para navegador)
+                .requestMatchers("/test").permitAll()
+                
+                // ==================== RESTO REQUIERE AUTENTICACIÓN ====================
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -62,8 +74,13 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
+            )
+            // ==================== DESACTIVAR CSRF PARA API ====================
+            // Solo para endpoints de API (necesario para Postman)
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/**")
             );
-        
+       
         System.err.println("SECURITY FILTER CHAIN CONFIGURADO");
         return http.build();
     }

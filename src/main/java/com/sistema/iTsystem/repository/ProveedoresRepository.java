@@ -16,9 +16,4 @@ public interface ProveedoresRepository extends JpaRepository<Proveedores, Long> 
     // Verificar si existe por nombre
     boolean existsByProvNom(String nombre);
     
-    // Buscar por NIT
-    Optional<Proveedores> findByProvNit(String nit);
-    
-    // Verificar si existe por NIT
-    boolean existsByProvNit(String nit);
 }

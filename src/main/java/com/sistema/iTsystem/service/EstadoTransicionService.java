@@ -163,7 +163,7 @@ public class EstadoTransicionService {
     private void validarTransicion(Activo activo, EstadoActivo nuevoEstado) {
         EstadoActivo estadoActual = activo.getEstado();
         
-        // ✅ Validar que el nuevo estado sea válido para la categoría
+        //Validar que el nuevo estado sea válido para la categoría
         boolean esValidoParaCategoria = categoriaEstadoRepository
             .existsByCategoriaIdAndEstadoId(
                 activo.getCategoria().getCatId(), 

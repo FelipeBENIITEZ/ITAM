@@ -75,4 +75,18 @@ public interface LicenciaInfoRepository extends JpaRepository<LicenciaInfo, Long
     // Contar total de cupos disponibles
     @Query("SELECT SUM(l.licenciaCupos - l.licenciaUsos) FROM LicenciaInfo l")
     Long countTotalCuposDisponibles();
+
+     /**
+     * Sumar total de cupos de un software específico
+     * Retorna 0 si no hay licencias
+     */
+    @Query("SELECT COALESCE(SUM(l.licenciaCupos), 0) FROM LicenciaInfo l WHERE l.softwareInfo.sftId = :softwareId")
+    Integer sumTotalCuposBySoftware(@Param("softwareId") Long softwareId);
+    
+    /**
+     * Sumar total de usos de un software específico
+     * Retorna 0 si no hay licencias
+     */
+    @Query("SELECT COALESCE(SUM(l.licenciaUsos), 0) FROM LicenciaInfo l WHERE l.softwareInfo.sftId = :softwareId")
+    Integer sumTotalUsosBySoftware(@Param("softwareId") Long softwareId);
 }

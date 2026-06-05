@@ -257,7 +257,7 @@ public class EstadoTransicionService {
             return List.of();
         }
         
-        // ✅ Filtrar por: (1) FSM y (2) Categoría
+        //Filtrar por: (1) FSM y (2) Categoría
         List<EstadoActivo> estadosDeCategoria = categoriaEstadoRepository
             .findEstadosByCategoriaId(activo.getCategoria().getCatId());
         

@@ -213,11 +213,11 @@ public class DashboardController {
             model.addAttribute("proximosVencimientosContratos", 
                 contratoService.buscarProximosAVencer().stream().limit(5).toList());
             
-            return "dashboard/index";
+            return "dashboard";
             
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar dashboard: " + e.getMessage());
-            return "dashboard/index";
+            return "dashboard";
         }
     }
 

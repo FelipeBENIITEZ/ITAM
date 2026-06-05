@@ -162,38 +162,37 @@ public class ContratoInfoService {
 
     // ==================== GESTIÓN DE VIGENCIA ====================
 
-    /**
-     * Buscar contratos vigentes
-     */
     public List<ContratoInfo> buscarVigentes() {
-        LocalDate hoy = LocalDate.now();
-        return contratoRepository.findAll().stream()
-            .filter(c -> c.getContratFechaFin() == null || !c.getContratFechaFin().isBefore(hoy))
-            .toList();
-    }
+    return contratoRepository.findContratosVigentes(LocalDate.now());
+}
 
     /**
-     * Buscar contratos vencidos
-     */
+     *Buscar contratos vencidos
+    * Usa query optimizada del repository
+    */
     public List<ContratoInfo> buscarVencidos() {
-        LocalDate hoy = LocalDate.now();
-        return contratoRepository.findAll().stream()
-            .filter(c -> c.getContratFechaFin() != null && c.getContratFechaFin().isBefore(hoy))
-            .toList();
+        return contratoRepository.findContratosVencidos(LocalDate.now());
     }
 
     /**
-     * Buscar contratos próximos a vencer (30 días)
-     */
+    * Buscar contratos próximos a vencer (dentro de X días)
+    * Por defecto: 60 días
+    * Usa query optimizada del repository
+    */
     public List<ContratoInfo> buscarProximosAVencer() {
         LocalDate hoy = LocalDate.now();
-        LocalDate dentroDe30Dias = hoy.plusDays(30);
-        
-        return contratoRepository.findAll().stream()
-            .filter(c -> c.getContratFechaFin() != null)
-            .filter(c -> !c.getContratFechaFin().isBefore(hoy))
-            .filter(c -> !c.getContratFechaFin().isAfter(dentroDe30Dias))
-            .toList();
+        LocalDate dentroDe60Dias = hoy.plusDays(60);
+        return contratoRepository.findContratosPorVencer(hoy, dentroDe60Dias);
+    }
+
+    /**
+    * Buscar contratos próximos a vencer (X días personalizados)
+    * Usa query optimizada del repository
+    */
+    public List<ContratoInfo> buscarProximosAVencer(int dias) {
+        LocalDate hoy = LocalDate.now();
+        LocalDate limite = hoy.plusDays(dias);
+        return contratoRepository.findContratosPorVencer(hoy, limite);
     }
 
     /**

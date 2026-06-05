@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.time.LocalDate;
 
 import com.sistema.iTsystem.model.ContratoInfo;
 
@@ -48,4 +49,35 @@ public interface ContratoInfoRepository extends JpaRepository<ContratoInfo, Long
     // Contar contratos por proveedor
     @Query("SELECT COUNT(c) FROM ContratoInfo c WHERE c.proveedor.provId = :proveedorId")
     Long countByProveedorId(@Param("proveedorId") Long proveedorId);
+    
+    // ==================== GESTION DE FECHAS Y VIGENCIA ====================
+    
+    /**
+     * Buscar contratos vigentes (fecha_fin >= hoy O fecha_fin IS NULL)
+     */
+    @Query("SELECT c FROM ContratoInfo c " +
+           "WHERE c.contratFechaFin >= :fechaActual OR c.contratFechaFin IS NULL " +
+           "ORDER BY c.contratFechaFin ASC")
+    List<ContratoInfo> findContratosVigentes(@Param("fechaActual") LocalDate fechaActual);
+    
+    /**
+     * Buscar contratos vencidos (fecha_fin < hoy)
+     */
+    @Query("SELECT c FROM ContratoInfo c " +
+           "WHERE c.contratFechaFin < :fechaActual " +
+           "ORDER BY c.contratFechaFin DESC")
+    List<ContratoInfo> findContratosVencidos(@Param("fechaActual") LocalDate fechaActual);
+    
+    /**
+     * Buscar contratos por vencer (dentro de X días)
+     * Ejemplo de uso: findContratosPorVencer(LocalDate.now(), LocalDate.now().plusDays(60))
+     */
+    @Query("SELECT c FROM ContratoInfo c " +
+           "WHERE c.contratFechaFin BETWEEN :fechaActual AND :fechaLimite " +
+           "ORDER BY c.contratFechaFin ASC")
+    List<ContratoInfo> findContratosPorVencer(
+        @Param("fechaActual") LocalDate fechaActual,
+        @Param("fechaLimite") LocalDate fechaLimite
+    );
+    
 }

@@ -13,8 +13,8 @@ import com.sistema.iTsystem.model.LicenciaInfo;
 import com.sistema.iTsystem.model.LicenciasEstados;
 import com.sistema.iTsystem.model.LicenciasTipo;
 import com.sistema.iTsystem.model.SoftwareInfo;
-import com.sistema.iTsystem.repository.LicenciaInfoRepository;
 import com.sistema.iTsystem.repository.LicenciaEstadosRepository;
+import com.sistema.iTsystem.repository.LicenciaInfoRepository;
 import com.sistema.iTsystem.repository.LicenciaTipoRepository;
 import com.sistema.iTsystem.repository.SoftwareInfoRepository;
 
@@ -411,5 +411,65 @@ public class LicenciaInfoService {
         public EstadoNoEncontradoException(String mensaje) {
             super(mensaje);
         }
+    }
+
+    /**
+    * Verificar si un software tiene licencias disponibles
+    * Suma todos los cupos y usos de todas las licencias del software
+    */
+    public boolean softwareTieneDisponibilidad(Long softwareId) {
+        Integer totalCupos = licenciaRepository.sumTotalCuposBySoftware(softwareId);
+        Integer totalUsos = licenciaRepository.sumTotalUsosBySoftware(softwareId);
+    
+        if (totalCupos == null || totalCupos == 0) {
+            return false;
+        }
+    
+        if (totalUsos == null) {
+            totalUsos = 0;
+        }
+    
+    return totalUsos < totalCupos;
+    }
+
+    /**
+    * Obtener cupos totales disponibles de un software
+    * Suma todos los cupos de todas las licencias del software
+    */
+    public int obtenerCuposTotalesSoftware(Long softwareId) {
+        Integer total = licenciaRepository.sumTotalCuposBySoftware(softwareId);
+        return total != null ? total : 0;
+    }
+
+    /**
+    * Obtener usos totales de un software
+    * Suma todos los usos de todas las licencias del software
+    */
+    public int obtenerUsosTotalesSoftware(Long softwareId) {
+        Integer total = licenciaRepository.sumTotalUsosBySoftware(softwareId);
+        return total != null ? total : 0;
+    }
+
+    /**
+    * Obtener cupos disponibles de un software
+    * Cupos totales - Usos totales
+    */
+    public int obtenerCuposDisponiblesSoftware(Long softwareId) {
+        int cupos = obtenerCuposTotalesSoftware(softwareId);
+        int usos = obtenerUsosTotalesSoftware(softwareId);
+        return cupos - usos;
+    }
+
+    /**
+    * Obtener porcentaje de uso de un software
+    * (Usos / Cupos) * 100
+    */
+    public double obtenerPorcentajeUsoSoftware(Long softwareId) {
+        int cupos = obtenerCuposTotalesSoftware(softwareId);
+        if (cupos == 0) {
+            return 0.0;
+        }
+        int usos = obtenerUsosTotalesSoftware(softwareId);
+        return ((double) usos / cupos) * 100.0;
     }
 }

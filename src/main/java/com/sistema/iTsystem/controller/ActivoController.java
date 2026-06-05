@@ -61,7 +61,7 @@ public class ActivoController {
         try {
             Pageable pageable = PageRequest.of(pagina, 10, Sort.by("activoFechaIngreso").descending());
             
-            // ✅ Delegado al service con filtros
+            // Delegado al service con filtros
             Page<Activo> paginaActivos = activoService.buscarConFiltros(
                 buscar, categoria, estado, departamento, pageable
             );
@@ -101,7 +101,7 @@ public class ActivoController {
             
             model.addAttribute("activo", activo);
             
-            // ✅ Verificar si es Hardware o Software según categoría
+            //Verificar si es Hardware o Software según categoría
             String tipoCategoria = activo.getCategoria().getCatNom().toLowerCase();
             
             if (tipoCategoria.contains("hardware")) {
@@ -118,11 +118,11 @@ public class ActivoController {
                 });
             }
             
-            // ✅ Obtener historial de estados (FSM)
+            //Obtener historial de estados (FSM)
             model.addAttribute("historialEstados", 
                 estadoTransicionService.obtenerHistorialEstados(id));
             
-            // ✅ Obtener estados posibles para cambio rápido
+            //Obtener estados posibles para cambio rápido
             model.addAttribute("estadosPosibles", 
                 estadoTransicionService.obtenerEstadosPosibles(id));
             
@@ -158,7 +158,7 @@ public class ActivoController {
     @PostMapping("/guardar")
     public String guardar(Activo activo, RedirectAttributes flash) {
         try {
-            // ✅ TODO delegado al service (validaciones, estado default, etc.)
+            //TODO delegado al service (validaciones, estado default, etc.)
             Activo activoGuardado = activoService.crear(activo);
             
             flash.addFlashAttribute("success", 

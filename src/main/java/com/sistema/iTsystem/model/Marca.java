@@ -32,6 +32,9 @@ public class Marca {
     @Column(name = "marca_descri", length = 255)
     private String marcaDescri;
 
+    @Column(name = "marca_activa", nullable = false)
+    private Boolean marcaActiva = true;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -40,6 +43,9 @@ public class Marca {
 
     @PrePersist
     protected void onCreate() {
+        if (marcaActiva == null) {
+            marcaActiva = true;
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }

@@ -31,8 +31,26 @@ public class Activo {
     @Column(name = "activo_id")
     private Long activoId;
 
+    @Column(name = "activo_codigo", nullable = false, unique = true, length = 50)
+    private String activoCodigo;
+
+    @ManyToOne
+    @JoinColumn(name = "prov_id")
+    private Proveedores proveedor;
+
+    @ManyToOne
+    @JoinColumn(name = "cat_id", nullable = false)
+    private CategoriasActivo categoria;
+
+    @ManyToOne
+    @JoinColumn(name = "estado_id", nullable = false)
+    private EstadoActivo estado;
+
     @Column(name = "activo_nom", nullable = false, length = 150)
     private String activoNom;
+
+    @Column(name = "activo_descri", columnDefinition = "TEXT")
+    private String activoDescri;
 
     @Column(name = "activo_fecha_ingreso")
     private LocalDateTime activoFechaIngreso;
@@ -40,23 +58,9 @@ public class Activo {
     @Column(name = "activo_fecha_egreso")
     private LocalDateTime activoFechaEgreso;
 
-    @Column(name = "activo_descri", columnDefinition = "TEXT", nullable = false)
-    private String activoDescri;
-    @ManyToOne
-    @JoinColumn(name = "dept_id", nullable = false)
-    private Departamentos departamento;
+    @Column(name = "activo_activo", nullable = false)
+    private Boolean activoActivo = true;
 
-    // Relación obligatoria con CategoriasActivo
-    @ManyToOne
-    @JoinColumn(name = "cat_id", nullable = false)
-    private CategoriasActivo categoria;
-
-    // Relación obligatoria con EstadoActivo
-    @ManyToOne
-    @JoinColumn(name = "estado_id", nullable = false)
-    private EstadoActivo estado;
-    
-    // Relación uno a uno con HardwareInfo
     @OneToOne(mappedBy = "activo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private HardwareInfo hardwareInfo;
 
@@ -71,6 +75,9 @@ public class Activo {
         if (activoFechaIngreso == null) {
             activoFechaIngreso = LocalDateTime.now();
         }
+        if (activoActivo == null) {
+            activoActivo = true;
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
@@ -80,7 +87,6 @@ public class Activo {
         updatedAt = LocalDateTime.now();
     }
 
-    //metodo para obtener la serial del hardware
     public String getSerial() {
         return hardwareInfo != null ? hardwareInfo.getHwSerialNum() : "Sin serial";
     }

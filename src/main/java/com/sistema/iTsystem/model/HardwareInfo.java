@@ -1,7 +1,8 @@
 package com.sistema.iTsystem.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -12,10 +13,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,32 +35,22 @@ public class HardwareInfo {
     @Column(name = "hw_id")
     private Long hwId;
 
+    @OneToOne
+    @JoinColumn(name = "activo_id", nullable = false, unique = true)
+    private Activo activo;
+
+    @ManyToOne
+    @JoinColumn(name = "model_id", nullable = false)
+    private Modelo modelo;
+
     @Column(name = "hw_serial_num", length = 100, unique = true, nullable = false)
     private String hwSerialNum;
 
-    @Column(name = "hw_descri")
+    @Column(name = "hw_descri", columnDefinition = "TEXT")
     private String hwDescri;
 
-    @Column(name = "hw_valor_compra", precision = 12, scale = 2)
-    private BigDecimal hwValorCompra;
-
-    // Relación con Activo (uno a uno)
-    @OneToOne
-    @JoinColumn(name = "activo_activo_id", nullable = false, unique = true)
-    private Activo activo;
-
-    // Relación con Modelo
-    @ManyToOne
-    @JoinColumn(name = "modelo_model_id", nullable = false)
-    private Modelo modelo;
-
-    // Relación con Garantía (uno a uno)
-    @OneToOne(mappedBy = "hardwareInfo", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Garantia garantia;
-    // Relación con Proveedor
-    @ManyToOne
-    @JoinColumn(name = "prov_id")
-    private Proveedores proveedor;
+    @OneToMany(mappedBy = "hardwareInfo", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Garantia> garantias;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -76,18 +69,19 @@ public class HardwareInfo {
         updatedAt = LocalDateTime.now();
     }
 
-    public boolean tieneValorCompra() {
-        return hwValorCompra != null && hwValorCompra.compareTo(BigDecimal.ZERO) > 0;
-    }
-
-    public String getValorCompraFormateado() {
-        if (hwValorCompra == null) {
-            return "No especificado";
+    @Transient
+    public Garantia getGarantia() {
+        if (garantias == null || garantias.isEmpty()) {
+            return null;
         }
-        return String.format("$%.2f", hwValorCompra);
+        return garantias.stream()
+            .max(Comparator.comparing(Garantia::getGaranFechaFin))
+            .orElse(garantias.get(0));
     }
 
     public String getProveedorNombre() {
-        return proveedor != null ? proveedor.getProvNom() : "Sin proveedor";
+        return activo != null && activo.getProveedor() != null
+            ? activo.getProveedor().getProvNom()
+            : "Sin proveedor";
     }
 }

@@ -29,6 +29,9 @@ public class EstadoActivo {
     @Column(name = "estado_nom", nullable = false, unique = true, length = 50)
     private String estadoNom;
 
+    @Column(name = "estado_descri", length = 255)
+    private String estadoDescri;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

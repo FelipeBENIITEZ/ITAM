@@ -1,13 +1,17 @@
 package com.sistema.iTsystem.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,24 +24,54 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UsuarioAsignacion {
 
-    @EmbeddedId
-    private UsuarioAsignacionId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "asignacion_id")
+    private Long asignacionId;
+
+    @ManyToOne
+    @JoinColumn(name = "usu_id", nullable = false)
+    private Usuario usuario;
+
+    @ManyToOne
+    @JoinColumn(name = "activo_id", nullable = false)
+    private Activo activo;
 
     @Column(name = "asignacion_fecha", nullable = false)
     private LocalDate asignacionFecha = LocalDate.now();
 
+    @Column(name = "devolucion_fecha")
+    private LocalDate devolucionFecha;
+
     @Column(name = "asignacion_motivo", length = 255)
     private String asignacionMotivo;
 
-    // Relación con Usuario (usa MapsId para sincronizar con la PK compuesta)
-    @ManyToOne
-    @MapsId("usuarioId")
-    @JoinColumn(name = "usuario_us_id", nullable = false)
-    private Usuario usuario;
+    @Column(name = "asignacion_observacion", columnDefinition = "TEXT")
+    private String asignacionObservacion;
 
-    // Relación con Activo
-    @ManyToOne
-    @MapsId("activoId")
-    @JoinColumn(name = "activo_activo_id", nullable = false)
-    private Activo activo;
+    @Column(name = "asignacion_activa", nullable = false)
+    private Boolean asignacionActiva = true;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (asignacionFecha == null) {
+            asignacionFecha = LocalDate.now();
+        }
+        if (asignacionActiva == null) {
+            asignacionActiva = true;
+        }
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

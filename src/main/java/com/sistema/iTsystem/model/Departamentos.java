@@ -24,4 +24,10 @@ public class Departamentos {
 
     @Column(name = "dept_nom", nullable = false, unique = true, length = 100)
     private String deptNom;
+
+    @Column(name = "dept_descri", length = 255)
+    private String deptDescri;
+
+    @Column(name = "dept_activo", nullable = false)
+    private Boolean deptActivo = true;
 }

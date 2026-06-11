@@ -1,6 +1,7 @@
 package com.sistema.iTsystem.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,23 +9,21 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.sistema.iTsystem.model.UsuarioAsignacion;
-import com.sistema.iTsystem.model.UsuarioAsignacionId;
 
 @Repository
-public interface UsuarioAsignacionRepository extends JpaRepository<UsuarioAsignacion, UsuarioAsignacionId>{
-    
-    // Buscar asignaciones por activo ID
-    List<UsuarioAsignacion> findByActivo_ActivoId(Long activoId);
-    
-    // Buscar asignaciones por usuario ID
+public interface UsuarioAsignacionRepository extends JpaRepository<UsuarioAsignacion, Long> {
+
+    List<UsuarioAsignacion> findByActivo_ActivoIdOrderByAsignacionFechaDesc(Long activoId);
+
     List<UsuarioAsignacion> findByUsuario_UsuId(Long usuarioId);
-    
-    // Query para obtener asignaciones con detalles de usuario y persona
+
+    Optional<UsuarioAsignacion> findByActivo_ActivoIdAndAsignacionActivaTrue(Long activoId);
+
     @Query("SELECT ua FROM UsuarioAsignacion ua " +
            "LEFT JOIN FETCH ua.usuario u " +
-           "LEFT JOIN FETCH u.persona p " +
-           "LEFT JOIN FETCH u.departamento d " +
+           "LEFT JOIN FETCH u.persona " +
+           "LEFT JOIN FETCH u.departamento " +
            "WHERE ua.activo.activoId = :activoId " +
-           "ORDER BY ua.asignacionFecha DESC")
+           "ORDER BY ua.asignacionActiva DESC, ua.asignacionFecha DESC")
     List<UsuarioAsignacion> findByActivoIdWithUserDetails(@Param("activoId") Long activoId);
 }

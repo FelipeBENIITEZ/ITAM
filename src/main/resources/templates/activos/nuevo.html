@@ -7,434 +7,98 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
     <div class="container-fluid">
         <div class="row">
-            <!-- Header -->
             <div class="col-12 bg-primary text-white p-3 mb-4">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h2><i class="fas fa-plus-circle me-2"></i>Nuevo Activo</h2>
+                    <h2 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Nuevo Activo</h2>
                     <a href="/activos" class="btn btn-light">
-                        <i class="fas fa-arrow-left me-1"></i>Volver a Activos
+                        <i class="fas fa-arrow-left me-1"></i>Volver
                     </a>
                 </div>
             </div>
         </div>
 
         <div class="row">
-            <div class="col-md-8 offset-md-2">
-                
-                <!-- INFORMACIÓN VISUAL PARA ADMINISTRADORES (fuera del formulario) -->
-                <div th:if="${esAdministrador}">
-                    <div class="card mb-4">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0"><i class="fas fa-building me-2"></i>Asignación de Departamento</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="mb-0 text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Como administrador, puedes asignar este activo a cualquier departamento que tenga presupuesto vigente.
-                            </p>
-                        </div>
+            <div class="col-lg-8 offset-lg-2">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="fas fa-box me-2"></i>Datos del activo</h5>
                     </div>
-                </div>
+                    <div class="card-body">
+                        <form th:action="@{/activos/guardar}" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="activoCodigo" class="form-label">Codigo unico *</label>
+                                    <input type="text" class="form-control" id="activoCodigo" name="activoCodigo"
+                                           maxlength="50" placeholder="Ej: IT-0001" required>
+                                </div>
 
-                <!-- INFORMACIÓN VISUAL PARA USUARIOS NORMALES (fuera del formulario) -->
-                <div th:unless="${esAdministrador}">
-                    <div class="card mb-4 border-info">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Presupuesto Asignado</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <strong>Departamento:</strong>
-                                    <p th:text="${presupuestoActual.departamento.deptNom}" class="text-primary">Departamento</p>
+                                <div class="col-md-8">
+                                    <label for="activoNom" class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" id="activoNom" name="activoNom"
+                                           maxlength="150" placeholder="Ej: Notebook Dell Latitude 5430" required>
                                 </div>
-                                <div class="col-md-3">
-                                    <strong>Presupuesto Total:</strong>
-                                    <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presAsignado, 1, 2)}" class="text-success">$0.00</p>
-                                </div>
-                                <div class="col-md-3">
-                                    <strong>Usado:</strong>
-                                    <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presUsado, 1, 2)}" class="text-warning">$0.00</p>
-                                </div>
-                                <div class="col-md-3">
-                                    <strong>Disponible:</strong>
-                                    <p th:text="'$' + ${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}" class="text-info">$0.00</p>
-                                </div>
-                            </div>
-                            <div class="row">
+
                                 <div class="col-md-6">
-                                    <small class="text-muted">Vigencia: </small>
-                                    <span th:text="${presupuestoActual.presIniVigencia} + ' - ' + ${presupuestoActual.presFinVigencia}"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- FORMULARIO PRINCIPAL -->
-                <form th:action="@{/activos/guardar}" method="post" id="formularioActivo">
-                    
-                    <!-- CAMPO DE DEPARTAMENTO PARA ADMINISTRADORES (dentro del formulario) -->
-                    <div th:if="${esAdministrador}" class="card mb-4">
-                        <div class="card-header bg-secondary text-white">
-                            <h6 class="mb-0"><i class="fas fa-building me-2"></i>Departamento de Destino</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="departamentoId" class="form-label">Departamento de destino *</label>
-                                <select name="departamentoId" id="departamentoId" class="form-control" required>
-                                    <option value="">Seleccionar departamento...</option>
-                                    <option th:each="pres : ${presupuestosInfo}" 
-                                            th:value="${pres.departamento.deptId}"
-                                            th:text="${pres.departamento.deptNom + ' - Disponible: $' + #numbers.formatDecimal(pres.presupuestoDisponible, 0, 'COMMA', 2, 'POINT')}">
-                                    </option>
-                                </select>
-                                <div class="form-text">
-                                    <i class="fas fa-info-circle text-primary"></i>
-                                    El sistema utilizará automáticamente el presupuesto vigente del departamento seleccionado.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- INPUT HIDDEN PARA USUARIOS NORMALES (dentro del formulario) -->
-                    <input th:unless="${esAdministrador}" type="hidden" name="departamentoId" th:value="${presupuestoActual.departamento.deptId}">
-                    
-                    <!-- INFORMACIÓN GENERAL DEL ACTIVO -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información General del Activo</h5>
-                        </div>
-                        <div class="card-body">
-                            
-                            <!-- Nombre del Activo -->
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <label for="activoNom" class="form-label">Nombre del Activo *</label>
-                                    <input type="text" class="form-control" id="activoNom" name="activoNom" 
-                                           placeholder="Ej: Laptop Dell Latitude 5430" required>
-                                </div>
-                            </div>
-
-                            <!-- Categoria, Estado y Contrato -->
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <label for="categoriaId" class="form-label">Categoría *</label>
-                                    <select class="form-select" id="categoriaId" name="categoriaId" required onchange="mostrarCamposHardware()">
-                                        <option value="">Seleccionar categoría...</option>
-                                        <option th:each="categoria : ${categorias}" 
-                                                th:value="${categoria.catId}" 
-                                                th:text="${categoria.catNom}">Categoría</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="estadoId" class="form-label">Estado *</label>
-                                    <select class="form-select" id="estadoId" name="estadoId" required>
-                                        <option value="">Seleccionar estado...</option>
-                                        <option th:each="estado : ${estados}" 
-                                                th:value="${estado.estadoId}" 
-                                                th:text="${estado.estadoNom}">Estado</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="contratoId" class="form-label">
-                                    Contrato <small class="text-muted">(opcional)</small>
-                                    </label>
-                                    <select class="form-select" id="contratoId" name="contratoId">
-                                        <option value="">Sin contrato</option>
-                                        <option th:each="contrato : ${contratos}" 
-                                                th:value="${contrato.contratId}"
-                                                th:text="${contrato.contratNumero + ' - ' + contrato.proveedor.provNom}"></option>
+                                    <label for="proveedorId" class="form-label">Proveedor</label>
+                                    <select class="form-select" id="proveedorId" name="proveedorId">
+                                        <option value="">Sin proveedor</option>
+                                        <option th:each="proveedor : ${proveedores}"
+                                                th:value="${proveedor.provId}"
+                                                th:text="${proveedor.provNom}">
+                                            Proveedor
                                         </option>
                                     </select>
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle text-primary"></i>
-                                        Solo para activos con servicios adicionales (soporte, mantenimiento, etc.)
-                                    </div>
                                 </div>
-                            </div>                                                          
-                        </div>
-                    </div>
 
-                    <!-- CAMPOS ESPECÍFICOS DE HARDWARE (ocultos por defecto) -->
-                    <div class="card mt-3" id="camposHardware" style="display: none;">
-                        <div class="card-header bg-secondary text-white">
-                            <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Información de Hardware</h5>
-                        </div>
-                        <div class="card-body">
-                            
-                            <!-- Marca y Modelo -->
-                            <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="marcaId" class="form-label">Marca</label>
-                                    <select class="form-select" id="marcaId" name="marcaId" onchange="filtrarModelos()">
-                                        <option value="">Seleccionar marca...</option>
-                                        <option th:each="marca : ${marcas}" 
-                                                th:value="${marca.marcaId}" 
-                                                th:text="${marca.marcaNom}">Marca</option>
+                                    <label for="categoriaId" class="form-label">Categoria *</label>
+                                    <select class="form-select" id="categoriaId" name="categoriaId" required>
+                                        <option value="">Seleccionar categoria...</option>
+                                        <option th:each="categoria : ${categorias}"
+                                                th:value="${categoria.catId}"
+                                                th:text="${categoria.catNom}">
+                                            Categoria
+                                        </option>
                                     </select>
                                 </div>
+
                                 <div class="col-md-6">
-                                    <label for="modeloId" class="form-label">Modelo</label>
-                                    <select class="form-select" id="modeloId" name="modeloId">
-                                        <option value="">Seleccionar modelo...</option>
-                                        <option th:each="modelo : ${modelos}" 
-                                            th:value="${modelo.modelId}" 
-                                            th:text="${modelo.modelNom}" 
-                                            th:attr="data-marca=${modelo.marca.marcaId}">Modelo</option>
+                                    <label for="estadoId" class="form-label">Estado inicial</label>
+                                    <select class="form-select" id="estadoId" name="estadoId">
+                                        <option value="">Usar estado por defecto</option>
+                                        <option th:each="estado : ${estados}"
+                                                th:value="${estado.estadoId}"
+                                                th:text="${estado.estadoNom}">
+                                            Estado
+                                        </option>
                                     </select>
                                 </div>
-                            </div>
 
-                            <!-- Numero de Serie y Valor -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="numeroSerie" class="form-label">Número de Serie</label>
-                                    <input type="text" class="form-control" id="numeroSerie" name="numeroSerie" 
-                                           placeholder="Ej: ABC123456789">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="valorCompra" class="form-label">Valor de Compra *</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" class="form-control" id="valorCompra" name="valorCompra" 
-                                               step="0.01" min="0" placeholder="0.00" required>
-                                    </div>
-                                    <!-- Mostrar disponible solo para usuarios normales -->
-                                    <small th:unless="${esAdministrador}" class="text-muted">
-                                        Disponible: $<span th:text="${#numbers.formatDecimal(presupuestoActual.presupuestoDisponible, 1, 2)}"></span>
-                                    </small>
-                                </div>
-                            </div>
-                            <hr class="my-4">
-
-                            <!-- SUBSECCIÓN: GARANTÍA -->
-                            <div class="mb-4">
-                                <h6 class="text-muted mb-3">
-                                    <i class="fas fa-shield-alt me-2"></i>Información de Garantía (Opcional)
-                                </h6>
-                                
-                                <div class="row mb-3">
-                                    <!-- Fecha de Inicio -->
-                                    <div class="col-md-4">
-                                        <label for="garantFechaInicio" class="form-label">
-                                            Fecha de Inicio
-                                        </label>
-                                        <input type="date" 
-                                               class="form-control" 
-                                               id="garantFechaInicio" 
-                                               name="garantFechaInicio"
-                                               onchange="calcularFechaFin()">
-                                        <small class="form-text text-muted">
-                                            Fecha en que inicia la garantía
-                                        </small>
-                                    </div>
-                                    
-                                    <!-- Duración en Meses -->
-                                    <div class="col-md-4">
-                                        <label for="garantDuracionMeses" class="form-label">
-                                            Duración (meses)
-                                        </label>
-                                        <input type="number" 
-                                               class="form-control" 
-                                               id="garantDuracionMeses" 
-                                               name="garantDuracionMeses" 
-                                               min="1" 
-                                               max="120"
-                                               placeholder="12"
-                                               onchange="calcularFechaFin()">
-                                        <small class="form-text text-muted">
-                                            Duración de la garantía en meses
-                                        </small>
-                                    </div>
-                                    
-                                    <!-- Fecha Fin (Calculada) -->
-                                    <div class="col-md-4">
-                                        <label for="garantFechaFinCalculada" class="form-label">
-                                            Fecha de Fin (calculada)
-                                        </label>
-                                        <input type="text" 
-                                               class="form-control bg-light" 
-                                               id="garantFechaFinCalculada" 
-                                               readonly
-                                               placeholder="Se calcula automáticamente">
-                                        <small class="form-text text-muted">
-                                            Fecha estimada de vencimiento
-                                        </small>
-                                    </div>
-                                </div>
-                                
-                                <!-- Información adicional -->
-                                <div class="alert alert-info mb-0" role="alert">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Nota:</strong> El estado de la garantía (Activa, Próxima a vencer, Expirada) 
-                                    se calculará automáticamente según las fechas ingresadas.
+                                <div class="col-12">
+                                    <label for="activoDescri" class="form-label">Descripcion</label>
+                                    <textarea class="form-control" id="activoDescri" name="activoDescri"
+                                              rows="3" placeholder="Observaciones generales del activo"></textarea>
                                 </div>
                             </div>
 
-                        </div>
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <a href="/activos" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-1"></i>Guardar
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    
-                    <!-- BOTONES -->
-                    <div class="text-center mt-4 mb-5">
-                        <button type="submit" class="btn btn-success btn-lg me-2">
-                            <i class="fas fa-save me-2"></i>Guardar Activo
-                        </button>
-                        <a href="/activos" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-times me-2"></i>Cancelar
-                        </a>
-                    </div>
-
-                </form>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    // Guardar todos los modelos al cargar la página
-    let todosLosModelos = [];
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        // Capturar todos los modelos ANTES de que se eliminen del DOM
-        const modeloSelect = document.getElementById('modeloId');
-        const opciones = modeloSelect.querySelectorAll('option[data-marca]');
-        
-        opciones.forEach(option => {
-            todosLosModelos.push({
-                value: option.value,
-                text: option.textContent,
-                marcaId: option.getAttribute('data-marca')
-            });
-        });
-    });
-
-    function mostrarCamposHardware() {
-        const categoria = document.getElementById('categoriaId');
-        const camposHardware = document.getElementById('camposHardware');
-        const valorCompra = document.getElementById('valorCompra');
-        
-        if (categoria.selectedOptions[0] && categoria.selectedOptions[0].text.includes('Hardware')) {
-            camposHardware.style.display = 'block';
-            valorCompra.required = true;
-        } else {
-            camposHardware.style.display = 'none';
-            valorCompra.required = false;
-        }
-    }
-
-    function filtrarModelos() {
-        const marcaSelect = document.getElementById('marcaId');
-        const modeloSelect = document.getElementById('modeloId');
-        const marcaId = marcaSelect.value;
-        
-        // Limpiar opciones
-        modeloSelect.innerHTML = '<option value="">Seleccionar modelo...</option>';
-        
-        if (marcaId) {
-            // Usar el array guardado en lugar de buscar en el DOM
-            const modelosFiltrados = todosLosModelos.filter(modelo => modelo.marcaId === marcaId);
-            
-            modelosFiltrados.forEach(modelo => {
-                const option = document.createElement('option');
-                option.value = modelo.value;
-                option.textContent = modelo.text;
-                modeloSelect.appendChild(option);
-            });
-        }
-    }
-
-    // Validar presupuesto antes de enviar (solo usuarios normales)
-    document.getElementById('formularioActivo').addEventListener('submit', function(e) {
-        const valorCompra = parseFloat(document.getElementById('valorCompra').value || 0);
-        const esAdmin = document.querySelector('input[name="departamentoId"][type="hidden"]') === null;
-        
-        if (!esAdmin) {
-            // Solo validar para usuarios normales
-            const disponibleElement = document.querySelector('[th\\:text*="presupuestoDisponible"]');
-            if (disponibleElement) {
-                const disponible = parseFloat(disponibleElement.textContent.replace('$', '').replace(',', '') || 0);
-                
-                if (valorCompra > disponible) {
-                    e.preventDefault();
-                    alert('El valor de compra ($' + valorCompra + ') excede el presupuesto disponible ($' + disponible + ')');
-                }
-            }
-        }
-    });
-</script>
-
-<script>
-// Script para información de contratos
-document.getElementById('contratoId').addEventListener('change', function() {
-    const select = this;
-    const contratoInfo = document.getElementById('contratoInfo');
-    
-    if (select.value) {
-        // Mostrar información del contrato seleccionado
-        const option = select.options[select.selectedIndex];
-        const titulo = option.getAttribute('title');
-        
-        if (!contratoInfo) {
-            const infoDiv = document.createElement('div');
-            infoDiv.id = 'contratoInfo';
-            infoDiv.className = 'alert alert-info mt-2';
-            infoDiv.innerHTML = '<small><i class="fas fa-contract me-1"></i>' + titulo + '</small>';
-            select.parentElement.appendChild(infoDiv);
-        } else {
-            contratoInfo.innerHTML = '<small><i class="fas fa-contract me-1"></i>' + titulo + '</small>';
-        }
-    } else {
-        // Ocultar información si no hay contrato
-        if (contratoInfo) {
-            contratoInfo.remove();
-        }
-    }
-});
-</script>
-<script>
-// Función para calcular la fecha fin de garantía
-function calcularFechaFin() {
-    const fechaInicio = document.getElementById('garantFechaInicio').value;
-    const duracionMeses = document.getElementById('garantDuracionMeses').value;
-    const fechaFinInput = document.getElementById('garantFechaFinCalculada');
-    
-    if (fechaInicio && duracionMeses && duracionMeses > 0) {
-        // Crear fecha de inicio
-        const inicio = new Date(fechaInicio + 'T00:00:00');
-        
-        // Calcular fecha fin sumando los meses
-        const fin = new Date(inicio);
-        fin.setMonth(fin.getMonth() + parseInt(duracionMeses));
-        
-        // Formatear fecha en formato legible
-        const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
-        fechaFinInput.value = fin.toLocaleDateString('es-ES', opciones);
-    } else {
-        fechaFinInput.value = '';
-    }
-}
-
-// Inicializar fecha de inicio con la fecha actual cuando se muestre el formulario de hardware
-document.addEventListener('DOMContentLoaded', function() {
-    const categoriaSelect = document.getElementById('categoriaId');
-    if (categoriaSelect) {
-        categoriaSelect.addEventListener('change', function() {
-            // Si es hardware, inicializar fecha de garantía con hoy
-            const camposHardware = document.getElementById('camposHardware');
-            if (camposHardware.style.display !== 'none') {
-                const fechaInicioInput = document.getElementById('garantFechaInicio');
-                if (fechaInicioInput && !fechaInicioInput.value) {
-                    const hoy = new Date().toISOString().split('T')[0];
-                    fechaInicioInput.value = hoy;
-                }
-            }
-        });
-    }
-});
-</script>
 </body>
-</html> 
+</html>

@@ -83,7 +83,6 @@
                     <!-- Proveedores -->
                     <li><h6 class="dropdown-header"><i class="fas fa-handshake me-2"></i>Proveedores</h6></li>
                     <li><a class="dropdown-item" href="/proveedores"><i class="fas fa-truck me-2"></i>Lista de proveedores</a></li>
-                    <li><a class="dropdown-item" href="/proveedores/contratos"><i class="fas fa-file-contract me-2"></i>Contratos</a></li>
                 </ul>
             </div>
             
@@ -196,10 +195,10 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>ID</th>
+                                    <th>Codigo</th>
                                     <th>Nombre del Activo</th>
                                     <th>Categoría</th>
-                                    <th>Departamento</th>
+                                    <th>Proveedor</th>
                                     <th>Estado</th>
                                     <th>Fecha Ingreso</th>
                                     <th class="text-center">Acciones</th>
@@ -208,17 +207,16 @@
                             <tbody>
                                 <!-- Ejemplo de datos - esto se reemplazará con Thymeleaf -->
                                 <tr th:each="activo : ${activos}" th:if="${activos != null and !activos.empty}">
-                                    <td th:text="${activo.activoId}">#001</td>
+                                    <td th:text="${activo.activoCodigo}">IT-001</td>
                                     <td>
                                         <div class="fw-bold" th:text="${activo.activoNom}">Laptop Dell Latitude 5520</div>
-                                        <small class="text-muted" th:text="${activo.contrato?.contratNumero ?: 'Sin contrato'}">
                                     </td>
                                     <td>
                                         <span class="badge bg-primary" th:text="${activo.categoria?.catNom ?: 'Sin categoría'}">
                                             Equipos de Cómputo
                                         </span>
                                     </td>
-                                    <td th:text="${activo.departamento?.deptNom ?: 'Sin departamento'}">IT</td>
+                                    <td th:text="${activo.proveedor?.provNom ?: 'Sin proveedor'}">Proveedor</td>
                                     <td>
                                         <span class="badge status-badge bg-success" 
                                               th:text="${activo.estado?.estadoNom ?: 'Sin estado'}"

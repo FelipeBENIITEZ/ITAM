@@ -84,7 +84,6 @@ public interface EventosRepository extends JpaRepository<Eventos, Long> {
     // Query optimizada con todas las relaciones
     @Query("SELECT e FROM Eventos e " +
            "LEFT JOIN FETCH e.activo a " +
-           "LEFT JOIN FETCH a.departamento " +
            "LEFT JOIN FETCH a.estado " +
            "LEFT JOIN FETCH e.eventosNivel " +
            "WHERE e.eventId = :eventId")

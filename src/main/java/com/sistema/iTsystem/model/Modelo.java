@@ -34,6 +34,9 @@ public class Modelo {
     @Column(name = "model_descri", length = 255)
     private String modelDescri;
 
+    @Column(name = "model_activo", nullable = false)
+    private Boolean modelActivo = true;
+
     // Relación con Marca
     @ManyToOne
     @JoinColumn(name = "marca_id", nullable = false)
@@ -47,6 +50,9 @@ public class Modelo {
 
     @PrePersist
     protected void onCreate() {
+        if (modelActivo == null) {
+            modelActivo = true;
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }

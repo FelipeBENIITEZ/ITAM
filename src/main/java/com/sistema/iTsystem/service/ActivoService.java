@@ -222,6 +222,13 @@ public class ActivoService {
         return estadoActivoRepository.findAllByOrderByEstadoNomAsc();
     }
 
+    public List<EstadoActivo> obtenerEstadosInicialesPermitidos() {
+        return estadoActivoRepository.findAllByOrderByEstadoNomAsc().stream()
+            .filter(estado -> "Disponible".equalsIgnoreCase(estado.getEstadoNom())
+                || "Asignado".equalsIgnoreCase(estado.getEstadoNom()))
+            .toList();
+    }
+
     public List<Departamentos> obtenerTodosDepartamentos() {
         return departamentosRepository.findAll();
     }

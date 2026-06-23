@@ -55,34 +55,34 @@
                     <!-- Dashboard -->
                     <li><h6 class="dropdown-header"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h6></li>
                     <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-home me-2"></i>Resumen general</a></li>
-                    <li><a class="dropdown-item" href="/dashboard/indicadores"><i class="fas fa-chart-line me-2"></i>Indicadores</a></li>
+                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-chart-line me-2"></i>Indicadores</a></li>
                     <li><hr class="dropdown-divider"></li>
                     
                     <!-- Activos -->
                     <li><h6 class="dropdown-header"><i class="fas fa-boxes me-2"></i>Activos</h6></li>
                     <li><a class="dropdown-item active" href="/activos"><i class="fas fa-list me-2"></i>Ver activos</a></li>
                     <li><a class="dropdown-item" href="/activos/nuevo"><i class="fas fa-plus me-2"></i>Registrar activo</a></li>
-                    <li><a class="dropdown-item" href="/activos/categorias"><i class="fas fa-tags me-2"></i>Categorías</a></li>
-                    <li><a class="dropdown-item" href="/activos/estados"><i class="fas fa-flag me-2"></i>Estados</a></li>
+                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-tags me-2"></i>Categorías</a></li>
+                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-flag me-2"></i>Estados</a></li>
                     <li><hr class="dropdown-divider"></li>
                     
                     <!-- Hardware -->
                     <li><h6 class="dropdown-header"><i class="fas fa-microchip me-2"></i>Hardware</h6></li>
-                    <li><a class="dropdown-item" href="/hardware/equipos"><i class="fas fa-desktop me-2"></i>Equipos</a></li>
-                    <li><a class="dropdown-item" href="/hardware/modelos"><i class="fas fa-cogs me-2"></i>Modelos</a></li>
-                    <li><a class="dropdown-item" href="/hardware/marcas"><i class="fas fa-trademark me-2"></i>Marcas</a></li>
+                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-desktop me-2"></i>Equipos</a></li>
+                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-cogs me-2"></i>Modelos</a></li>
+                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-trademark me-2"></i>Marcas</a></li>
                     <li><hr class="dropdown-divider"></li>
                     
                     <!-- Software -->
                     <li><h6 class="dropdown-header"><i class="fas fa-code me-2"></i>Software</h6></li>
-                    <li><a class="dropdown-item" href="/software/aplicaciones"><i class="fas fa-window-restore me-2"></i>Aplicaciones</a></li>
-                    <li><a class="dropdown-item" href="/software/licencias"><i class="fas fa-key me-2"></i>Licencias</a></li>
-                    <li><a class="dropdown-item" href="/software/instalaciones"><i class="fas fa-download me-2"></i>Instalaciones</a></li>
+                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-window-restore me-2"></i>Aplicaciones</a></li>
+                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-key me-2"></i>Licencias</a></li>
+                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-download me-2"></i>Instalaciones</a></li>
                     <li><hr class="dropdown-divider"></li>
                     
                     <!-- Proveedores -->
                     <li><h6 class="dropdown-header"><i class="fas fa-handshake me-2"></i>Proveedores</h6></li>
-                    <li><a class="dropdown-item" href="/proveedores"><i class="fas fa-truck me-2"></i>Lista de proveedores</a></li>
+                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-truck me-2"></i>Lista de proveedores</a></li>
                 </ul>
             </div>
             
@@ -94,8 +94,8 @@
                         <span sec:authentication="name">admin</span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/perfil"><i class="fas fa-user-edit me-2"></i>Mi Perfil</a></li>
-                        <li><a class="dropdown-item" href="/configuracion"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-user-edit me-2"></i>Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-cog me-2"></i>Configuración</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form th:action="@{/logout}" method="post" style="display: inline; width: 100%;">
@@ -311,7 +311,7 @@
             const nombre = button.getAttribute('data-nombre');
             
             document.getElementById('nombreActivo').textContent = nombre;
-            document.getElementById('formEliminar').action = `/activos/${id}`;
+            document.getElementById('formEliminar').action = `/activos/eliminar/${id}`;
             
             new bootstrap.Modal(document.getElementById('modalEliminar')).show();
         }

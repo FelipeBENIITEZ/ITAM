@@ -23,15 +23,10 @@ public class LoginController {
         
         return "login";
     }
-    /* 
-    @GetMapping("/dashboard")
-    public String dashboard() {
-        return "dashboard";
-    }
-    
+
     @GetMapping("/")
     public String home() {
-        return "redirect:/dashboard";
-    }*/
+        return "redirect:/login";
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.sistema.iTsystem.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.sistema.iTsystem.model.Activo;
 import com.sistema.iTsystem.model.EstadoActivo;
 import com.sistema.iTsystem.model.Usuario;
+import com.sistema.iTsystem.model.UsuarioAsignacion;
 import com.sistema.iTsystem.repository.CategoriasActivoRepository;
 import com.sistema.iTsystem.repository.EstadoActivoRepository;
 import com.sistema.iTsystem.repository.ProveedoresRepository;
@@ -123,8 +125,9 @@ public class ActivoController {
     public String nuevoForm(Model model) {
         model.addAttribute("activo", new Activo());
         model.addAttribute("categorias", activoService.obtenerTodasCategorias());
-        model.addAttribute("estados", activoService.obtenerTodosEstados());
+        model.addAttribute("estados", activoService.obtenerEstadosInicialesPermitidos());
         model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
+        model.addAttribute("usuarios", usuarioRepository.findAll());
         return "activos/nuevo";
     }
 
@@ -136,6 +139,8 @@ public class ActivoController {
             @RequestParam(required = false) Long proveedorId,
             @RequestParam Long categoriaId,
             @RequestParam(required = false) Long estadoId,
+            @RequestParam(required = false) Long usuarioAsignadoId,
+            @RequestParam(required = false) String asignacionMotivo,
             RedirectAttributes flash) {
         try {
             Activo activo = new Activo();
@@ -145,9 +150,13 @@ public class ActivoController {
             activo.setCategoria(categoriasRepository.findById(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoria no encontrada")));
 
-            if (estadoId != null) {
-                activo.setEstado(estadoActivoRepository.findById(estadoId)
-                    .orElseThrow(() -> new RuntimeException("Estado no encontrado")));
+            if (usuarioAsignadoId != null) {
+                activo.setEstado(buscarEstadoPorNombre("Asignado"));
+            } else if (estadoId != null) {
+                EstadoActivo estadoInicial = estadoActivoRepository.findById(estadoId)
+                    .orElseThrow(() -> new RuntimeException("Estado no encontrado"));
+                validarEstadoInicial(estadoInicial);
+                activo.setEstado(estadoInicial);
             }
             if (proveedorId != null) {
                 activo.setProveedor(proveedoresRepository.findById(proveedorId)
@@ -156,12 +165,21 @@ public class ActivoController {
 
             Activo activoGuardado = activoService.crear(activo);
 
+            if (usuarioAsignadoId != null) {
+                Usuario usuarioAsignado = usuarioRepository.findById(usuarioAsignadoId)
+                    .orElseThrow(() -> new RuntimeException("Usuario asignado no encontrado"));
+
+                UsuarioAsignacion asignacion = new UsuarioAsignacion();
+                asignacion.setActivo(activoGuardado);
+                asignacion.setUsuario(usuarioAsignado);
+                asignacion.setAsignacionFecha(LocalDate.now());
+                asignacion.setAsignacionMotivo(asignacionMotivo);
+                asignacion.setAsignacionActiva(true);
+                usuarioAsignacionRepository.save(asignacion);
+            }
+
             flash.addFlashAttribute("success",
                 "Activo '" + activoGuardado.getActivoNom() + "' creado exitosamente");
-
-            if (esCategoriaHardware(activoGuardado.getCategoria().getCatNom())) {
-                return "redirect:/hardware/nuevo?activoId=" + activoGuardado.getActivoId();
-            }
 
             return "redirect:/activos/" + activoGuardado.getActivoId();
         } catch (ActivoService.ActivoInvalidoException e) {
@@ -173,7 +191,7 @@ public class ActivoController {
         }
     }
 
-    @GetMapping("/editar/{id}")
+    @GetMapping({"/editar/{id}", "/{id}/editar"})
     public String editarForm(@PathVariable Long id, Model model) {
         try {
             Activo activo = activoService.buscarPorId(id)
@@ -181,8 +199,9 @@ public class ActivoController {
 
             model.addAttribute("activo", activo);
             model.addAttribute("categorias", activoService.obtenerTodasCategorias());
-            model.addAttribute("estados", activoService.obtenerTodosEstados());
+            model.addAttribute("estados", activoService.obtenerEstadosInicialesPermitidos());
             model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
+            model.addAttribute("usuarios", usuarioRepository.findAll());
 
             return "activos/nuevo";
         } catch (Exception e) {
@@ -319,20 +338,16 @@ public class ActivoController {
         return usuario;
     }
 
-    private boolean esCategoriaHardware(String categoria) {
-        if (categoria == null) {
-            return false;
-        }
-        String nombre = categoria.toLowerCase();
-        return nombre.contains("hardware")
-            || nombre.contains("notebook")
-            || nombre.contains("pc")
-            || nombre.contains("monitor")
-            || nombre.contains("impresora")
-            || nombre.contains("router")
-            || nombre.contains("switch")
-            || nombre.contains("servidor")
-            || nombre.contains("ups")
-            || nombre.contains("access point");
+    private EstadoActivo buscarEstadoPorNombre(String estadoNom) {
+        return estadoActivoRepository.findByEstadoNom(estadoNom)
+            .orElseThrow(() -> new RuntimeException("Estado '" + estadoNom + "' no encontrado"));
     }
+
+    private void validarEstadoInicial(EstadoActivo estado) {
+        String nombre = estado.getEstadoNom();
+        if (!"Disponible".equalsIgnoreCase(nombre) && !"Asignado".equalsIgnoreCase(nombre)) {
+            throw new RuntimeException("Estado inicial no permitido: " + nombre);
+        }
+    }
+
 }

@@ -15,74 +15,46 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .dropdown-menu {
-            min-width: 250px;
+            min-width: 240px;
         }
         .dropdown-header {
             color: #0d6efd;
             font-weight: 600;
         }
-        .dropdown-divider {
-            margin: 0.5rem 0;
+        .metric-card {
+            border: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <!-- Logo/Brand con menú desplegable -->
             <div class="nav-item dropdown">
                 <a class="navbar-brand dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                     <i class="fas fa-laptop-code me-2"></i>
                     ITASSET
                 </a>
                 <ul class="dropdown-menu">
-                    <!-- Gestión de Usuarios -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-users me-2"></i>Gestión de Usuarios</h6></li>
-                    <li><a class="dropdown-item" href="/usuarios"><i class="fas fa-user me-2"></i>Usuarios</a></li>
-                    <li><a class="dropdown-item" href="/personas"><i class="fas fa-id-card me-2"></i>Personas</a></li>
-                    <li><a class="dropdown-item" href="/roles"><i class="fas fa-user-tag me-2"></i>Roles</a></li>
-                    <li><a class="dropdown-item" href="/departamentos"><i class="fas fa-building me-2"></i>Departamentos</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Gestión de Activos -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-boxes me-2"></i>Gestión de Activos</h6></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-laptop me-2"></i>Activos</a></li>
-                    <li><a class="dropdown-item" href="/categorias"><i class="fas fa-tags me-2"></i>Categorías</a></li>
-                    <li><a class="dropdown-item" href="/estados"><i class="fas fa-flag me-2"></i>Estados</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Proveedores -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-handshake me-2"></i>Proveedores</h6></li>
-                    <li><a class="dropdown-item" href="/proveedores"><i class="fas fa-truck me-2"></i>Proveedores</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Catálogo -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-list me-2"></i>Catálogo</h6></li>
-                    <li><a class="dropdown-item" href="/marcas"><i class="fas fa-trademark me-2"></i>Marcas</a></li>
-                    <li><a class="dropdown-item" href="/modelos"><i class="fas fa-cogs me-2"></i>Modelos</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Dashboard -->
-                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                    <li><h6 class="dropdown-header"><i class="fas fa-boxes me-2"></i>Demo de activos</h6></li>
+                    <li><a class="dropdown-item active" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-list me-2"></i>Ver activos</a></li>
+                    <li><a class="dropdown-item" href="/activos/nuevo"><i class="fas fa-plus me-2"></i>Registrar activo</a></li>
                 </ul>
             </div>
-            
-            <!-- Usuario logueado -->
+
             <div class="navbar-nav ms-auto">
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-user-circle me-1"></i>
                         <span sec:authentication="name">admin</span>
                     </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/perfil"><i class="fas fa-user-edit me-2"></i>Mi Perfil</a></li>
-                        <li><a class="dropdown-item" href="/configuracion"><i class="fas fa-cog me-2"></i>Configuración</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                    <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <form th:action="@{/logout}" method="post" style="display: inline; width: 100%;">
+                            <form th:action="@{/logout}" method="post" class="m-0">
                                 <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesion
                                 </button>
                             </form>
                         </li>
@@ -92,56 +64,67 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="text-center">
-                    <h1 class="display-4 text-primary">
-                        <i class="fas fa-laptop-code me-3"></i>
-                        Bienvenido a ITASSET
-                    </h1>
-                    <p class="lead text-muted">Sistema de Gestión de Activos de TI</p>
-                    
-                    <div class="mt-5">
-                        <div class="alert alert-success" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>¡Login exitoso!</strong> Has iniciado sesión correctamente como administrador.
-                        </div>
-                        
-                        <div class="mt-4">
-                            <div class="row">
-                                <div class="col-md-8 mx-auto">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title"><i class="fas fa-info-circle me-2"></i>Módulos Disponibles</h5>
-                                            <p class="card-text">Utiliza el menú desplegable en <strong>ITASSET</strong> para navegar entre los diferentes módulos del sistema:</p>
-                                            <div class="row text-start">
-                                                <div class="col-md-6">
-                                                    <ul class="list-unstyled">
-                                                        <li><i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard e Indicadores</li>
-                                                        <li><i class="fas fa-boxes text-success me-2"></i>Gestión de Activos</li>
-                                                        <li><i class="fas fa-microchip text-warning me-2"></i>Hardware y Equipos</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <ul class="list-unstyled">
-                                                        <li><i class="fas fa-code text-info me-2"></i>Software y Licencias</li>
-                                                        <li><i class="fas fa-handshake text-danger me-2"></i>Proveedores</li>
-                                                        <li><i class="fas fa-chart-bar text-secondary me-2"></i>Reportes y Análisis</li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <main class="container-fluid mt-4">
+        <section class="mb-4">
+            <h1 class="h3 text-primary mb-1">
+                <i class="fas fa-laptop-code me-2"></i>
+                Dashboard ITASSET
+            </h1>
+            <p class="text-muted mb-0">Primera demo enfocada en activos, hardware, proveedores, garantias y asignaciones.</p>
+        </section>
+
+        <section class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="text-muted">Activos</div>
+                        <div class="display-6" th:text="${totalActivos ?: 0}">0</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="text-muted">Hardware</div>
+                        <div class="display-6" th:text="${totalHardware ?: 0}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="text-muted">Asignaciones activas</div>
+                        <div class="display-6" th:text="${asignacionesActivas ?: 0}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="text-muted">Hardware disponible</div>
+                        <div class="display-6" th:text="${hardwareDisponible ?: 0}">0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card metric-card">
+            <div class="card-body">
+                <h2 class="h5 mb-3"><i class="fas fa-route me-2"></i>Rutas disponibles en esta demo</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/dashboard" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                    <a href="/activos" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-1"></i>Ver activos
+                    </a>
+                    <a href="/activos/nuevo" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Registrar activo
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

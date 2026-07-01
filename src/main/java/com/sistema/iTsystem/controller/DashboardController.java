@@ -1,6 +1,8 @@
 package com.sistema.iTsystem.controller;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,10 +11,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.sistema.iTsystem.model.Usuario;
+import com.sistema.iTsystem.repository.PersonaRepository;
 import com.sistema.iTsystem.repository.UsuarioAsignacionRepository;
 import com.sistema.iTsystem.repository.UsuarioRepository;
 import com.sistema.iTsystem.service.ActivoService;
-import com.sistema.iTsystem.service.HardwareInfoService;
+import com.sistema.iTsystem.service.SolicitudesService;
 
 @Controller
 @RequestMapping("/dashboard")
@@ -22,13 +25,16 @@ public class DashboardController {
     private ActivoService activoService;
 
     @Autowired
-    private HardwareInfoService hardwareService;
+    private SolicitudesService solicitudesService;
 
     @Autowired
     private UsuarioAsignacionRepository usuarioAsignacionRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PersonaRepository personaRepository;
 
     @GetMapping
     public String dashboard(Principal principal, Model model) {
@@ -85,28 +91,22 @@ public class DashboardController {
             model.addAttribute("esAdmin", usuario != null && usuario.esAdministrador());
         }
 
-        model.addAttribute("totalActivos", activoService.obtenerTodos().size());
-        model.addAttribute("totalHardware", hardwareService.obtenerTodos().size());
-        model.addAttribute("hardwareDisponible", hardwareService.buscarDisponibles().size());
-        model.addAttribute("hardwareEnUso", hardwareService.buscarEnUso().size());
-        model.addAttribute("hardwareEnMantenimiento", hardwareService.buscarEnMantenimiento().size());
-        model.addAttribute("hardwareFueraServicio", hardwareService.buscarFueraDeServicio().size());
-        model.addAttribute("activosPorCategoria", activoService.contarPorCategoria());
-        model.addAttribute("activosPorEstado", activoService.contarPorEstado());
-        model.addAttribute("activosPorDepartamento", activoService.contarPorDepartamento());
-        model.addAttribute("hardwarePorMarca", hardwareService.contarPorTipo());
-        model.addAttribute("hardwarePorModelo", hardwareService.contarPorModelo());
-        model.addAttribute("hardwarePorEstado", hardwareService.contarPorEstado());
-        model.addAttribute("hardwarePorProveedor", hardwareService.contarPorProveedor());
-        model.addAttribute("asignacionesActivas", usuarioAsignacionRepository.findAll().stream()
-            .filter(asignacion -> Boolean.TRUE.equals(asignacion.getAsignacionActiva()))
-            .count());
+        Map<String, Long> estados = new HashMap<>();
+        for (Object[] fila : activoService.contarPorEstado()) {
+            estados.put(String.valueOf(fila[0]), ((Number) fila[1]).longValue());
+        }
 
-        model.addAttribute("totalSoftware", 0);
-        model.addAttribute("totalLicencias", 0);
-        model.addAttribute("totalMantenimientos", 0);
-        model.addAttribute("totalSolicitudes", 0);
-        model.addAttribute("totalEventos", 0);
-        model.addAttribute("costoTotalGeneral", java.math.BigDecimal.ZERO);
+        model.addAttribute("totalActivos", activoService.contarTodos());
+        model.addAttribute("activosDisponibles", estados.getOrDefault("Disponible", 0L));
+        model.addAttribute("activosAsignados", estados.getOrDefault("Asignado", 0L));
+        model.addAttribute("activosEnMantenimiento", estados.getOrDefault("En mantenimiento", 0L));
+        model.addAttribute("activosDadosDeBaja", estados.getOrDefault("Dado de baja", 0L));
+        model.addAttribute("totalUsuarios", usuarioRepository.count());
+        model.addAttribute("totalPersonas", personaRepository.count());
+        model.addAttribute("incidenciasAbiertas", solicitudesService.contarPendientes());
+        model.addAttribute("asignacionesActivas", usuarioAsignacionRepository.findByAsignacionActivaTrueOrderByAsignacionFechaDesc().size());
+        model.addAttribute("activosPorCategoria", activoService.contarPorCategoria());
+        model.addAttribute("activosPorEstado", estados);
+        model.addAttribute("totalSolicitudes", solicitudesService.obtenerTodas().size());
     }
 }

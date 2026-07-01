@@ -1,7 +1,6 @@
 package com.sistema.iTsystem.controller;
 
 import java.security.Principal;
-import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,7 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.sistema.iTsystem.model.Activo;
 import com.sistema.iTsystem.model.EstadoActivo;
 import com.sistema.iTsystem.model.Usuario;
-import com.sistema.iTsystem.model.UsuarioAsignacion;
 import com.sistema.iTsystem.repository.CategoriasActivoRepository;
 import com.sistema.iTsystem.repository.EstadoActivoRepository;
 import com.sistema.iTsystem.repository.ProveedoresRepository;
@@ -30,6 +28,7 @@ import com.sistema.iTsystem.repository.UsuarioRepository;
 import com.sistema.iTsystem.service.ActivoService;
 import com.sistema.iTsystem.service.EstadoTransicionService;
 import com.sistema.iTsystem.service.HardwareInfoService;
+import com.sistema.iTsystem.service.MovimientosService;
 
 @Controller
 @RequestMapping("/activos")
@@ -40,6 +39,9 @@ public class ActivoController {
 
     @Autowired
     private HardwareInfoService hardwareService;
+
+    @Autowired
+    private MovimientosService movimientosService;
 
     @Autowired
     private EstadoTransicionService estadoTransicionService;
@@ -128,6 +130,7 @@ public class ActivoController {
         model.addAttribute("estados", activoService.obtenerEstadosInicialesPermitidos());
         model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
         model.addAttribute("usuarios", usuarioRepository.findAll());
+        model.addAttribute("modoEdicion", false);
         return "activos/nuevo";
     }
 
@@ -141,8 +144,12 @@ public class ActivoController {
             @RequestParam(required = false) Long estadoId,
             @RequestParam(required = false) Long usuarioAsignadoId,
             @RequestParam(required = false) String asignacionMotivo,
+            Principal principal,
             RedirectAttributes flash) {
         try {
+            Usuario usuarioOperador = usuarioRepository.findByUsuLogin(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
             Activo activo = new Activo();
             activo.setActivoCodigo(activoCodigo);
             activo.setActivoNom(activoNom);
@@ -150,32 +157,34 @@ public class ActivoController {
             activo.setCategoria(categoriasRepository.findById(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoria no encontrada")));
 
-            if (usuarioAsignadoId != null) {
-                activo.setEstado(buscarEstadoPorNombre("Asignado"));
-            } else if (estadoId != null) {
+            if (estadoId != null && usuarioAsignadoId == null) {
                 EstadoActivo estadoInicial = estadoActivoRepository.findById(estadoId)
                     .orElseThrow(() -> new RuntimeException("Estado no encontrado"));
                 validarEstadoInicial(estadoInicial);
                 activo.setEstado(estadoInicial);
             }
+
             if (proveedorId != null) {
                 activo.setProveedor(proveedoresRepository.findById(proveedorId)
                     .orElseThrow(() -> new RuntimeException("Proveedor no encontrado")));
             }
 
             Activo activoGuardado = activoService.crear(activo);
+            estadoTransicionService.registrarCreacion(
+                activoGuardado,
+                usuarioOperador,
+                "Creacion de activo",
+                asignacionMotivo
+            );
 
             if (usuarioAsignadoId != null) {
-                Usuario usuarioAsignado = usuarioRepository.findById(usuarioAsignadoId)
-                    .orElseThrow(() -> new RuntimeException("Usuario asignado no encontrado"));
-
-                UsuarioAsignacion asignacion = new UsuarioAsignacion();
-                asignacion.setActivo(activoGuardado);
-                asignacion.setUsuario(usuarioAsignado);
-                asignacion.setAsignacionFecha(LocalDate.now());
-                asignacion.setAsignacionMotivo(asignacionMotivo);
-                asignacion.setAsignacionActiva(true);
-                usuarioAsignacionRepository.save(asignacion);
+                movimientosService.asignarActivo(
+                    activoGuardado.getActivoId(),
+                    usuarioAsignadoId,
+                    asignacionMotivo != null ? asignacionMotivo : "Asignacion inicial",
+                    "Asignacion inicial al crear el activo",
+                    usuarioOperador
+                );
             }
 
             flash.addFlashAttribute("success",
@@ -202,6 +211,7 @@ public class ActivoController {
             model.addAttribute("estados", activoService.obtenerEstadosInicialesPermitidos());
             model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
             model.addAttribute("usuarios", usuarioRepository.findAll());
+            model.addAttribute("modoEdicion", true);
 
             return "activos/nuevo";
         } catch (Exception e) {
@@ -211,8 +221,27 @@ public class ActivoController {
     }
 
     @PostMapping("/actualizar/{id}")
-    public String actualizar(@PathVariable Long id, Activo activo, RedirectAttributes flash) {
+    public String actualizar(
+            @PathVariable Long id,
+            @RequestParam String activoCodigo,
+            @RequestParam String activoNom,
+            @RequestParam(required = false) String activoDescri,
+            @RequestParam(required = false) Long proveedorId,
+            @RequestParam Long categoriaId,
+            RedirectAttributes flash) {
         try {
+            Activo activo = new Activo();
+            activo.setActivoCodigo(activoCodigo);
+            activo.setActivoNom(activoNom);
+            activo.setActivoDescri(activoDescri);
+            activo.setCategoria(categoriasRepository.findById(categoriaId)
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada")));
+
+            if (proveedorId != null) {
+                activo.setProveedor(proveedoresRepository.findById(proveedorId)
+                    .orElseThrow(() -> new RuntimeException("Proveedor no encontrado")));
+            }
+
             Activo activoActualizado = activoService.actualizar(id, activo);
             flash.addFlashAttribute("success",
                 "Activo '" + activoActualizado.getActivoNom() + "' actualizado exitosamente");
@@ -338,16 +367,10 @@ public class ActivoController {
         return usuario;
     }
 
-    private EstadoActivo buscarEstadoPorNombre(String estadoNom) {
-        return estadoActivoRepository.findByEstadoNom(estadoNom)
-            .orElseThrow(() -> new RuntimeException("Estado '" + estadoNom + "' no encontrado"));
-    }
-
     private void validarEstadoInicial(EstadoActivo estado) {
         String nombre = estado.getEstadoNom();
         if (!"Disponible".equalsIgnoreCase(nombre) && !"Asignado".equalsIgnoreCase(nombre)) {
             throw new RuntimeException("Estado inicial no permitido: " + nombre);
         }
     }
-
 }

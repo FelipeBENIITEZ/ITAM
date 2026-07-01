@@ -62,6 +62,15 @@ public class CatalogosController {
             return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
+
+    @GetMapping("/marcas")
+    public ResponseEntity<?> getMarcas() {
+        try {
+            return ResponseEntity.ok(hardwareService.obtenerTodasMarcas());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
     
     // ==================== PROVEEDORES ====================
     
@@ -85,6 +94,7 @@ public class CatalogosController {
             resumen.put("estados", activoService.obtenerTodosEstados().size());
             resumen.put("departamentos", activoService.obtenerTodosDepartamentos().size());
             resumen.put("modelos", hardwareService.obtenerTodosModelos().size());
+            resumen.put("marcas", hardwareService.obtenerTodasMarcas().size());
             resumen.put("proveedores", hardwareService.obtenerTodosProveedores().size());
             
             resumen.put("activos", activoService.obtenerTodos().size());

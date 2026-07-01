@@ -3,377 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITASSET - Detalles del Activo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar {
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-        }
-        .info-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
-        }
-        .info-label {
-            font-weight: 600;
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-        .info-value {
-            font-size: 1.1rem;
-            color: #212529;
-        }
-        .status-badge {
-            font-size: 0.8rem;
-            padding: 0.5rem 1rem;
-        }
-        .section-title {
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
-            color: #667eea;
-        }
-        .coming-soon {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 10px;
-            padding: 3rem;
-            text-align: center;
-            color: #6c757d;
-        }
-    </style>
+    <title>ITASSET | Detalle de activo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <!-- Logo/Brand con menú desplegable -->
-            <div class="nav-item dropdown">
-                <a class="navbar-brand dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-laptop-code me-2"></i>
-                    ITASSET
-                </a>
-                <ul class="dropdown-menu">
-                    <!-- Dashboard -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h6></li>
-                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-home me-2"></i>Resumen general</a></li>
-                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-chart-line me-2"></i>Indicadores</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Activos -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-boxes me-2"></i>Activos</h6></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-list me-2"></i>Ver activos</a></li>
-                    <li><a class="dropdown-item" href="/activos/nuevo"><i class="fas fa-plus me-2"></i>Registrar activo</a></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-tags me-2"></i>Categorías</a></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-flag me-2"></i>Estados</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Hardware -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-microchip me-2"></i>Hardware</h6></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-desktop me-2"></i>Equipos</a></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-cogs me-2"></i>Modelos</a></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-trademark me-2"></i>Marcas</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Software -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-code me-2"></i>Software</h6></li>
-                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-window-restore me-2"></i>Aplicaciones</a></li>
-                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-key me-2"></i>Licencias</a></li>
-                    <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-download me-2"></i>Instalaciones</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    
-                    <!-- Proveedores -->
-                    <li><h6 class="dropdown-header"><i class="fas fa-handshake me-2"></i>Proveedores</h6></li>
-                    <li><a class="dropdown-item" href="/activos"><i class="fas fa-truck me-2"></i>Lista de proveedores</a></li>
-                </ul>
-            </div>
-            
-            <!-- Usuario logueado -->
-            <div class="navbar-nav ms-auto">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle me-1"></i>
-                        <span sec:authentication="name">admin</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-user-edit me-2"></i>Mi Perfil</a></li>
-                        <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-cog me-2"></i>Configuración</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form th:action="@{/logout}" method="post" style="display: inline; width: 100%;">
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body class="bg-light">
+<div th:replace="~{fragments/app-nav :: nav('activos')}"></div>
 
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="mb-0">
-                        <i class="fas fa-laptop me-3"></i>
-                        <span th:text="${activo.activoNom}">Nombre del Activo</span>
-                    </h1>
-                    <p class="mb-0 mt-2 opacity-75">Detalles completos del activo</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <a href="/activos" class="btn btn-light btn-lg me-2">
-                        <i class="fas fa-arrow-left me-2"></i>
-                        Volver
-                    </a>
-                    <a th:href="@{/activos/{id}/editar(id=${activo.activoId})}" class="btn btn-warning btn-lg">
-                        <i class="fas fa-edit me-2"></i>
-                        Editar
-                    </a>
-                </div>
-            </div>
+<main class="container-fluid py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3">
+        <div>
+            <p class="text-uppercase text-muted fw-semibold mb-1">Detalle operativo</p>
+            <h1 class="h3 mb-1" th:text="${activo.activoNom}">Activo</h1>
+            <p class="text-muted mb-0">
+                <span th:text="${activo.activoCodigo}">IT-001</span> |
+                <span th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoría'}">Categoría</span>
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-secondary" th:href="@{/activos/{id}/editar(id=${activo.activoId})}">Editar</a>
+            <a class="btn btn-outline-primary" th:href="@{/activos/{id}/cambiar-estado(id=${activo.activoId})}">Cambiar estado</a>
+            <a class="btn btn-outline-dark" th:href="@{/activos/{id}/historial(id=${activo.activoId})}">Historial</a>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Información Básica del Activo -->
-            <div class="col-md-6">
-                <div class="info-card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Activo</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="info-label">ID del Activo</div>
-                                <div class="info-value" th:text="${activo.activoId}"></div>
-                                <div class="info-label mt-2">Codigo</div>
-                                <div class="info-value" th:text="${activo.activoCodigo}"></div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-label">Nombre</div>
-                                <div class="info-value" th:text="${activo.activoNom}"></div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-label">Categoría</div>
-                                <div class="info-value">
-                                    <span class="badge bg-primary" th:text="${activo.categoria?.catNom ?: 'Sin categoría'}"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-label">Estado</div>
-                                <div class="info-value">
-                                    <span class="badge status-badge" 
-                                          th:text="${activo.estado?.estadoNom ?: 'Sin estado'}"
-                                          th:classappend="${activo.estado?.estadoNom == 'Activo' ? 'bg-success' : 
-                                                         activo.estado?.estadoNom == 'En Mantenimiento' ? 'bg-warning' : 
-                                                         activo.estado?.estadoNom == 'Fuera de Servicio' ? 'bg-danger' : 'bg-secondary'}">
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-label">Proveedor</div>
-                                <div class="info-value" th:text="${activo.proveedor?.provNom ?: 'Sin proveedor'}"></div>
-                                <div class="info-label mt-2">Departamento actual</div>
-                                <div class="info-value" th:text="${asignacionActiva?.usuario?.departamento?.deptNom ?: 'Sin departamento actual'}"></div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="info-label">Fecha de Ingreso</div>
-                                <div class="info-value" th:text="${#temporals.format(activo.activoFechaIngreso, 'dd/MM/yyyy HH:mm')}"></div>
-                            </div>
-                            <div class="col-md-6 mb-3" th:if="${activo.activoFechaEgreso}">
-                                <div class="info-label">Fecha de Egreso</div>
-                                <div class="info-value" th:text="${#temporals.format(activo.activoFechaEgreso, 'dd/MM/yyyy HH:mm')}"></div>
-                            </div>
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="text-muted">Estado actual</div>
+                            <div class="fw-semibold" th:text="${activo.estado != null ? activo.estado.estadoNom : 'Sin estado'}">Disponible</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted">Proveedor</div>
+                            <div class="fw-semibold" th:text="${activo.proveedor != null ? activo.proveedor.provNom : 'Sin proveedor'}">Proveedor</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="text-muted">Descripción</div>
+                            <div th:text="${activo.activoDescri != null ? activo.activoDescri : 'Sin descripción'}">Texto</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted">Ingreso</div>
+                            <div th:text="${activo.activoFechaIngreso != null ? #temporals.format(activo.activoFechaIngreso, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted">Baja</div>
+                            <div th:text="${activo.activoFechaEgreso != null ? #temporals.format(activo.activoFechaEgreso, 'dd/MM/yyyy HH:mm') : 'Activo'}">Activo</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Metadatos del Hardware -->
-            <div class="col-md-6">
-                <div class="info-card">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Metadatos del Hardware</h5>
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${hardwareInfo}">
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <div class="info-label">Número de Serie</div>
-                                    <div class="info-value fw-bold text-primary" th:text="${hardwareInfo.hwSerialNum ?: 'Sin serial'}"></div>
-                                </div>
-                                <div class="col-md-6 mb-3" th:if="${hardwareInfo.modelo}">
-                                    <div class="info-label">Marca</div>
-                                    <div class="info-value" th:text="${hardwareInfo.modelo.marca?.marcaNom ?: 'Sin marca'}"></div>
-                                </div>
-                                <div class="col-md-6 mb-3" th:if="${hardwareInfo.modelo}">
-                                    <div class="info-label">Modelo</div>
-                                    <div class="info-value" th:text="${hardwareInfo.modelo?.modelNom ?: 'Sin modelo'}"></div>
-                                </div>
-                                <div class="col-md-12 mb-3" th:if="${hardwareInfo.modelo?.modelDescri}">
-                                    <div class="info-label">Descripción del Modelo</div>
-                                    <div class="info-value" th:text="${hardwareInfo.modelo.modelDescri}"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Información de Garantía -->
-                            <div th:if="${garantia}" class="mt-4">
-                                <h6 class="section-title"><i class="fas fa-shield-alt me-2"></i>Garantía</h6>
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <div class="info-label">Fecha de Inicio</div>
-                                        <div class="info-value" th:text="${#temporals.format(garantia.garanFechaInicio, 'dd/MM/yyyy')}"></div>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <div class="info-label">Fecha de Fin</div>
-                                        <div class="info-value" th:text="${#temporals.format(garantia.garanFechaFin, 'dd/MM/yyyy')}"></div>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <div class="info-label">Estado</div>
-                                        <div class="info-value">
-                                            <span th:if="${garantia.garanEstado == 'Activa'}" 
-                                                  class="badge bg-success">
-                                                <i class="fas fa-check-circle me-1"></i>Activa
-                                            </span>
-                                            <span th:if="${garantia.garanEstado == 'Proxima a vencer'}" 
-                                                  class="badge bg-warning text-dark">
-                                                <i class="fas fa-exclamation-triangle me-1"></i>Próxima a vencer
-                                            </span>
-                                            <span th:if="${garantia.garanEstado == 'Expirada'}" 
-                                                  class="badge bg-danger">
-                                                <i class="fas fa-times-circle me-1"></i>Expirada
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-label">Días Restantes</div>
-                                        <div class="info-value" th:text="${garantia.diasRestantes} + ' días'"></div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-label">Duración Total</div>
-                                        <div class="info-value" th:text="${garantia.duracionEnMeses} + ' meses'"></div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Alerta si está próxima a vencer -->
-                                <div th:if="${garantia.garanEstado == 'Proxima a vencer'}" 
-                                     class="alert alert-warning mt-3" role="alert">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <strong>Atención:</strong> Esta garantía vencerá en 
-                                    <span th:text="${garantia.diasRestantes}"></span> días.
-                                </div>
-                                
-                                <!-- Alerta si expiró -->
-                                <div th:if="${garantia.garanEstado == 'Expirada'}" 
-                                     class="alert alert-danger mt-3" role="alert">
-                                    <i class="fas fa-times-circle me-2"></i>
-                                    <strong>Garantía Expirada:</strong> Este activo ya no está cubierto por garantía.
-                                </div>
-                            </div>
-
-                            <!-- Mensaje si no tiene garantía -->
-                            <div th:if="${hardwareInfo != null && garantia == null}" class="mt-4">
-                                <div class="alert alert-info" role="alert">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Sin Garantía:</strong> Este activo no tiene garantía registrada.
-                                </div>
-                            </div>
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-white">
+                    <strong>Asignación actual</strong>
+                </div>
+                <div class="card-body">
+                    <div th:if="${asignacionActiva != null}">
+                        <div class="fw-semibold"
+                             th:text="${asignacionActiva.usuario != null and asignacionActiva.usuario.persona != null ? asignacionActiva.usuario.persona.perNom1 + ' ' + asignacionActiva.usuario.persona.perApe1 : asignacionActiva.usuario.usuLogin}">Usuario</div>
+                        <div class="text-muted" th:text="${asignacionActiva.asignacionMotivo}">Motivo</div>
+                        <div class="mt-3">
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{/movimientos}">Gestionar movimiento</a>
                         </div>
-                        
-                        <!-- Mensaje si no hay información de hardware -->
-                        <div th:unless="${hardwareInfo}" class="text-center text-muted py-4">
-                            <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
-                            <p class="mb-0">No hay información de hardware registrada para este activo</p>
+                    </div>
+                    <div th:if="${asignacionActiva == null}" class="text-muted">Sin asignación activa.</div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3" th:if="${hardwareInfo != null}">
+                <div class="card-header bg-white">
+                    <strong>Hardware asociado</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="text-muted">Modelo</div>
+                            <div th:text="${hardwareInfo.modelo != null ? hardwareInfo.modelo.modelNom : 'Sin modelo'}">Modelo</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted">Serie</div>
+                            <div th:text="${hardwareInfo.hwSerialNum}">Serial</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="text-muted">Garantía</div>
+                            <div th:text="${garantia != null ? (garantia.garanFechaInicio + ' - ' + garantia.garanFechaFin) : 'Sin garantía'}">Garantía</div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
 
-        <!-- Asignaciones de Usuarios -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="info-card">
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Asignaciones de Usuarios</h5>
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${asignaciones != null and !asignaciones.empty}">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Usuario</th>
-                                            <th>Departamento</th>
-                                            <th>Fecha de Asignación</th>
-                                            <th>Motivo</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="asignacion : ${asignaciones}">
-                                            <td>
-                                                <div class="fw-bold" th:if="${asignacion.usuario.persona}">
-                                                    <span th:text="${asignacion.usuario.persona.perNom1}"></span>
-                                                    <span th:text="${asignacion.usuario.persona.perApe1}"></span>
-                                                </div>
-                                                <small class="text-muted" th:text="${asignacion.usuario.usuLogin}"></small>
-                                            </td>
-                                            <td th:text="${asignacion.usuario.departamento?.deptNom ?: 'Sin departamento'}"></td>
-                                            <td th:text="${#temporals.format(asignacion.asignacionFecha, 'dd/MM/yyyy')}"></td>
-                                            <td th:text="${asignacion.asignacionMotivo ?: 'Sin motivo especificado'}"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <!-- Mensaje si no hay asignaciones -->
-                        <div th:if="${asignaciones == null or asignaciones.empty}" class="text-center text-muted py-4">
-                            <i class="fas fa-user-slash fa-2x mb-3"></i>
-                            <p class="mb-0">No hay usuarios asignados a este activo</p>
-                        </div>
-                    </div>
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <strong>Historial de estados</strong>
+                </div>
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Anterior</th>
+                            <th>Nuevo</th>
+                            <th>Usuario</th>
+                            <th>Motivo</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${historialEstados}">
+                            <td th:text="${#temporals.format(item.fechaCambio, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                            <td th:text="${item.estadoAnteriorNombre}">Anterior</td>
+                            <td th:text="${item.estadoNuevoNombre}">Nuevo</td>
+                            <td th:text="${item.usuarioNombre}">Usuario</td>
+                            <td th:text="${item.motivo != null ? item.motivo : '-'}">Motivo</td>
+                        </tr>
+                        <tr th:if="${historialEstados == null or historialEstados.isEmpty()}">
+                            <td colspan="5" class="text-center text-muted py-4">No hay historial registrado.</td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Software Instalado (Sección preparada para futura implementación) -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="info-card">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0"><i class="fas fa-code me-2"></i>Software Instalado</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="coming-soon">
-                            <i class="fas fa-tools fa-3x mb-3"></i>
-                            <h5>Funcionalidad en Desarrollo</h5>
-                            <p class="mb-0">La gestión de software instalado estará disponible próximamente</p>
-                        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-white"><strong>Asignaciones históricas</strong></div>
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Estado</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="asig : ${asignaciones}">
+                            <td th:text="${asig.asignacionFecha}">Fecha</td>
+                            <td th:text="${asig.usuario != null and asig.usuario.persona != null ? asig.usuario.persona.perNom1 + ' ' + asig.usuario.persona.perApe1 : asig.usuario.usuLogin}">Usuario</td>
+                            <td>
+                                <span class="badge" th:text="${asig.asignacionActiva ? 'Activa' : 'Finalizada'}" th:classappend="${asig.asignacionActiva ? ' bg-success' : ' bg-secondary'}"></span>
+                            </td>
+                        </tr>
+                        <tr th:if="${asignaciones == null or asignaciones.isEmpty()}">
+                            <td colspan="3" class="text-center text-muted py-4">Sin asignaciones previas.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5">Acciones rápidas</h2>
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-primary" th:href="@{/movimientos}">Asignar / devolver</a>
+                        <a class="btn btn-outline-primary" th:href="@{/activos/{id}/cambiar-estado(id=${activo.activoId})}">Cambiar estado</a>
+                        <a class="btn btn-outline-secondary" th:href="@{/activos}">Volver al listado</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

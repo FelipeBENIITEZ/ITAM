@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITASSET | Estadísticas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div th:replace="~{fragments/app-nav :: nav('solicitudes')}"></div>
+
+<main class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <p class="text-uppercase text-muted fw-semibold mb-1">Soporte básico</p>
+            <h1 class="h3 mb-1">Estadísticas de incidencias</h1>
+            <p class="text-muted mb-0">Resumen simple para la demo.</p>
+        </div>
+        <a class="btn btn-outline-secondary" th:href="@{/solicitudes}">Volver</a>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted">Total solicitudes</div>
+                    <div class="h2 mb-0" th:text="${totalSolicitudes}">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted">Pendientes</div>
+                    <div class="h2 mb-0" th:text="${pendientes}">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted">Últimas cargadas</div>
+                    <div class="h2 mb-0" th:text="${ultimasSolicitudes != null ? ultimasSolicitudes.size() : 0}">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white"><strong>Por estado</strong></div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <tbody>
+                        <tr th:each="item : ${porEstado}">
+                            <td th:text="${item[0]}">Estado</td>
+                            <td class="text-end" th:text="${item[1]}">0</td>
+                        </tr>
+                        <tr th:if="${porEstado == null or porEstado.isEmpty()}">
+                            <td colspan="2" class="text-center text-muted py-4">Sin datos</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white"><strong>Por tipo</strong></div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <tbody>
+                        <tr th:each="item : ${porTipo}">
+                            <td th:text="${item[0]}">Tipo</td>
+                            <td class="text-end" th:text="${item[1]}">0</td>
+                        </tr>
+                        <tr th:if="${porTipo == null or porTipo.isEmpty()}">
+                            <td colspan="2" class="text-center text-muted py-4">Sin datos</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white"><strong>Por usuario</strong></div>
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <tbody>
+                        <tr th:each="item : ${porUsuario}">
+                            <td th:text="${item[0]}">Usuario</td>
+                            <td class="text-end" th:text="${item[1]}">0</td>
+                        </tr>
+                        <tr th:if="${porUsuario == null or porUsuario.isEmpty()}">
+                            <td colspan="2" class="text-center text-muted py-4">Sin datos</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

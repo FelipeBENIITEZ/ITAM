@@ -12,9 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sistema.iTsystem.model.HardwareInfo;
+import com.sistema.iTsystem.model.Marca;
 import com.sistema.iTsystem.model.Modelo;
 import com.sistema.iTsystem.model.Proveedores;
 import com.sistema.iTsystem.repository.HardwareInfoRepository;
+import com.sistema.iTsystem.repository.MarcaRepository;
 import com.sistema.iTsystem.repository.ModeloRepository;
 import com.sistema.iTsystem.repository.ProveedoresRepository;
 
@@ -29,6 +31,9 @@ public class HardwareInfoService {
 
     @Autowired
     private ProveedoresRepository proveedoresRepository;
+
+    @Autowired
+    private MarcaRepository marcaRepository;
 
     public List<HardwareInfo> obtenerTodos() {
         return hardwareRepository.findAll();
@@ -208,6 +213,10 @@ public class HardwareInfoService {
 
     public List<Modelo> obtenerTodosModelos() {
         return modeloRepository.findAll();
+    }
+
+    public List<Marca> obtenerTodasMarcas() {
+        return marcaRepository.findAllByOrderByMarcaNomAsc();
     }
 
     public List<Proveedores> obtenerTodosProveedores() {

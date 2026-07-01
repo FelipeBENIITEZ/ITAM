@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sistema.iTsystem.model.Activo;
+import com.sistema.iTsystem.model.ActivoHistorialEstados;
 import com.sistema.iTsystem.model.EstadoActivo;
 import com.sistema.iTsystem.model.Usuario;
 import com.sistema.iTsystem.repository.ActivoRepository;
+import com.sistema.iTsystem.repository.ActivoHistorialEstadosRepository;
 import com.sistema.iTsystem.repository.EstadoActivoRepository;
 
 @Service
@@ -36,6 +38,9 @@ public class EstadoTransicionService {
 
     @Autowired
     private EstadoActivoRepository estadoActivoRepository;
+
+    @Autowired
+    private ActivoHistorialEstadosRepository historialEstadosRepository;
 
     private static final Map<String, List<String>> TRANSICIONES_PERMITIDAS = new HashMap<>();
 
@@ -70,14 +75,33 @@ public class EstadoTransicionService {
         Activo activo = activoRepository.findById(activoId)
             .orElseThrow(() -> new ActivoNoEncontradoException("Activo con ID " + activoId + " no encontrado"));
 
+        EstadoActivo estadoAnterior = activo.getEstado();
         EstadoActivo nuevoEstado = estadoActivoRepository.findById(nuevoEstadoId)
             .orElseThrow(() -> new TransicionInvalidaException("Estado con ID " + nuevoEstadoId + " no encontrado"));
 
         validarTransicion(activo, nuevoEstado);
         activo.setEstado(nuevoEstado);
+        if ("Dado de baja".equalsIgnoreCase(nuevoEstado.getEstadoNom())) {
+            activo.setActivoActivo(false);
+            activo.setActivoFechaEgreso(LocalDateTime.now());
+        } else {
+            activo.setActivoActivo(true);
+        }
         activoRepository.save(activo);
+        registrarHistorial(activo, estadoAnterior, nuevoEstado, usuario, motivo, observaciones);
 
         return true;
+    }
+
+    @Transactional
+    public ActivoHistorialEstados registrarCreacion(Activo activo, Usuario usuario, String motivo, String observaciones) {
+        if (activo == null) {
+            throw new IllegalArgumentException("El activo es obligatorio");
+        }
+        if (activo.getEstado() == null) {
+            throw new IllegalArgumentException("El activo debe tener un estado antes de registrar la creacion");
+        }
+        return registrarHistorial(activo, null, activo.getEstado(), usuario, motivo, observaciones);
     }
 
     private void validarTransicion(Activo activo, EstadoActivo nuevoEstado) {
@@ -101,8 +125,8 @@ public class EstadoTransicionService {
         }
     }
 
-    public List<Object> obtenerHistorialEstados(Long activoId) {
-        return List.of();
+    public List<ActivoHistorialEstados> obtenerHistorialEstados(Long activoId) {
+        return historialEstadosRepository.findByActivoIdWithDetails(activoId);
     }
 
     public List<EstadoActivo> obtenerEstadosPosibles(Long activoId) {
@@ -137,5 +161,22 @@ public class EstadoTransicionService {
         } catch (TransicionInvalidaException e) {
             return false;
         }
+    }
+
+    private ActivoHistorialEstados registrarHistorial(Activo activo, EstadoActivo estadoAnterior,
+                                                      EstadoActivo estadoNuevo, Usuario usuario,
+                                                      String motivo, String observaciones) {
+        if (usuario == null) {
+            throw new IllegalArgumentException("El usuario es obligatorio para registrar el historial");
+        }
+
+        ActivoHistorialEstados historial = new ActivoHistorialEstados();
+        historial.setActivo(activo);
+        historial.setEstadoAnterior(estadoAnterior);
+        historial.setEstadoNuevo(estadoNuevo);
+        historial.setUsuario(usuario);
+        historial.setMotivo(motivo);
+        historial.setObservaciones(observaciones);
+        return historialEstadosRepository.save(historial);
     }
 }

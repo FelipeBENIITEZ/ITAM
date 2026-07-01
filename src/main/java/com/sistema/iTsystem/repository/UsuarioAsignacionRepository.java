@@ -19,6 +19,8 @@ public interface UsuarioAsignacionRepository extends JpaRepository<UsuarioAsigna
 
     Optional<UsuarioAsignacion> findByActivo_ActivoIdAndAsignacionActivaTrue(Long activoId);
 
+    List<UsuarioAsignacion> findByAsignacionActivaTrueOrderByAsignacionFechaDesc();
+
     @Query("SELECT ua FROM UsuarioAsignacion ua " +
            "LEFT JOIN FETCH ua.usuario u " +
            "LEFT JOIN FETCH u.persona " +

@@ -1,0 +1,43 @@
+<nav th:fragment="nav(activePage)" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-semibold" th:href="@{/dashboard}">ITASSET</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activePage == 'dashboard'} ? ' active' : ''" th:href="@{/dashboard}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activePage == 'activos'} ? ' active' : ''" th:href="@{/activos}">Activos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activePage == 'catalogos'} ? ' active' : ''" th:href="@{/catalogos}">Catálogos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activePage == 'movimientos'} ? ' active' : ''" th:href="@{/movimientos}">Asignaciones / Movimientos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activePage == 'solicitudes'} ? ' active' : ''" th:href="@{/solicitudes}">Soporte / Incidencias</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activePage == 'informes'} ? ' active' : ''" th:href="@{/informes}">Informes</a>
+                </li>
+            </ul>
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" type="button">
+                    <span class="me-1">Usuario:</span><span sec:authentication="name">admin</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="m-0">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="dropdown-item text-danger">Cerrar sesión</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>

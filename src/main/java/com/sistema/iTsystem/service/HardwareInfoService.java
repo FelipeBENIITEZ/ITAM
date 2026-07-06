@@ -61,6 +61,7 @@ public class HardwareInfoService {
 
     @Transactional
     public HardwareInfo crear(HardwareInfo hardware) {
+        normalizarHardware(hardware);
         validarHardware(hardware);
 
         if (hardwareRepository.existsByHwSerialNum(hardware.getHwSerialNum())) {
@@ -75,6 +76,7 @@ public class HardwareInfoService {
         HardwareInfo hardwareExistente = hardwareRepository.findById(id)
             .orElseThrow(() -> new HardwareNoEncontradoException("Hardware con ID " + id + " no encontrado"));
 
+        normalizarHardware(hardwareActualizado);
         validarHardware(hardwareActualizado);
 
         if (!hardwareExistente.getHwSerialNum().equals(hardwareActualizado.getHwSerialNum())
@@ -232,6 +234,16 @@ public class HardwareInfoService {
         }
         if (hardware.getActivo() == null) {
             throw new HardwareInvalidoException("El activo asociado es obligatorio");
+        }
+    }
+
+    private void normalizarHardware(HardwareInfo hardware) {
+        if (hardware == null) {
+            return;
+        }
+
+        if (hardware.getHwSerialNum() != null) {
+            hardware.setHwSerialNum(hardware.getHwSerialNum().trim());
         }
     }
 

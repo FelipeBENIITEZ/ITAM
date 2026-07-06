@@ -13,79 +13,264 @@
 <main class="container py-4">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
         <div>
-            <p class="text-uppercase text-muted fw-semibold mb-1" th:text="${modoEdicion} ? 'Edición de activo' : 'Alta de activo'">Alta de activo</p>
-            <h1 class="h3 mb-1" th:text="${modoEdicion} ? 'Editar activo' : 'Nuevo activo'">Nuevo activo</h1>
-            <p class="text-muted mb-0">Formulario base para registrar un activo con sus catálogos principales.</p>
+            <p class="text-uppercase text-muted fw-semibold mb-1" th:text="${modoEdicion} ? 'Edicion de activo' : 'Alta de activo'">Alta de activo</p>
+            <h1 class="h3 mb-1" th:text="${modoEdicion} ? 'Editar datos generales' : 'Nuevo activo'">Nuevo activo</h1>
+            <p class="text-muted mb-0">El estado se controla desde las operaciones del activo. Aqui solo se cargan datos generales y tecnicos minimos.</p>
         </div>
         <a class="btn btn-outline-secondary" th:href="@{/activos}">Volver</a>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form th:action="${modoEdicion} ? @{/activos/actualizar/{id}(id=${activo.activoId})} : @{/activos/guardar}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Código *</label>
-                        <input class="form-control" type="text" name="activoCodigo" th:value="${activo.activoCodigo}" required>
-                    </div>
-                    <div class="col-md-8">
-                        <label class="form-label">Nombre *</label>
-                        <input class="form-control" type="text" name="activoNom" th:value="${activo.activoNom}" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Categoría *</label>
-                        <select class="form-select" name="categoriaId" required>
-                            <option value="">Seleccionar...</option>
-                            <option th:each="categoria : ${categorias}" th:value="${categoria.catId}" th:text="${categoria.catNom}" th:selected="${activo.categoria != null and activo.categoria.catId == categoria.catId}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Proveedor</label>
-                        <select class="form-select" name="proveedorId">
-                            <option value="">Sin proveedor</option>
-                            <option th:each="proveedor : ${proveedores}" th:value="${proveedor.provId}" th:text="${proveedor.provNom}" th:selected="${activo.proveedor != null and activo.proveedor.provId == proveedor.provId}"></option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Descripción</label>
-                        <textarea class="form-control" name="activoDescri" rows="3" th:text="${activo.activoDescri}"></textarea>
-                    </div>
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form th:action="${modoEdicion} ? @{/activos/{codigo}/editar(codigo=${activo.activoCodigo})} : @{/activos/guardar}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                    <div class="col-md-6" th:if="${!modoEdicion}">
-                        <label class="form-label">Estado inicial</label>
-                        <select class="form-select" name="estadoId">
-                            <option value="">Usar estado por defecto</option>
-                            <option th:each="estado : ${estados}" th:value="${estado.estadoId}" th:text="${estado.estadoNom}" th:selected="${activo.estado != null and activo.estado.estadoId == estado.estadoId}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6" th:if="${!modoEdicion}">
-                        <label class="form-label">Asignar a usuario</label>
-                        <select class="form-select" name="usuarioAsignadoId">
-                            <option value="">No asignar ahora</option>
-                            <option th:each="usuario : ${usuarios}" th:value="${usuario.usuId}" th:text="${usuario.persona != null ? usuario.persona.perNom1 + ' ' + usuario.persona.perApe1 + ' (' + usuario.usuLogin + ')' : usuario.usuLogin}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-6" th:if="${!modoEdicion}">
-                        <label class="form-label">Motivo de asignación</label>
-                        <input class="form-control" type="text" name="asignacionMotivo" placeholder="Entrega inicial">
-                    </div>
-
-                    <div class="col-12" th:if="${modoEdicion}">
-                        <div class="alert alert-info mb-0">
-                            La edición de asignaciones se gestiona desde <a th:href="@{/movimientos}" class="alert-link">Asignaciones / Movimientos</a>.
+                        <div class="mb-4">
+                            <h2 class="h5 mb-2">Datos generales</h2>
+                            <div class="row g-3">
+                                <div class="col-md-4" th:if="${!modoEdicion}">
+                                    <label class="form-label">Codigo *</label>
+                                    <input class="form-control" type="text" name="activoCodigo" th:value="${activo.activoCodigo}" required>
+                                    <div class="form-text">Sin espacios. Se recomienda usar mayusculas.</div>
+                                </div>
+                                <div class="col-md-8" th:classappend="${modoEdicion} ? 'col-md-12' : ''">
+                                    <label class="form-label">Nombre *</label>
+                                    <input class="form-control" type="text" name="activoNom" th:value="${activo.activoNom}" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Descripcion</label>
+                                    <textarea class="form-control" name="activoDescri" rows="3" th:text="${activo.activoDescri}"></textarea>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a class="btn btn-outline-secondary" th:href="@{/activos}">Cancelar</a>
-                    <button class="btn btn-primary" type="submit" th:text="${modoEdicion} ? 'Actualizar' : 'Guardar'">Guardar</button>
+                        <div class="mb-4">
+                            <h2 class="h5 mb-2">Clasificacion</h2>
+                            <div class="row g-3" th:if="${!modoEdicion}">
+                                <div class="col-md-6">
+                                    <label class="form-label">Categoria *</label>
+                                    <select class="form-select" name="categoriaId" required>
+                                        <option value="">Seleccionar...</option>
+                                        <option th:each="categoria : ${categorias}" th:value="${categoria.catId}" th:text="${categoria.catNom}" th:selected="${activo.categoria != null and activo.categoria.catId == categoria.catId}"></option>
+                                    </select>
+                                    <div class="form-text">La categoría agrupa el activo por familia general.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Estado inicial</div>
+                                            <div class="fw-semibold">Disponible</div>
+                                            <div class="text-muted small mt-2">El valor se asigna automaticamente al crear el activo.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3" th:if="${modoEdicion}">
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Codigo</div>
+                                            <div class="fw-semibold" th:text="${activo.activoCodigo}">ACT-001</div>
+                                            <div class="text-muted small mt-2">No editable en esta etapa.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Categoria</div>
+                                            <div class="fw-semibold" th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoria'}">Categoria</div>
+                                            <div class="text-muted small mt-2">La clasificacion no se edita desde el formulario.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Estado actual</div>
+                                            <div class="fw-semibold" th:text="${activo.estado != null ? activo.estado.estadoNom : 'Sin estado'}">Disponible</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Fechas</div>
+                                            <div class="small" th:text="${activo.activoFechaIngreso != null ? 'Ingreso: ' + #temporals.format(activo.activoFechaIngreso, 'dd/MM/yyyy HH:mm') : 'Ingreso: -'}">Ingreso</div>
+                                            <div class="small" th:text="${activo.activoFechaEgreso != null ? 'Baja: ' + #temporals.format(activo.activoFechaEgreso, 'dd/MM/yyyy HH:mm') : 'Baja: -'}">Baja</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4" th:if="${!modoEdicion}">
+                            <h2 class="h5 mb-2">Datos tecnicos</h2>
+                            <p class="text-muted mb-3">La marca, el modelo y el número de serie identifican técnicamente el equipo físico.</p>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Marca *</label>
+                                    <select class="form-select" name="marcaId" id="marcaSelect" required>
+                                        <option value="">Seleccionar...</option>
+                                        <option th:each="marca : ${marcas}" th:value="${marca.marcaId}" th:text="${marca.marcaNom}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Modelo *</label>
+                                    <select class="form-select" name="modeloId" id="modeloSelect" required disabled>
+                                        <option value="">Primero selecciona una marca</option>
+                                        <option th:each="modelo : ${modelos}"
+                                                th:value="${modelo.modelId}"
+                                                th:text="${modelo.marca != null ? modelo.marca.marcaNom + ' - ' + modelo.modelNom : modelo.modelNom}"
+                                                th:attr="data-marca=${modelo.marca != null ? modelo.marca.marcaId : ''}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Numero de serie *</label>
+                                    <input class="form-control" type="text" name="numeroSerie" required>
+                                    <div class="form-text">Debe ser unico y no puede repetirse.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4" th:if="${modoEdicion}">
+                            <h2 class="h5 mb-2">Datos tecnicos</h2>
+                            <p class="text-muted mb-3">La marca, el modelo y el número de serie identifican técnicamente el equipo físico.</p>
+                            <div th:if="${hardwareInfo != null}" class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Marca</div>
+                                            <div class="fw-semibold" th:text="${hardwareInfo.modelo != null and hardwareInfo.modelo.marca != null ? hardwareInfo.modelo.marca.marcaNom : 'Sin marca'}">Marca</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Modelo</div>
+                                            <div class="fw-semibold" th:text="${hardwareInfo.modelo != null ? hardwareInfo.modelo.modelNom : 'Sin modelo'}">Modelo</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Numero de serie</div>
+                                            <div class="fw-semibold" th:text="${hardwareInfo.hwSerialNum}">Serie</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${hardwareInfo == null}" class="alert alert-info mb-0">
+                                Sin datos tecnicos registrados.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h2 class="h5 mb-2">Proveedor</h2>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Proveedor</label>
+                                    <select class="form-select" name="proveedorId">
+                                        <option value="">Sin proveedor</option>
+                                        <option th:each="proveedor : ${proveedores}" th:value="${proveedor.provId}" th:text="${proveedor.provNom}" th:selected="${activo.proveedor != null and activo.proveedor.provId == proveedor.provId}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-body-tertiary h-100">
+                                        <div class="card-body">
+                                            <div class="text-muted small mb-1">Alcance</div>
+                                            <div class="fw-semibold">Datos generales</div>
+                                            <div class="text-muted small mt-2">La edicion solo modifica datos generales. Marca, modelo y serie se conservan una vez creado el activo.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a class="btn btn-outline-secondary" th:href="@{/activos}">Cancelar</a>
+                            <button class="btn btn-primary" type="submit" th:text="${modoEdicion} ? 'Guardar cambios' : 'Guardar activo'">Guardar</button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h2 class="h5">Criterio de captura</h2>
+                    <p class="text-muted mb-0">
+                        La categoría define la familia del activo. El código identifica la ficha y el proveedor ayuda a trazar origen y soporte.
+                    </p>
+                </div>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5">Estado del activo</h2>
+                    <ul class="list-unstyled mb-0">
+                        <li>Disponible</li>
+                        <li>En mantenimiento</li>
+                        <li>Dado de baja</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </main>
+
+<script>
+    (function () {
+        const marcaSelect = document.getElementById('marcaSelect');
+        const modeloSelect = document.getElementById('modeloSelect');
+
+        if (!marcaSelect || !modeloSelect) {
+            return;
+        }
+
+        const opciones = Array.from(modeloSelect.querySelectorAll('option[data-marca]'));
+
+        function filtrarModelos() {
+            const marcaId = marcaSelect.value;
+            let visibleCount = 0;
+
+            opciones.forEach((opcion) => {
+                const coincide = !marcaId || opcion.dataset.marca === marcaId;
+                opcion.hidden = !coincide;
+                if (coincide) {
+                    visibleCount += 1;
+                }
+            });
+
+            modeloSelect.disabled = !marcaId;
+            if (!marcaId) {
+                modeloSelect.value = '';
+            } else if (!modeloSelect.value || modeloSelect.selectedOptions[0]?.hidden) {
+                modeloSelect.value = '';
+            }
+
+            const placeholder = modeloSelect.querySelector('option:not([data-marca])');
+            if (placeholder) {
+                if (!marcaId) {
+                    placeholder.textContent = 'Primero selecciona una marca';
+                } else if (visibleCount === 0) {
+                    placeholder.textContent = 'No hay modelos para la marca seleccionada';
+                } else {
+                    placeholder.textContent = 'Seleccionar...';
+                }
+            }
+        }
+
+        marcaSelect.addEventListener('change', filtrarModelos);
+        filtrarModelos();
+    })();
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

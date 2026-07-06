@@ -15,10 +15,10 @@
         <div>
             <p class="text-uppercase text-muted fw-semibold mb-1">Inventario operativo</p>
             <h1 class="h3 mb-1">Activos</h1>
-            <p class="text-muted mb-0">Listado operativo con filtros, detalle, edición y auditoría básica.</p>
+            <p class="text-muted mb-0">Listado operativo con filtros, detalle, edicion controlada y auditoria basica.</p>
         </div>
         <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary" th:href="@{/catalogos}">Ver catálogos</a>
+            <a class="btn btn-outline-secondary" th:href="@{/catalogos}">Ver catalogos</a>
             <a class="btn btn-primary" th:href="@{/activos/nuevo}"><i class="fa-solid fa-plus me-1"></i>Nuevo activo</a>
         </div>
     </div>
@@ -29,10 +29,10 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Buscar</label>
-                        <input class="form-control" type="text" name="buscar" th:value="${buscar}" placeholder="Código o nombre">
+                        <input class="form-control" type="text" name="buscar" th:value="${buscar}" placeholder="Codigo o nombre">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Categoría</label>
+                        <label class="form-label">Categoria</label>
                         <select class="form-select" name="categoria">
                             <option value="">Todas</option>
                             <option th:each="cat : ${categorias}" th:value="${cat.catId}" th:text="${cat.catNom}" th:selected="${categoria == cat.catId}"></option>
@@ -66,9 +66,9 @@
             <table class="table table-hover mb-0 align-middle">
                 <thead class="table-dark">
                 <tr>
-                    <th>Código</th>
+                    <th>Codigo</th>
                     <th>Activo</th>
-                    <th>Categoría</th>
+                    <th>Categoria</th>
                     <th>Proveedor</th>
                     <th>Estado</th>
                     <th>Ingreso</th>
@@ -80,9 +80,9 @@
                     <td th:text="${activo.activoCodigo}">IT-001</td>
                     <td>
                         <div class="fw-semibold" th:text="${activo.activoNom}">Laptop</div>
-                        <small class="text-muted" th:text="${activo.activoDescri}">Descripción</small>
+                        <small class="text-muted" th:text="${activo.activoDescri}">Descripcion</small>
                     </td>
-                    <td th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoría'}">Notebook</td>
+                    <td th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoria'}">Notebook</td>
                     <td th:text="${activo.proveedor != null ? activo.proveedor.provNom : 'Sin proveedor'}">Proveedor</td>
                     <td>
                         <span class="badge bg-success" th:if="${activo.estado != null and activo.estado.estadoNom == 'Disponible'}" th:text="${activo.estado.estadoNom}"></span>
@@ -93,13 +93,12 @@
                     </td>
                     <td th:text="${activo.activoFechaIngreso != null ? #temporals.format(activo.activoFechaIngreso, 'dd/MM/yyyy') : '-'}">01/01/2026</td>
                     <td class="text-end">
-                        <a class="btn btn-sm btn-outline-primary" th:href="@{/activos/{id}(id=${activo.activoId})}">Ver</a>
-                        <a class="btn btn-sm btn-outline-secondary" th:href="@{/activos/{id}/editar(id=${activo.activoId})}">Editar</a>
-                        <a class="btn btn-sm btn-outline-warning" th:href="@{/activos/{id}/cambiar-estado(id=${activo.activoId})}">Estado</a>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/activos/{codigo}(codigo=${activo.activoCodigo})}">Ver</a>
+                        <a class="btn btn-sm btn-outline-secondary" th:href="@{/activos/{codigo}/editar(codigo=${activo.activoCodigo})}">Editar</a>
                     </td>
                 </tr>
                 <tr th:if="${activos == null or activos.isEmpty()}">
-                    <td colspan="7" class="text-center text-muted py-5">No hay activos para mostrar.</td>
+                    <td colspan="6" class="text-center text-muted py-5">No hay activos para mostrar.</td>
                 </tr>
                 </tbody>
             </table>

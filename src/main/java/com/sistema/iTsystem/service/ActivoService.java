@@ -1,7 +1,9 @@
 package com.sistema.iTsystem.service;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +16,17 @@ import com.sistema.iTsystem.model.Activo;
 import com.sistema.iTsystem.model.CategoriasActivo;
 import com.sistema.iTsystem.model.Departamentos;
 import com.sistema.iTsystem.model.EstadoActivo;
+import com.sistema.iTsystem.model.HardwareInfo;
+import com.sistema.iTsystem.model.Marca;
+import com.sistema.iTsystem.model.Modelo;
 import com.sistema.iTsystem.model.Proveedores;
 import com.sistema.iTsystem.model.Usuario;
 import com.sistema.iTsystem.repository.ActivoRepository;
 import com.sistema.iTsystem.repository.CategoriasActivoRepository;
 import com.sistema.iTsystem.repository.DepartamentosRepository;
 import com.sistema.iTsystem.repository.EstadoActivoRepository;
+import com.sistema.iTsystem.repository.MarcaRepository;
+import com.sistema.iTsystem.repository.ModeloRepository;
 import com.sistema.iTsystem.repository.ProveedoresRepository;
 
 @Service
@@ -59,6 +66,15 @@ public class ActivoService {
     private ProveedoresRepository proveedoresRepository;
 
     @Autowired
+    private MarcaRepository marcaRepository;
+
+    @Autowired
+    private ModeloRepository modeloRepository;
+
+    @Autowired
+    private HardwareInfoService hardwareInfoService;
+
+    @Autowired
     private EstadoTransicionService estadoTransicionService;
 
     public List<Activo> obtenerTodos() {
@@ -73,9 +89,23 @@ public class ActivoService {
         return activoRepository.findById(id);
     }
 
+    public Optional<Activo> buscarPorCodigo(String activoCodigo) {
+        if (activoCodigo == null || activoCodigo.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return activoRepository.findByActivoCodigoIgnoreCase(activoCodigo.trim());
+    }
+
     @Transactional
     public Activo crear(Activo activo) {
+        return crear(activo, null, null, null);
+    }
+
+    @Transactional
+    public Activo crear(Activo activo, Long marcaId, Long modeloId, String numeroSerie) {
         validarActivo(activo, null);
+        activo.setActivoCodigo(normalizarCodigo(activo.getActivoCodigo()));
 
         if (activo.getEstado() == null) {
             activo.setEstado(obtenerEstadoInicial());
@@ -87,7 +117,14 @@ public class ActivoService {
             activo.setActivoActivo(true);
         }
 
-        return activoRepository.save(activo);
+        Activo activoGuardado = activoRepository.save(activo);
+
+        if (marcaId != null || modeloId != null || numeroSerie != null) {
+            HardwareInfo hardware = crearHardwareParaActivo(activoGuardado, marcaId, modeloId, numeroSerie);
+            hardwareInfoService.crear(hardware);
+        }
+
+        return activoGuardado;
     }
 
     @Transactional
@@ -95,20 +132,11 @@ public class ActivoService {
         Activo activoExistente = activoRepository.findById(id)
             .orElseThrow(() -> new ActivoNoEncontradoException("Activo con ID " + id + " no encontrado"));
 
-        validarActivo(activoActualizado, id);
+        validarActualizacion(activoActualizado);
 
-        activoExistente.setActivoCodigo(activoActualizado.getActivoCodigo());
         activoExistente.setActivoNom(activoActualizado.getActivoNom());
         activoExistente.setActivoDescri(activoActualizado.getActivoDescri());
-        activoExistente.setActivoFechaIngreso(activoActualizado.getActivoFechaIngreso());
-        activoExistente.setActivoFechaEgreso(activoActualizado.getActivoFechaEgreso());
-        activoExistente.setActivoActivo(activoActualizado.getActivoActivo());
         activoExistente.setProveedor(activoActualizado.getProveedor());
-        activoExistente.setCategoria(activoActualizado.getCategoria());
-
-        if (activoActualizado.getEstado() != null) {
-            activoExistente.setEstado(activoActualizado.getEstado());
-        }
 
         return activoRepository.save(activoExistente);
     }
@@ -177,7 +205,16 @@ public class ActivoService {
     }
 
     public List<Object[]> contarPorCategoria() {
-        return activoRepository.countActivosPorCategoria();
+        Map<String, Long> acumulado = new LinkedHashMap<>();
+        for (Object[] fila : activoRepository.countActivosPorCategoria()) {
+            String categoriaNormalizada = normalizarCategoriaPrincipal(String.valueOf(fila[0]));
+            long cantidad = ((Number) fila[1]).longValue();
+            acumulado.merge(categoriaNormalizada, cantidad, Long::sum);
+        }
+
+        return acumulado.entrySet().stream()
+            .map(entry -> new Object[] { entry.getKey(), entry.getValue() })
+            .toList();
     }
 
     public List<Object[]> contarPorDepartamento() {
@@ -199,12 +236,18 @@ public class ActivoService {
     }
 
     private void validarActivo(Activo activo, Long idActual) {
-        if (activo.getActivoCodigo() == null || activo.getActivoCodigo().trim().isEmpty()) {
+        String codigoNormalizado = normalizarCodigo(activo.getActivoCodigo());
+        if (codigoNormalizado == null || codigoNormalizado.isEmpty()) {
             throw new ActivoInvalidoException("El codigo del activo es obligatorio");
         }
-        Optional<Activo> activoConCodigo = activoRepository.findByActivoCodigo(activo.getActivoCodigo());
+
+        if (contieneEspacios(activo.getActivoCodigo())) {
+            throw new ActivoInvalidoException("El codigo del activo no puede contener espacios");
+        }
+
+        Optional<Activo> activoConCodigo = activoRepository.findByActivoCodigoIgnoreCase(codigoNormalizado);
         if (activoConCodigo.isPresent() && !activoConCodigo.get().getActivoId().equals(idActual)) {
-            throw new ActivoInvalidoException("Ya existe un activo con el codigo: " + activo.getActivoCodigo());
+            throw new ActivoInvalidoException("Ya existe un activo con el codigo: " + codigoNormalizado);
         }
         if (activo.getActivoNom() == null || activo.getActivoNom().trim().isEmpty()) {
             throw new ActivoInvalidoException("El nombre del activo es obligatorio");
@@ -214,8 +257,14 @@ public class ActivoService {
         }
     }
 
+    private void validarActualizacion(Activo activo) {
+        if (activo.getActivoNom() == null || activo.getActivoNom().trim().isEmpty()) {
+            throw new ActivoInvalidoException("El nombre del activo es obligatorio");
+        }
+    }
+
     public List<CategoriasActivo> obtenerTodasCategorias() {
-        return categoriasRepository.findAllByOrderByCatNomAsc();
+        return categoriasRepository.findByCatActivoTrueOrderByCatNomAsc();
     }
 
     public List<EstadoActivo> obtenerTodosEstados() {
@@ -235,5 +284,82 @@ public class ActivoService {
 
     public List<Proveedores> obtenerTodosProveedores() {
         return proveedoresRepository.findAll();
+    }
+
+    public List<Marca> obtenerTodasMarcas() {
+        return marcaRepository.findAllByOrderByMarcaNomAsc();
+    }
+
+    public List<Modelo> obtenerTodosModelos() {
+        return modeloRepository.findAllByOrderByModelNomAsc();
+    }
+
+    public List<Modelo> obtenerModelosPorMarca(Long marcaId) {
+        if (marcaId == null) {
+            return obtenerTodosModelos();
+        }
+
+        return modeloRepository.findByMarca_MarcaIdOrderByModelNomAsc(marcaId);
+    }
+
+    private String normalizarCategoriaPrincipal(String categoria) {
+        if (categoria == null || categoria.isBlank()) {
+            return "Otro";
+        }
+
+        return switch (categoria) {
+            case "Notebook", "Laptop" -> "Laptop";
+            case "PC Escritorio", "Computadora de Escritorio" -> "Computadora de Escritorio";
+            case "Router", "Switch", "Access Point", "Firewall", "Dispositivo de Red" -> "Dispositivo de Red";
+            case "Monitor", "Periférico" -> "Periférico";
+            case "Impresora", "Impresora / Multifunción" -> "Impresora / Multifunción";
+            case "UPS", "Equipo de Energía" -> "Equipo de Energía";
+            case "Servidor" -> "Servidor";
+            case "Componente" -> "Componente";
+            case "Dispositivo IoT" -> "Dispositivo IoT";
+            case "Dispositivo Móvil" -> "Dispositivo Móvil";
+            case "Otro" -> "Otro";
+            default -> categoria;
+        };
+    }
+
+    private String normalizarCodigo(String activoCodigo) {
+        if (activoCodigo == null) {
+            return null;
+        }
+
+        return activoCodigo.trim().toUpperCase();
+    }
+
+    private boolean contieneEspacios(String activoCodigo) {
+        return activoCodigo != null && activoCodigo.chars().anyMatch(Character::isWhitespace);
+    }
+
+    private HardwareInfo crearHardwareParaActivo(Activo activo, Long marcaId, Long modeloId, String numeroSerie) {
+        if (marcaId == null || modeloId == null || numeroSerie == null || numeroSerie.trim().isEmpty()) {
+            throw new ActivoInvalidoException("Marca, modelo y numero de serie son obligatorios para un activo fisico");
+        }
+
+        Marca marca = marcaRepository.findById(marcaId)
+            .orElseThrow(() -> new ActivoInvalidoException("Marca no encontrada"));
+        Modelo modelo = modeloRepository.findById(modeloId)
+            .orElseThrow(() -> new ActivoInvalidoException("Modelo no encontrado"));
+
+        if (modelo.getMarca() == null || modelo.getMarca().getMarcaId() == null
+                || !modelo.getMarca().getMarcaId().equals(marca.getMarcaId())) {
+            throw new ActivoInvalidoException("El modelo seleccionado no pertenece a la marca indicada");
+        }
+
+        String serialNormalizado = numeroSerie.trim();
+        if (hardwareInfoService.existeSerial(serialNormalizado)) {
+            throw new ActivoInvalidoException("Ya existe un hardware con el numero de serie: " + serialNormalizado);
+        }
+
+        HardwareInfo hardware = new HardwareInfo();
+        hardware.setActivo(activo);
+        hardware.setModelo(modelo);
+        hardware.setHwSerialNum(serialNormalizado);
+        hardware.setHwDescri(null);
+        return hardware;
     }
 }

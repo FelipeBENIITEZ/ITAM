@@ -21,4 +21,7 @@ public interface CategoriasActivoRepository extends JpaRepository<CategoriasActi
     
     // Obtener todas las categorías ordenadas por nombre
     List<CategoriasActivo> findAllByOrderByCatNomAsc();
+
+    // Obtener solo categorías activas para la demo principal
+    List<CategoriasActivo> findByCatActivoTrueOrderByCatNomAsc();
 }

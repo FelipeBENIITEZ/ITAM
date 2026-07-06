@@ -17,13 +17,12 @@
             <h1 class="h3 mb-1" th:text="${activo.activoNom}">Activo</h1>
             <p class="text-muted mb-0">
                 <span th:text="${activo.activoCodigo}">IT-001</span> |
-                <span th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoría'}">Categoría</span>
+                <span th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoria'}">Categoria</span>
             </p>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            <a class="btn btn-outline-secondary" th:href="@{/activos/{id}/editar(id=${activo.activoId})}">Editar</a>
-            <a class="btn btn-outline-primary" th:href="@{/activos/{id}/cambiar-estado(id=${activo.activoId})}">Cambiar estado</a>
-            <a class="btn btn-outline-dark" th:href="@{/activos/{id}/historial(id=${activo.activoId})}">Historial</a>
+            <a class="btn btn-outline-secondary" th:href="@{/activos/{codigo}/editar(codigo=${activo.activoCodigo})}">Editar datos generales</a>
+            <a class="btn btn-outline-dark" th:href="@{/activos/{codigo}/historial(codigo=${activo.activoCodigo})}">Historial</a>
         </div>
     </div>
 
@@ -41,8 +40,8 @@
                             <div class="fw-semibold" th:text="${activo.proveedor != null ? activo.proveedor.provNom : 'Sin proveedor'}">Proveedor</div>
                         </div>
                         <div class="col-12">
-                            <div class="text-muted">Descripción</div>
-                            <div th:text="${activo.activoDescri != null ? activo.activoDescri : 'Sin descripción'}">Texto</div>
+                            <div class="text-muted">Descripcion</div>
+                            <div th:text="${activo.activoDescri != null ? activo.activoDescri : 'Sin descripcion'}">Texto</div>
                         </div>
                         <div class="col-md-6">
                             <div class="text-muted">Ingreso</div>
@@ -56,43 +55,33 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm mb-3">
-                <div class="card-header bg-white">
-                    <strong>Asignación actual</strong>
-                </div>
-                <div class="card-body">
-                    <div th:if="${asignacionActiva != null}">
-                        <div class="fw-semibold"
-                             th:text="${asignacionActiva.usuario != null and asignacionActiva.usuario.persona != null ? asignacionActiva.usuario.persona.perNom1 + ' ' + asignacionActiva.usuario.persona.perApe1 : asignacionActiva.usuario.usuLogin}">Usuario</div>
-                        <div class="text-muted" th:text="${asignacionActiva.asignacionMotivo}">Motivo</div>
-                        <div class="mt-3">
-                            <a class="btn btn-sm btn-outline-primary" th:href="@{/movimientos}">Gestionar movimiento</a>
-                        </div>
-                    </div>
-                    <div th:if="${asignacionActiva == null}" class="text-muted">Sin asignación activa.</div>
-                </div>
-            </div>
-
             <div class="card shadow-sm mb-3" th:if="${hardwareInfo != null}">
                 <div class="card-header bg-white">
-                    <strong>Hardware asociado</strong>
+                    <strong>Detalle tecnico</strong>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
+                            <div class="text-muted">Marca</div>
+                            <div th:text="${hardwareInfo.modelo != null and hardwareInfo.modelo.marca != null ? hardwareInfo.modelo.marca.marcaNom : 'Sin marca'}">Marca</div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="text-muted">Modelo</div>
                             <div th:text="${hardwareInfo.modelo != null ? hardwareInfo.modelo.modelNom : 'Sin modelo'}">Modelo</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="text-muted">Serie</div>
+                        <div class="col-12">
+                            <div class="text-muted">Numero de serie</div>
                             <div th:text="${hardwareInfo.hwSerialNum}">Serial</div>
                         </div>
                         <div class="col-12">
-                            <div class="text-muted">Garantía</div>
-                            <div th:text="${garantia != null ? (garantia.garanFechaInicio + ' - ' + garantia.garanFechaFin) : 'Sin garantía'}">Garantía</div>
+                            <div class="text-muted">Garantia</div>
+                            <div th:text="${garantia != null ? (garantia.garanFechaInicio + ' - ' + garantia.garanFechaFin) : 'Sin garantia'}">Garantia</div>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="alert alert-info" th:if="${hardwareInfo == null}">
+                Sin datos tecnicos registrados.
             </div>
 
             <div class="card shadow-sm">
@@ -104,8 +93,9 @@
                         <thead class="table-light">
                         <tr>
                             <th>Fecha</th>
-                            <th>Anterior</th>
-                            <th>Nuevo</th>
+                            <th>Operacion</th>
+                            <th>Estado anterior</th>
+                            <th>Estado nuevo</th>
                             <th>Usuario</th>
                             <th>Motivo</th>
                         </tr>
@@ -113,13 +103,14 @@
                         <tbody>
                         <tr th:each="item : ${historialEstados}">
                             <td th:text="${#temporals.format(item.fechaCambio, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                            <td th:text="${item.operacionResumen}">Operacion</td>
                             <td th:text="${item.estadoAnteriorNombre}">Anterior</td>
                             <td th:text="${item.estadoNuevoNombre}">Nuevo</td>
                             <td th:text="${item.usuarioNombre}">Usuario</td>
                             <td th:text="${item.motivo != null ? item.motivo : '-'}">Motivo</td>
                         </tr>
                         <tr th:if="${historialEstados == null or historialEstados.isEmpty()}">
-                            <td colspan="5" class="text-center text-muted py-4">No hay historial registrado.</td>
+                            <td colspan="6" class="text-center text-muted py-4">No hay historial registrado.</td>
                         </tr>
                         </tbody>
                     </table>
@@ -129,40 +120,35 @@
 
         <div class="col-lg-5">
             <div class="card shadow-sm mb-3">
-                <div class="card-header bg-white"><strong>Asignaciones históricas</strong></div>
-                <div class="table-responsive">
-                    <table class="table mb-0 align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Usuario</th>
-                            <th>Estado</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="asig : ${asignaciones}">
-                            <td th:text="${asig.asignacionFecha}">Fecha</td>
-                            <td th:text="${asig.usuario != null and asig.usuario.persona != null ? asig.usuario.persona.perNom1 + ' ' + asig.usuario.persona.perApe1 : asig.usuario.usuLogin}">Usuario</td>
-                            <td>
-                                <span class="badge" th:text="${asig.asignacionActiva ? 'Activa' : 'Finalizada'}" th:classappend="${asig.asignacionActiva ? ' bg-success' : ' bg-secondary'}"></span>
-                            </td>
-                        </tr>
-                        <tr th:if="${asignaciones == null or asignaciones.isEmpty()}">
-                            <td colspan="3" class="text-center text-muted py-4">Sin asignaciones previas.</td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Operaciones del activo</h2>
+                    <div th:switch="${activo.estado != null ? activo.estado.estadoNom : ''}">
+                        <div th:case="'Disponible'" class="d-grid gap-2">
+                            <a class="btn btn-warning" th:href="@{/activos/{codigo}/operacion(codigo=${activo.activoCodigo}, operacion='mantenimiento')}">Enviar a mantenimiento</a>
+                            <a class="btn btn-outline-danger" th:href="@{/activos/{codigo}/operacion(codigo=${activo.activoCodigo}, operacion='baja')}">Dar de baja</a>
+                        </div>
+                        <div th:case="'En mantenimiento'" class="d-grid gap-2">
+                            <a class="btn btn-success" th:href="@{/activos/{codigo}/operacion(codigo=${activo.activoCodigo}, operacion='finalizar-mantenimiento')}">Finalizar mantenimiento</a>
+                        </div>
+                        <div th:case="'Dado de baja'">
+                            <div class="alert alert-secondary mb-0">El activo se encuentra dado de baja. No hay operaciones disponibles.</div>
+                        </div>
+                        <div th:case="*">
+                            <div class="alert alert-warning mb-0">Este estado no tiene operaciones disponibles en esta etapa.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h2 class="h5">Acciones rápidas</h2>
-                    <div class="d-grid gap-2">
-                        <a class="btn btn-primary" th:href="@{/movimientos}">Asignar / devolver</a>
-                        <a class="btn btn-outline-primary" th:href="@{/activos/{id}/cambiar-estado(id=${activo.activoId})}">Cambiar estado</a>
-                        <a class="btn btn-outline-secondary" th:href="@{/activos}">Volver al listado</a>
-                    </div>
+                    <h2 class="h5">Resumen</h2>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><strong>Codigo:</strong> <span th:text="${activo.activoCodigo}">ACT-001</span></li>
+                        <li class="mb-2"><strong>Categoria:</strong> <span th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoria'}">Categoria</span></li>
+                        <li class="mb-2"><strong>Estado:</strong> <span th:text="${activo.estado != null ? activo.estado.estadoNom : 'Sin estado'}">Estado</span></li>
+                        <li class="mb-2"><strong>Proveedor:</strong> <span th:text="${activo.proveedor != null ? activo.proveedor.provNom : 'Sin proveedor'}">Proveedor</span></li>
+                    </ul>
                 </div>
             </div>
         </div>

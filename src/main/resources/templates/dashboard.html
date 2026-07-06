@@ -44,10 +44,7 @@
         <div class="row align-items-center g-3">
             <div class="col-lg-8">
                 <p class="text-uppercase text-info fw-semibold mb-2">ITASSET | Gestión de activos TI</p>
-                <h1 class="display-6 fw-bold mb-3">Dashboard operativo de activos, soporte e incidencias</h1>
-                <p class="mb-0 text-white-75">
-                    Esta primera versión prioriza inventario real, catálogo base, asignaciones, auditoría básica e incidencias relacionadas a activos.
-                </p>
+                <h1 class="display-6 fw-bold mb-3">Dashboard operativo</h1>
             </div>
             <div class="col-lg-4 text-lg-end">
                 <a class="btn btn-light btn-lg me-2 mb-2" th:href="@{/activos}">
@@ -179,21 +176,12 @@
             </div>
         </div>
         <div class="col-lg-5">
-            <div class="card soft-card mb-4">
-                <div class="card-body">
-                    <h2 class="h5">Resumen rápido</h2>
-                    <p class="text-muted mb-0">
-                        La navegación está organizada como una sola experiencia: catálogo, inventario, movimientos, soporte e informes.
-                    </p>
-                </div>
-            </div>
             <div class="card soft-card">
                 <div class="card-body">
                     <h2 class="h5">Accesos directos</h2>
                     <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-outline-primary" th:href="@{/activos}">Activos</a>
                         <a class="btn btn-outline-primary" th:href="@{/catalogos}">Catálogos</a>
-                        <a class="btn btn-outline-primary" th:href="@{/movimientos}">Movimientos</a>
-                        <a class="btn btn-outline-primary" th:href="@{/solicitudes}">Incidencias</a>
                         <a class="btn btn-outline-primary" th:href="@{/informes}">Informes</a>
                     </div>
                 </div>

@@ -12,11 +12,11 @@
 <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <p class="text-uppercase text-muted fw-semibold mb-1">Auditoría básica</p>
+            <p class="text-uppercase text-muted fw-semibold mb-1">Auditoria basica</p>
             <h1 class="h4 mb-1">Historial de activo</h1>
             <p class="text-muted mb-0" th:text="${activo.activoNom}">Activo</p>
         </div>
-        <a class="btn btn-outline-secondary" th:href="@{/activos/{id}(id=${activo.activoId})}">Volver</a>
+        <a class="btn btn-outline-secondary" th:href="@{/activos/{codigo}(codigo=${activo.activoCodigo})}">Volver</a>
     </div>
 
     <div class="card shadow-sm">
@@ -25,8 +25,9 @@
                 <thead class="table-dark">
                 <tr>
                     <th>Fecha</th>
-                    <th>Anterior</th>
-                    <th>Nuevo</th>
+                    <th>Operacion</th>
+                    <th>Estado anterior</th>
+                    <th>Estado nuevo</th>
                     <th>Usuario</th>
                     <th>Motivo</th>
                 </tr>
@@ -34,13 +35,14 @@
                 <tbody>
                 <tr th:each="item : ${historial}">
                     <td th:text="${#temporals.format(item.fechaCambio, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                    <td th:text="${item.operacionResumen}">Operacion</td>
                     <td th:text="${item.estadoAnteriorNombre}">Anterior</td>
                     <td th:text="${item.estadoNuevoNombre}">Nuevo</td>
                     <td th:text="${item.usuarioNombre}">Usuario</td>
                     <td th:text="${item.motivo != null ? item.motivo : '-'}">Motivo</td>
                 </tr>
                 <tr th:if="${historial == null or historial.isEmpty()}">
-                    <td colspan="5" class="text-center text-muted py-4">Sin registros.</td>
+                    <td colspan="6" class="text-center text-muted py-4">Sin registros.</td>
                 </tr>
                 </tbody>
             </table>

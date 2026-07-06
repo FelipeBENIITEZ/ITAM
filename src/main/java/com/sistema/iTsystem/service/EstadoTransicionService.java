@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,48 @@ public class EstadoTransicionService {
     }
 
     @Transactional
+    public ActivoHistorialEstados enviarAMantenimiento(String activoCodigo, String motivo,
+                                                       String observaciones, Usuario usuario) {
+        return ejecutarOperacion(
+            activoCodigo,
+            "En mantenimiento",
+            Set.of("Disponible"),
+            motivo,
+            observaciones,
+            usuario,
+            false
+        );
+    }
+
+    @Transactional
+    public ActivoHistorialEstados finalizarMantenimiento(String activoCodigo, String motivo,
+                                                         String observaciones, Usuario usuario) {
+        return ejecutarOperacion(
+            activoCodigo,
+            "Disponible",
+            Set.of("En mantenimiento"),
+            motivo,
+            observaciones,
+            usuario,
+            false
+        );
+    }
+
+    @Transactional
+    public ActivoHistorialEstados darDeBaja(String activoCodigo, String motivo,
+                                            String observaciones, Usuario usuario) {
+        return ejecutarOperacion(
+            activoCodigo,
+            "Dado de baja",
+            Set.of("Disponible", "En mantenimiento"),
+            motivo,
+            observaciones,
+            usuario,
+            true
+        );
+    }
+
+    @Transactional
     public ActivoHistorialEstados registrarCreacion(Activo activo, Usuario usuario, String motivo, String observaciones) {
         if (activo == null) {
             throw new IllegalArgumentException("El activo es obligatorio");
@@ -163,6 +206,41 @@ public class EstadoTransicionService {
         }
     }
 
+    private ActivoHistorialEstados ejecutarOperacion(String activoCodigo, String estadoDestinoNombre,
+                                                     Set<String> estadosOrigenPermitidos, String motivo,
+                                                     String observaciones, Usuario usuario, boolean esBaja) {
+        if (motivo == null || motivo.trim().isEmpty()) {
+            throw new TransicionInvalidaException("El motivo es obligatorio");
+        }
+
+        Activo activo = activoRepository.findByActivoCodigoIgnoreCase(normalizarCodigo(activoCodigo))
+            .orElseThrow(() -> new ActivoNoEncontradoException("Activo con codigo " + activoCodigo + " no encontrado"));
+
+        EstadoActivo estadoActual = activo.getEstado();
+        if (estadoActual == null) {
+            throw new TransicionInvalidaException("El activo no tiene un estado actual definido");
+        }
+        if (!estadosOrigenPermitidos.contains(estadoActual.getEstadoNom())) {
+            throw new TransicionInvalidaException(
+                "No se puede pasar de '" + estadoActual.getEstadoNom() + "' a '" + estadoDestinoNombre + "'"
+            );
+        }
+
+        EstadoActivo nuevoEstado = estadoActivoRepository.findByEstadoNom(estadoDestinoNombre)
+            .orElseThrow(() -> new TransicionInvalidaException("Estado '" + estadoDestinoNombre + "' no encontrado"));
+
+        activo.setEstado(nuevoEstado);
+        activo.setActivoActivo(!esBaja);
+        if (esBaja) {
+            activo.setActivoFechaEgreso(LocalDateTime.now());
+        } else {
+            activo.setActivoFechaEgreso(null);
+        }
+        activoRepository.save(activo);
+
+        return registrarHistorial(activo, estadoActual, nuevoEstado, usuario, motivo, observaciones);
+    }
+
     private ActivoHistorialEstados registrarHistorial(Activo activo, EstadoActivo estadoAnterior,
                                                       EstadoActivo estadoNuevo, Usuario usuario,
                                                       String motivo, String observaciones) {
@@ -178,5 +256,13 @@ public class EstadoTransicionService {
         historial.setMotivo(motivo);
         historial.setObservaciones(observaciones);
         return historialEstadosRepository.save(historial);
+    }
+
+    private String normalizarCodigo(String activoCodigo) {
+        if (activoCodigo == null) {
+            return null;
+        }
+
+        return activoCodigo.trim();
     }
 }

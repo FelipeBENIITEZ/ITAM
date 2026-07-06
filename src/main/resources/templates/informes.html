@@ -14,7 +14,7 @@
         <div>
             <p class="text-uppercase text-muted fw-semibold mb-1">Resumen ejecutivo</p>
             <h1 class="h3 mb-1">Informes</h1>
-            <p class="text-muted mb-0">Listados simples y resúmenes operativos para la primera demo.</p>
+            <p class="text-muted mb-0">Resumen simple del inventario físico por estado y por familia de activo.</p>
         </div>
         <a class="btn btn-outline-secondary" th:href="@{/dashboard}">Dashboard</a>
     </div>
@@ -39,16 +39,16 @@
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted">Incidencias abiertas</div>
-                    <div class="h2 mb-0" th:text="${incidenciasAbiertas}">0</div>
+                    <div class="text-muted">Familias con activos</div>
+                    <div class="h2 mb-0" th:text="${activosPorCategoria != null ? activosPorCategoria.size() : 0}">0</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted">Categorías con activos</div>
-                    <div class="h2 mb-0" th:text="${activosPorCategoria != null ? activosPorCategoria.size() : 0}">0</div>
+                    <div class="text-muted">Estados registrados</div>
+                    <div class="h2 mb-0" th:text="${activosPorEstado != null ? activosPorEstado.size() : 0}">0</div>
                 </div>
             </div>
         </div>
@@ -76,37 +76,17 @@
         </div>
         <div class="col-lg-6">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-white"><strong>Activos por categoría</strong></div>
+                <div class="card-header bg-white"><strong>Activos por familia</strong></div>
                 <div class="table-responsive">
                     <table class="table mb-0">
-                        <thead class="table-light"><tr><th>Categoría</th><th class="text-end">Cantidad</th></tr></thead>
+                        <thead class="table-light"><tr><th>Familia</th><th class="text-end">Cantidad</th></tr></thead>
                         <tbody>
                         <tr th:each="item : ${activosPorCategoria}">
-                            <td th:text="${item[0]}">Categoría</td>
+                            <td th:text="${item[0]}">Familia</td>
                             <td class="text-end" th:text="${item[1]}">0</td>
                         </tr>
                         <tr th:if="${activosPorCategoria == null or activosPorCategoria.isEmpty()}">
                             <td colspan="2" class="text-center text-muted py-4">Sin datos</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white"><strong>Últimas incidencias</strong></div>
-                <div class="table-responsive">
-                    <table class="table mb-0 align-middle">
-                        <thead class="table-light"><tr><th>ID</th><th>Descripción</th><th>Estado</th></tr></thead>
-                        <tbody>
-                        <tr th:each="solicitud : ${ultimasSolicitudes}">
-                            <td th:text="${solicitud.soliId}">1</td>
-                            <td th:text="${solicitud.getDescripcionCorta()}">Descripción</td>
-                            <td th:text="${solicitud.getEstadoSolicitud()}">Estado</td>
-                        </tr>
-                        <tr th:if="${ultimasSolicitudes == null or ultimasSolicitudes.isEmpty()}">
-                            <td colspan="3" class="text-center text-muted py-4">Sin incidencias registradas.</td>
                         </tr>
                         </tbody>
                     </table>

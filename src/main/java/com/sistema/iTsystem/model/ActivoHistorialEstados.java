@@ -120,6 +120,14 @@ public class ActivoHistorialEstados {
         );
     }
 
+    public String getOperacionResumen() {
+        if (estadoAnterior == null) {
+            return "Alta del activo";
+        }
+
+        return String.format("%s -> %s", getEstadoAnteriorNombre(), getEstadoNuevoNombre());
+    }
+
     /**
      * Verifica si es el registro inicial (sin estado anterior)
      */

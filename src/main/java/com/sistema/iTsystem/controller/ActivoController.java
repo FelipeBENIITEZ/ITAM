@@ -21,14 +21,11 @@ import com.sistema.iTsystem.model.Activo;
 import com.sistema.iTsystem.model.EstadoActivo;
 import com.sistema.iTsystem.model.Usuario;
 import com.sistema.iTsystem.repository.CategoriasActivoRepository;
-import com.sistema.iTsystem.repository.EstadoActivoRepository;
 import com.sistema.iTsystem.repository.ProveedoresRepository;
-import com.sistema.iTsystem.repository.UsuarioAsignacionRepository;
 import com.sistema.iTsystem.repository.UsuarioRepository;
 import com.sistema.iTsystem.service.ActivoService;
 import com.sistema.iTsystem.service.EstadoTransicionService;
 import com.sistema.iTsystem.service.HardwareInfoService;
-import com.sistema.iTsystem.service.MovimientosService;
 
 @Controller
 @RequestMapping("/activos")
@@ -41,9 +38,6 @@ public class ActivoController {
     private HardwareInfoService hardwareService;
 
     @Autowired
-    private MovimientosService movimientosService;
-
-    @Autowired
     private EstadoTransicionService estadoTransicionService;
 
     @Autowired
@@ -53,13 +47,7 @@ public class ActivoController {
     private CategoriasActivoRepository categoriasRepository;
 
     @Autowired
-    private EstadoActivoRepository estadoActivoRepository;
-
-    @Autowired
     private ProveedoresRepository proveedoresRepository;
-
-    @Autowired
-    private UsuarioAsignacionRepository usuarioAsignacionRepository;
 
     @GetMapping
     public String listarActivos(
@@ -95,26 +83,21 @@ public class ActivoController {
         }
     }
 
-    @GetMapping("/{id}")
-    public String verDetalle(@PathVariable Long id, Model model) {
+    @GetMapping("/{activoCodigo}")
+    public String verDetalle(@PathVariable String activoCodigo, Model model) {
         try {
-            Activo activo = activoService.buscarPorId(id)
+            Activo activo = activoService.buscarPorCodigo(activoCodigo)
                 .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
             model.addAttribute("activo", activo);
-            model.addAttribute("asignacionActiva",
-                usuarioAsignacionRepository.findByActivo_ActivoIdAndAsignacionActivaTrue(id).orElse(null));
-            model.addAttribute("asignaciones",
-                usuarioAsignacionRepository.findByActivoIdWithUserDetails(id));
 
-            hardwareService.buscarPorActivoIdConDetalles(id).ifPresent(hw -> {
+            hardwareService.buscarPorActivoIdConDetalles(activo.getActivoId()).ifPresent(hw -> {
                 model.addAttribute("hardwareInfo", hw);
                 model.addAttribute("garantia", hw.getGarantia());
                 model.addAttribute("tipoActivo", "hardware");
             });
 
-            model.addAttribute("historialEstados", estadoTransicionService.obtenerHistorialEstados(id));
-            model.addAttribute("estadosPosibles", estadoTransicionService.obtenerEstadosPosibles(id));
+            model.addAttribute("historialEstados", estadoTransicionService.obtenerHistorialEstados(activo.getActivoId()));
 
             return "activo-detalle";
         } catch (Exception e) {
@@ -127,9 +110,9 @@ public class ActivoController {
     public String nuevoForm(Model model) {
         model.addAttribute("activo", new Activo());
         model.addAttribute("categorias", activoService.obtenerTodasCategorias());
-        model.addAttribute("estados", activoService.obtenerEstadosInicialesPermitidos());
+        model.addAttribute("marcas", activoService.obtenerTodasMarcas());
+        model.addAttribute("modelos", activoService.obtenerTodosModelos());
         model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
-        model.addAttribute("usuarios", usuarioRepository.findAll());
         model.addAttribute("modoEdicion", false);
         return "activos/nuevo";
     }
@@ -139,11 +122,11 @@ public class ActivoController {
             @RequestParam String activoCodigo,
             @RequestParam String activoNom,
             @RequestParam(required = false) String activoDescri,
+            @RequestParam Long marcaId,
+            @RequestParam Long modeloId,
+            @RequestParam String numeroSerie,
             @RequestParam(required = false) Long proveedorId,
             @RequestParam Long categoriaId,
-            @RequestParam(required = false) Long estadoId,
-            @RequestParam(required = false) Long usuarioAsignadoId,
-            @RequestParam(required = false) String asignacionMotivo,
             Principal principal,
             RedirectAttributes flash) {
         try {
@@ -157,40 +140,23 @@ public class ActivoController {
             activo.setCategoria(categoriasRepository.findById(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoria no encontrada")));
 
-            if (estadoId != null && usuarioAsignadoId == null) {
-                EstadoActivo estadoInicial = estadoActivoRepository.findById(estadoId)
-                    .orElseThrow(() -> new RuntimeException("Estado no encontrado"));
-                validarEstadoInicial(estadoInicial);
-                activo.setEstado(estadoInicial);
-            }
-
             if (proveedorId != null) {
                 activo.setProveedor(proveedoresRepository.findById(proveedorId)
                     .orElseThrow(() -> new RuntimeException("Proveedor no encontrado")));
             }
 
-            Activo activoGuardado = activoService.crear(activo);
+            Activo activoGuardado = activoService.crear(activo, marcaId, modeloId, numeroSerie);
             estadoTransicionService.registrarCreacion(
                 activoGuardado,
                 usuarioOperador,
                 "Creacion de activo",
-                asignacionMotivo
+                activoDescri
             );
-
-            if (usuarioAsignadoId != null) {
-                movimientosService.asignarActivo(
-                    activoGuardado.getActivoId(),
-                    usuarioAsignadoId,
-                    asignacionMotivo != null ? asignacionMotivo : "Asignacion inicial",
-                    "Asignacion inicial al crear el activo",
-                    usuarioOperador
-                );
-            }
 
             flash.addFlashAttribute("success",
                 "Activo '" + activoGuardado.getActivoNom() + "' creado exitosamente");
 
-            return "redirect:/activos/" + activoGuardado.getActivoId();
+            return "redirect:/activos/" + activoGuardado.getActivoCodigo();
         } catch (ActivoService.ActivoInvalidoException e) {
             flash.addFlashAttribute("error", e.getMessage());
             return "redirect:/activos/nuevo";
@@ -200,17 +166,17 @@ public class ActivoController {
         }
     }
 
-    @GetMapping({"/editar/{id}", "/{id}/editar"})
-    public String editarForm(@PathVariable Long id, Model model) {
+    @GetMapping("/{activoCodigo}/editar")
+    public String editarForm(@PathVariable String activoCodigo, Model model) {
         try {
-            Activo activo = activoService.buscarPorId(id)
+            Activo activo = activoService.buscarPorCodigo(activoCodigo)
                 .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
             model.addAttribute("activo", activo);
             model.addAttribute("categorias", activoService.obtenerTodasCategorias());
-            model.addAttribute("estados", activoService.obtenerEstadosInicialesPermitidos());
+            model.addAttribute("hardwareInfo",
+                hardwareService.buscarPorActivoIdConDetalles(activo.getActivoId()).orElse(null));
             model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
-            model.addAttribute("usuarios", usuarioRepository.findAll());
             model.addAttribute("modoEdicion", true);
 
             return "activos/nuevo";
@@ -220,59 +186,65 @@ public class ActivoController {
         }
     }
 
-    @PostMapping("/actualizar/{id}")
+    @PostMapping("/{activoCodigo}/editar")
     public String actualizar(
-            @PathVariable Long id,
-            @RequestParam String activoCodigo,
+            @PathVariable String activoCodigo,
             @RequestParam String activoNom,
             @RequestParam(required = false) String activoDescri,
             @RequestParam(required = false) Long proveedorId,
-            @RequestParam Long categoriaId,
             RedirectAttributes flash) {
         try {
+            Activo activoExistente = activoService.buscarPorCodigo(activoCodigo)
+                .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
+
             Activo activo = new Activo();
-            activo.setActivoCodigo(activoCodigo);
             activo.setActivoNom(activoNom);
             activo.setActivoDescri(activoDescri);
-            activo.setCategoria(categoriasRepository.findById(categoriaId)
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada")));
 
             if (proveedorId != null) {
                 activo.setProveedor(proveedoresRepository.findById(proveedorId)
                     .orElseThrow(() -> new RuntimeException("Proveedor no encontrado")));
             }
 
-            Activo activoActualizado = activoService.actualizar(id, activo);
+            Activo activoActualizado = activoService.actualizar(activoExistente.getActivoId(), activo);
             flash.addFlashAttribute("success",
                 "Activo '" + activoActualizado.getActivoNom() + "' actualizado exitosamente");
-            return "redirect:/activos/" + id;
+            return "redirect:/activos/" + activoActualizado.getActivoCodigo();
         } catch (ActivoService.ActivoNoEncontradoException | ActivoService.ActivoInvalidoException e) {
             flash.addFlashAttribute("error", e.getMessage());
-            return "redirect:/activos/editar/" + id;
+            return "redirect:/activos/" + activoCodigo + "/editar";
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/activos/" + activoCodigo + "/editar";
         }
     }
 
-    @GetMapping("/{id}/cambiar-estado")
-    public String cambiarEstadoForm(@PathVariable Long id, Model model, Principal principal) {
+    @GetMapping("/{activoCodigo}/operacion")
+    public String operacionForm(
+            @PathVariable String activoCodigo,
+            @RequestParam String operacion,
+            Model model,
+            Principal principal) {
         try {
             validarPermisos(principal);
-            Activo activo = activoService.buscarPorId(id)
+            Activo activo = activoService.buscarPorCodigo(activoCodigo)
                 .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
             model.addAttribute("activo", activo);
-            model.addAttribute("estadosPosibles", estadoTransicionService.obtenerEstadosPosibles(id));
+            model.addAttribute("operacion", operacion);
+            cargarDatosOperacion(model, activo, operacion);
 
             return "activos/cambiar-estado";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            return "redirect:/activos/" + id;
+            return "redirect:/activos/" + activoCodigo;
         }
     }
 
-    @PostMapping("/{id}/cambiar-estado")
-    public String cambiarEstado(
-            @PathVariable Long id,
-            @RequestParam Long nuevoEstadoId,
+    @PostMapping("/{activoCodigo}/operacion")
+    public String ejecutarOperacion(
+            @PathVariable String activoCodigo,
+            @RequestParam String operacion,
             @RequestParam String motivo,
             @RequestParam(required = false) String observaciones,
             Principal principal,
@@ -280,39 +252,42 @@ public class ActivoController {
         try {
             Usuario usuario = usuarioRepository.findByUsuLogin(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            String operacionNormalizada = operacion != null ? operacion.trim().toLowerCase() : "";
 
-            activoService.cambiarEstado(id, nuevoEstadoId, motivo, observaciones, usuario);
-            flash.addFlashAttribute("success", "Estado cambiado exitosamente");
-            return "redirect:/activos/" + id;
+            if ("baja".equals(operacionNormalizada)) {
+                usuario = validarEsAdministrador(principal);
+            }
+
+            ejecutarOperacion(activoCodigo, operacionNormalizada, motivo, observaciones, usuario);
+            flash.addFlashAttribute("success", "Operacion registrada correctamente");
+            return "redirect:/activos/" + activoCodigo;
         } catch (EstadoTransicionService.TransicionInvalidaException e) {
-            flash.addFlashAttribute("error", "Transicion invalida: " + e.getMessage());
-            return "redirect:/activos/" + id + "/cambiar-estado";
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/activos/" + activoCodigo + "/operacion?operacion=" + operacion;
         } catch (Exception e) {
             flash.addFlashAttribute("error", e.getMessage());
-            return "redirect:/activos/" + id;
+            return "redirect:/activos/" + activoCodigo;
         }
     }
 
-    @PostMapping("/{id}/dar-baja")
+    @PostMapping("/{activoCodigo}/dar-baja")
     public String darBaja(
-            @PathVariable Long id,
+            @PathVariable String activoCodigo,
             @RequestParam String motivo,
             @RequestParam(required = false) String observaciones,
             Principal principal,
             RedirectAttributes flash) {
         try {
             Usuario usuario = validarEsAdministrador(principal);
-            EstadoActivo estadoBaja = activoService.obtenerTodosEstados().stream()
-                .filter(e -> "Dado de baja".equals(e.getEstadoNom()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Estado 'Dado de baja' no encontrado"));
-
-            activoService.cambiarEstado(id, estadoBaja.getEstadoId(), motivo, observaciones, usuario);
+            estadoTransicionService.darDeBaja(activoCodigo, motivo, observaciones, usuario);
             flash.addFlashAttribute("success", "Activo dado de baja exitosamente");
-            return "redirect:/activos/" + id;
+            return "redirect:/activos/" + activoCodigo;
+        } catch (EstadoTransicionService.TransicionInvalidaException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/activos/" + activoCodigo + "/operacion?operacion=baja";
         } catch (Exception e) {
             flash.addFlashAttribute("error", e.getMessage());
-            return "redirect:/activos/" + id;
+            return "redirect:/activos/" + activoCodigo;
         }
     }
 
@@ -329,19 +304,19 @@ public class ActivoController {
         }
     }
 
-    @GetMapping("/{id}/historial")
-    public String verHistorial(@PathVariable Long id, Model model) {
+    @GetMapping("/{activoCodigo}/historial")
+    public String verHistorial(@PathVariable String activoCodigo, Model model) {
         try {
-            Activo activo = activoService.buscarPorId(id)
+            Activo activo = activoService.buscarPorCodigo(activoCodigo)
                 .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
             model.addAttribute("activo", activo);
-            model.addAttribute("historial", estadoTransicionService.obtenerHistorialEstados(id));
+            model.addAttribute("historial", estadoTransicionService.obtenerHistorialEstados(activo.getActivoId()));
 
             return "activos/historial";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
-            return "redirect:/activos/" + id;
+            return "redirect:/activos/" + activoCodigo;
         }
     }
 
@@ -367,10 +342,46 @@ public class ActivoController {
         return usuario;
     }
 
-    private void validarEstadoInicial(EstadoActivo estado) {
-        String nombre = estado.getEstadoNom();
-        if (!"Disponible".equalsIgnoreCase(nombre) && !"Asignado".equalsIgnoreCase(nombre)) {
-            throw new RuntimeException("Estado inicial no permitido: " + nombre);
+    private void cargarDatosOperacion(Model model, Activo activo, String operacion) {
+        String operacionNormalizada = operacion != null ? operacion.trim().toLowerCase() : "";
+        String titulo;
+        String estadoResultante;
+        String descripcion;
+
+        switch (operacionNormalizada) {
+            case "mantenimiento" -> {
+                titulo = "Enviar a mantenimiento";
+                estadoResultante = "En mantenimiento";
+                descripcion = "El activo pasará a mantenimiento y quedará fuera de uso operativo.";
+            }
+            case "finalizar-mantenimiento" -> {
+                titulo = "Finalizar mantenimiento";
+                estadoResultante = "Disponible";
+                descripcion = "El activo volverá a estar disponible para uso operativo.";
+            }
+            case "baja" -> {
+                titulo = "Dar de baja";
+                estadoResultante = "Dado de baja";
+                descripcion = "La baja es lógica. El activo seguirá visible con su historial.";
+            }
+            default -> throw new RuntimeException("Operacion no reconocida");
+        }
+
+        model.addAttribute("operacion", operacionNormalizada);
+        model.addAttribute("tituloOperacion", titulo);
+        model.addAttribute("estadoResultante", estadoResultante);
+        model.addAttribute("descripcionOperacion", descripcion);
+        model.addAttribute("estadoActual", activo.getEstado() != null ? activo.getEstado().getEstadoNom() : "Sin estado");
+    }
+
+    private void ejecutarOperacion(String activoCodigo, String operacion, String motivo, String observaciones, Usuario usuario) {
+        String operacionNormalizada = operacion != null ? operacion.trim().toLowerCase() : "";
+
+        switch (operacionNormalizada) {
+            case "mantenimiento" -> estadoTransicionService.enviarAMantenimiento(activoCodigo, motivo, observaciones, usuario);
+            case "finalizar-mantenimiento" -> estadoTransicionService.finalizarMantenimiento(activoCodigo, motivo, observaciones, usuario);
+            case "baja" -> estadoTransicionService.darDeBaja(activoCodigo, motivo, observaciones, usuario);
+            default -> throw new EstadoTransicionService.TransicionInvalidaException("Operacion no reconocida");
         }
     }
 }

@@ -25,6 +25,8 @@ public interface ActivoRepository extends JpaRepository<Activo, Long> {
 
     Optional<Activo> findByActivoCodigo(String activoCodigo);
 
+    Optional<Activo> findByActivoCodigoIgnoreCase(String activoCodigo);
+
     boolean existsByActivoCodigo(String activoCodigo);
 
     @Query("SELECT DISTINCT a FROM Activo a " +

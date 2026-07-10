@@ -1,12 +1,16 @@
 package com.sistema.iTsystem.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.text.Normalizer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,14 +22,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.sistema.iTsystem.model.Activo;
+import com.sistema.iTsystem.model.Garantia;
 import com.sistema.iTsystem.model.EstadoActivo;
+import com.sistema.iTsystem.model.HardwareInfo;
 import com.sistema.iTsystem.model.Usuario;
+import com.sistema.iTsystem.model.UsuarioAsignacion;
 import com.sistema.iTsystem.repository.CategoriasActivoRepository;
 import com.sistema.iTsystem.repository.ProveedoresRepository;
 import com.sistema.iTsystem.repository.UsuarioRepository;
 import com.sistema.iTsystem.service.ActivoService;
 import com.sistema.iTsystem.service.EstadoTransicionService;
 import com.sistema.iTsystem.service.HardwareInfoService;
+import com.sistema.iTsystem.service.MovimientosService;
 
 @Controller
 @RequestMapping("/activos")
@@ -39,6 +47,9 @@ public class ActivoController {
 
     @Autowired
     private EstadoTransicionService estadoTransicionService;
+
+    @Autowired
+    private MovimientosService movimientosService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -55,13 +66,12 @@ public class ActivoController {
             @RequestParam(value = "buscar", required = false) String buscar,
             @RequestParam(value = "categoria", required = false) Long categoria,
             @RequestParam(value = "estado", required = false) Long estado,
-            @RequestParam(value = "departamento", required = false) Long departamento,
             Model model) {
 
         try {
             Pageable pageable = PageRequest.of(pagina, 10, Sort.by("activoFechaIngreso").descending());
             Page<Activo> paginaActivos = activoService.buscarConFiltros(
-                buscar, categoria, estado, departamento, pageable
+                buscar, categoria, estado, null, pageable
             );
 
             model.addAttribute("activos", paginaActivos.getContent());
@@ -70,11 +80,9 @@ public class ActivoController {
             model.addAttribute("totalElementos", paginaActivos.getTotalElements());
             model.addAttribute("categorias", activoService.obtenerTodasCategorias());
             model.addAttribute("estados", activoService.obtenerTodosEstados());
-            model.addAttribute("departamentos", activoService.obtenerTodosDepartamentos());
             model.addAttribute("buscar", buscar);
             model.addAttribute("categoria", categoria);
             model.addAttribute("estado", estado);
-            model.addAttribute("departamento", departamento);
 
             return "activos";
         } catch (Exception e) {
@@ -89,16 +97,9 @@ public class ActivoController {
             Activo activo = activoService.buscarPorCodigo(activoCodigo)
                 .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
-            model.addAttribute("activo", activo);
-
-            hardwareService.buscarPorActivoIdConDetalles(activo.getActivoId()).ifPresent(hw -> {
-                model.addAttribute("hardwareInfo", hw);
-                model.addAttribute("garantia", hw.getGarantia());
-                model.addAttribute("tipoActivo", "hardware");
-            });
-
-            model.addAttribute("historialEstados", estadoTransicionService.obtenerHistorialEstados(activo.getActivoId()));
-
+            cargarDetalleActivo(model, activo, hardwareService.buscarPorActivoIdConDetalles(activo.getActivoId()).orElse(null),
+                movimientosService.obtenerAsignacionActiva(activo.getActivoId()).orElse(null),
+                false, null, null, null, null);
             return "activo-detalle";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
@@ -106,19 +107,131 @@ public class ActivoController {
         }
     }
 
+    @GetMapping("/{activoCodigo}/asignar")
+    public String formularioAsignacion(@PathVariable String activoCodigo, Model model, RedirectAttributes flash) {
+        try {
+            Activo activo = activoService.buscarPorCodigo(activoCodigo)
+                .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
+
+            UsuarioAsignacion asignacionActiva = movimientosService.obtenerAsignacionActiva(activo.getActivoId()).orElse(null);
+            if (asignacionActiva != null || activo.getEstado() == null
+                    || !"Disponible".equalsIgnoreCase(activo.getEstado().getEstadoNom())) {
+                flash.addFlashAttribute("error", "El activo no está disponible para asignación.");
+                return "redirect:/activos/" + activo.getActivoCodigo();
+            }
+
+            cargarFormularioAsignacion(model, activo, asignacionActiva, null, null, null, null, null);
+            return "activos/asignar";
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/activos";
+        }
+    }
+
+    @PostMapping("/{activoCodigo}/asignar")
+    public String asignarActivo(
+            @PathVariable String activoCodigo,
+            @RequestParam(required = false) Long usuarioId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaAsignacion,
+            @RequestParam(required = false) String motivo,
+            @RequestParam(required = false) String observacion,
+            Principal principal,
+            Model model,
+            RedirectAttributes flash) {
+        try {
+            Activo activo = activoService.buscarPorCodigo(activoCodigo)
+                .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
+
+            Usuario usuarioOperador = usuarioRepository.findByUsuLogin(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            movimientosService.asignarActivo(
+                activo.getActivoId(),
+                usuarioId,
+                fechaAsignacion,
+                motivo,
+                observacion,
+                usuarioOperador
+            );
+            flash.addFlashAttribute("success", "Activo asignado correctamente.");
+            return "redirect:/activos/" + activo.getActivoCodigo();
+        } catch (Exception e) {
+            try {
+                Activo activo = activoService.buscarPorCodigo(activoCodigo)
+                    .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
+
+                cargarFormularioAsignacion(
+                    model,
+                    activo,
+                    movimientosService.obtenerAsignacionActiva(activo.getActivoId()).orElse(null),
+                    fechaAsignacion,
+                    usuarioId,
+                    motivo,
+                    observacion,
+                    e.getMessage()
+                );
+                return "activos/asignar";
+            } catch (Exception detalleException) {
+                flash.addFlashAttribute("error", detalleException.getMessage());
+                return "redirect:/activos";
+            }
+        }
+    }
+
+    @PostMapping("/{activoCodigo}/garantia")
+    public String guardarGarantia(
+            @PathVariable String activoCodigo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+            @RequestParam(required = false) String descripcion,
+            Model model,
+            RedirectAttributes flash) {
+        try {
+            Activo activo = activoService.buscarPorCodigo(activoCodigo)
+                .orElseThrow(() -> new ActivoService.ActivoNoEncontradoException("Activo no encontrado"));
+
+            HardwareInfo hardware = hardwareService.buscarPorActivoIdConDetalles(activo.getActivoId()).orElse(null);
+            if (hardware == null) {
+                cargarDetalleActivo(model, activo, null, null, true,
+                    "No se puede cargar garantía porque el activo no tiene datos técnicos asociados.",
+                    fechaInicio, fechaFin, descripcion);
+                return "activo-detalle";
+            }
+
+            hardwareService.guardarGarantia(hardware, fechaInicio, fechaFin, descripcion);
+            flash.addFlashAttribute("success", "Garantía guardada exitosamente.");
+            return "redirect:/activos/" + activo.getActivoCodigo();
+        } catch (ActivoService.ActivoNoEncontradoException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/activos";
+        } catch (HardwareInfoService.HardwareInvalidoException e) {
+            try {
+                Activo activo = activoService.buscarPorCodigo(activoCodigo)
+                    .orElseThrow(() -> new ActivoService.ActivoNoEncontradoException("Activo no encontrado"));
+                HardwareInfo hardware = hardwareService.buscarPorActivoIdConDetalles(activo.getActivoId()).orElse(null);
+                cargarDetalleActivo(model, activo, hardware,
+                    movimientosService.obtenerAsignacionActiva(activo.getActivoId()).orElse(null),
+                    true, e.getMessage(), fechaInicio, fechaFin, descripcion);
+                return "activo-detalle";
+            } catch (Exception detalleException) {
+                flash.addFlashAttribute("error", detalleException.getMessage());
+                return "redirect:/activos";
+            }
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/activos/" + activoCodigo;
+        }
+    }
+
     @GetMapping("/nuevo")
     public String nuevoForm(Model model) {
-        model.addAttribute("activo", new Activo());
-        model.addAttribute("categorias", activoService.obtenerTodasCategorias());
-        model.addAttribute("marcas", activoService.obtenerTodasMarcas());
-        model.addAttribute("modelos", activoService.obtenerTodosModelos());
-        model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
-        model.addAttribute("modoEdicion", false);
+        prepararFormularioAlta(model, new Activo(), null, null, null, null, null);
         return "activos/nuevo";
     }
 
     @PostMapping("/guardar")
     public String guardar(
+            Model model,
             @RequestParam String activoCodigo,
             @RequestParam String activoNom,
             @RequestParam(required = false) String activoDescri,
@@ -129,14 +242,12 @@ public class ActivoController {
             @RequestParam Long categoriaId,
             Principal principal,
             RedirectAttributes flash) {
-        try {
-            Usuario usuarioOperador = usuarioRepository.findByUsuLogin(principal.getName())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Activo activo = new Activo();
+        activo.setActivoCodigo(activoCodigo);
+        activo.setActivoNom(activoNom);
+        activo.setActivoDescri(activoDescri);
 
-            Activo activo = new Activo();
-            activo.setActivoCodigo(activoCodigo);
-            activo.setActivoNom(activoNom);
-            activo.setActivoDescri(activoDescri);
+        try {
             activo.setCategoria(categoriasRepository.findById(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoria no encontrada")));
 
@@ -144,6 +255,9 @@ public class ActivoController {
                 activo.setProveedor(proveedoresRepository.findById(proveedorId)
                     .orElseThrow(() -> new RuntimeException("Proveedor no encontrado")));
             }
+
+            Usuario usuarioOperador = usuarioRepository.findByUsuLogin(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             Activo activoGuardado = activoService.crear(activo, marcaId, modeloId, numeroSerie);
             estadoTransicionService.registrarCreacion(
@@ -158,11 +272,17 @@ public class ActivoController {
 
             return "redirect:/activos/" + activoGuardado.getActivoCodigo();
         } catch (ActivoService.ActivoInvalidoException e) {
-            flash.addFlashAttribute("error", e.getMessage());
-            return "redirect:/activos/nuevo";
+            prepararFormularioAlta(model, activo, marcaId, modeloId, numeroSerie, categoriaId, proveedorId);
+            asignarErroresFormulario(model, e.getMessage());
+            return "activos/nuevo";
+        } catch (DataIntegrityViolationException e) {
+            prepararFormularioAlta(model, activo, marcaId, modeloId, numeroSerie, categoriaId, proveedorId);
+            model.addAttribute("error", "Ya existe un activo con ese código o ese número de serie.");
+            return "activos/nuevo";
         } catch (Exception e) {
-            flash.addFlashAttribute("error", "Error al guardar: " + e.getMessage());
-            return "redirect:/activos/nuevo";
+            prepararFormularioAlta(model, activo, marcaId, modeloId, numeroSerie, categoriaId, proveedorId);
+            model.addAttribute("error", e.getMessage());
+            return "activos/nuevo";
         }
     }
 
@@ -291,19 +411,6 @@ public class ActivoController {
         }
     }
 
-    @PostMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable Long id, Principal principal, RedirectAttributes flash) {
-        try {
-            validarEsAdministrador(principal);
-            activoService.eliminar(id);
-            flash.addFlashAttribute("success", "Activo eliminado exitosamente");
-            return "redirect:/activos";
-        } catch (Exception e) {
-            flash.addFlashAttribute("error", e.getMessage());
-            return "redirect:/activos/" + id;
-        }
-    }
-
     @GetMapping("/{activoCodigo}/historial")
     public String verHistorial(@PathVariable String activoCodigo, Model model) {
         try {
@@ -383,5 +490,104 @@ public class ActivoController {
             case "baja" -> estadoTransicionService.darDeBaja(activoCodigo, motivo, observaciones, usuario);
             default -> throw new EstadoTransicionService.TransicionInvalidaException("Operacion no reconocida");
         }
+    }
+
+    private void prepararFormularioAlta(Model model, Activo activo, Long marcaId, Long modeloId,
+                                        String numeroSerie, Long categoriaId, Long proveedorId) {
+        model.addAttribute("activo", activo);
+        model.addAttribute("categorias", activoService.obtenerTodasCategorias());
+        model.addAttribute("marcas", activoService.obtenerTodasMarcas());
+        model.addAttribute("modelos", activoService.obtenerTodosModelos());
+        model.addAttribute("proveedores", activoService.obtenerTodosProveedores());
+        model.addAttribute("marcaId", marcaId);
+        model.addAttribute("modeloId", modeloId);
+        model.addAttribute("numeroSerie", numeroSerie);
+        model.addAttribute("categoriaId", categoriaId);
+        model.addAttribute("proveedorId", proveedorId);
+        model.addAttribute("modoEdicion", false);
+    }
+
+    private void cargarDetalleActivo(Model model, Activo activo, HardwareInfo hardwareInfo,
+                                     UsuarioAsignacion asignacionActiva,
+                                     boolean mostrarFormularioGarantia, String errorGarantia,
+                                     LocalDate garantiaFechaInicio, LocalDate garantiaFechaFin,
+                                     String garantiaDescri) {
+        model.addAttribute("activo", activo);
+        model.addAttribute("hardwareInfo", hardwareInfo);
+        model.addAttribute("asignacionActiva", asignacionActiva);
+        model.addAttribute("puedeAsignar", activo != null && activo.getEstado() != null
+            && "Disponible".equalsIgnoreCase(activo.getEstado().getEstadoNom())
+            && asignacionActiva == null);
+
+        Garantia garantia = hardwareInfo != null ? hardwareInfo.getGarantia() : null;
+        model.addAttribute("garantia", garantia);
+        model.addAttribute("garantiaFechaInicio", garantiaFechaInicio != null
+            ? garantiaFechaInicio
+            : garantia != null ? garantia.getGaranFechaInicio() : null);
+        model.addAttribute("garantiaFechaFin", garantiaFechaFin != null
+            ? garantiaFechaFin
+            : garantia != null ? garantia.getGaranFechaFin() : null);
+        model.addAttribute("garantiaDescri", garantiaDescri != null
+            ? garantiaDescri
+            : garantia != null ? garantia.getGaranDescri() : null);
+        model.addAttribute("mostrarFormularioGarantia", mostrarFormularioGarantia);
+        if (errorGarantia != null) {
+            model.addAttribute("error", errorGarantia);
+        }
+
+        model.addAttribute("historialEstados", estadoTransicionService.obtenerHistorialEstados(activo.getActivoId()));
+    }
+
+    private void cargarFormularioAsignacion(Model model, Activo activo, UsuarioAsignacion asignacionActiva,
+                                            LocalDate fechaAsignacion, Long usuarioId, String motivo,
+                                            String observacion, String error) {
+        LocalDate fechaMinimaAsignacion = activo != null && activo.getActivoFechaIngreso() != null
+            ? activo.getActivoFechaIngreso().toLocalDate()
+            : LocalDate.now();
+
+        model.addAttribute("activo", activo);
+        model.addAttribute("asignacionActiva", asignacionActiva);
+        model.addAttribute("usuarios", movimientosService.obtenerUsuariosActivos());
+        model.addAttribute("fechaMinimaAsignacion", fechaMinimaAsignacion);
+        model.addAttribute("fechaAsignacion", obtenerFechaAsignacionInicial(fechaAsignacion, fechaMinimaAsignacion));
+        model.addAttribute("usuarioId", usuarioId);
+        model.addAttribute("motivo", motivo);
+        model.addAttribute("observacion", observacion);
+        model.addAttribute("error", error);
+    }
+
+    private LocalDate obtenerFechaAsignacionInicial(LocalDate fechaAsignacion, LocalDate fechaMinimaAsignacion) {
+        if (fechaAsignacion != null) {
+            return fechaAsignacion;
+        }
+
+        LocalDate hoy = LocalDate.now();
+        if (hoy.isBefore(fechaMinimaAsignacion)) {
+            return fechaMinimaAsignacion;
+        }
+
+        return hoy;
+    }
+
+    private void asignarErroresFormulario(Model model, String mensaje) {
+        model.addAttribute("error", mensaje);
+
+        String mensajeNormalizado = normalizarTexto(mensaje);
+        if (mensajeNormalizado.contains("codigo")) {
+            model.addAttribute("codigoError", mensaje);
+        }
+        if (mensajeNormalizado.contains("serial") || mensajeNormalizado.contains("numero de serie")) {
+            model.addAttribute("serialError", mensaje);
+        }
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null) {
+            return "";
+        }
+
+        String sinAcentos = Normalizer.normalize(texto, Normalizer.Form.NFD)
+            .replaceAll("\\p{M}+", "");
+        return sinAcentos.toLowerCase();
     }
 }

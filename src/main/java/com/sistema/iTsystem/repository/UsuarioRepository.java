@@ -1,5 +1,6 @@
 package com.sistema.iTsystem.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     
     // Buscar por email
     Optional<Usuario> findByUsuMail(String usuMail);
+
+    // Usuarios activos ordenados por login
+    List<Usuario> findByUsuActivoTrueOrderByUsuLoginAsc();
     
     // Validar existencia por login
     boolean existsByUsuLogin(String usuLogin);

@@ -1,7 +1,11 @@
 package com.sistema.iTsystem.service;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,41 +42,81 @@ public class MovimientosService {
     private ActivoRepository activoRepository;
 
     public List<UsuarioAsignacion> obtenerAsignacionesActivas() {
-        return usuarioAsignacionRepository.findByAsignacionActivaTrueOrderByAsignacionFechaDesc();
+        return usuarioAsignacionRepository.findAsignacionesActivasConDetalles();
     }
 
     public List<Activo> obtenerActivosDisponiblesParaAsignar() {
+        Set<Long> activosAsignados = usuarioAsignacionRepository.findAsignacionesActivasConDetalles().stream()
+            .map(UsuarioAsignacion::getActivo)
+            .filter(activo -> activo != null && activo.getActivoId() != null)
+            .map(Activo::getActivoId)
+            .collect(Collectors.toCollection(HashSet::new));
+
         return activoService.obtenerTodos().stream()
             .filter(activo -> activo.getEstado() != null)
             .filter(activo -> "Disponible".equalsIgnoreCase(activo.getEstado().getEstadoNom()))
             .filter(activo -> Boolean.TRUE.equals(activo.getActivoActivo()))
+            .filter(activo -> !activosAsignados.contains(activo.getActivoId()))
             .toList();
     }
 
     public List<Usuario> obtenerUsuariosActivos() {
-        return usuarioRepository.findAll();
+        return usuarioRepository.findByUsuActivoTrueOrderByUsuLoginAsc();
+    }
+
+    public Optional<UsuarioAsignacion> obtenerAsignacionActiva(Long activoId) {
+        return usuarioAsignacionRepository.findByActivoIdWithUserDetails(activoId).stream()
+            .filter(asignacion -> Boolean.TRUE.equals(asignacion.getAsignacionActiva()))
+            .findFirst();
+    }
+
+    public boolean tieneAsignacionActiva(Long activoId) {
+        return usuarioAsignacionRepository.findByActivo_ActivoIdAndAsignacionActivaTrue(activoId).isPresent();
     }
 
     @Transactional
-    public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId, String motivo,
-                                           String observacion, Usuario usuarioOperador) {
+    public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId, LocalDate fechaAsignacion,
+                                           String motivo, String observacion, Usuario usuarioOperador) {
         Activo activo = activoRepository.findById(activoId)
             .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
         Usuario usuarioAsignado = usuarioRepository.findById(usuarioId)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (usuarioAsignacionRepository.findByActivo_ActivoIdAndAsignacionActivaTrue(activoId).isPresent()) {
-            throw new RuntimeException("El activo ya tiene una asignacion activa");
+        if (fechaAsignacion == null) {
+            throw new RuntimeException("Debe ingresar una fecha de asignación.");
         }
 
+        if (activo.getActivoFechaIngreso() != null
+                && fechaAsignacion.isBefore(activo.getActivoFechaIngreso().toLocalDate())) {
+            throw new RuntimeException("La fecha de asignación no puede ser anterior a la fecha de ingreso del activo.");
+        }
+
+        if (motivo == null || motivo.trim().isEmpty()) {
+            throw new RuntimeException("Debe ingresar un motivo.");
+        }
+
+        if (usuarioAsignado.getUsuActivo() == null || !Boolean.TRUE.equals(usuarioAsignado.getUsuActivo())) {
+            throw new RuntimeException("El usuario seleccionado no está activo.");
+        }
+
+        obtenerEstado("Disponible");
         EstadoActivo estadoAsignado = obtenerEstado("Asignado");
+
+        if (activo.getEstado() == null || !"Disponible".equalsIgnoreCase(activo.getEstado().getEstadoNom())) {
+            throw new RuntimeException("El activo no está disponible para asignación.");
+        }
+
+        if (tieneAsignacionActiva(activoId)) {
+            throw new RuntimeException("El activo ya tiene una asignación activa.");
+        }
+
         estadoTransicionService.cambiarEstado(activoId, estadoAsignado.getEstadoId(), motivo, observacion, usuarioOperador);
 
         UsuarioAsignacion asignacion = new UsuarioAsignacion();
         asignacion.setActivo(activo);
         asignacion.setUsuario(usuarioAsignado);
-        asignacion.setAsignacionFecha(LocalDate.now());
+        asignacion.setAsignacionFecha(fechaAsignacion);
         asignacion.setAsignacionMotivo(motivo);
         asignacion.setAsignacionObservacion(observacion);
         asignacion.setAsignacionActiva(true);
@@ -120,6 +164,6 @@ public class MovimientosService {
 
     private EstadoActivo obtenerEstado(String nombre) {
         return estadoActivoRepository.findByEstadoNom(nombre)
-            .orElseThrow(() -> new RuntimeException("Estado '" + nombre + "' no encontrado"));
+            .orElseThrow(() -> new RuntimeException("No se encontró el estado " + nombre + "."));
     }
 }

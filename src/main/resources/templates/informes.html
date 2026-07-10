@@ -14,7 +14,7 @@
         <div>
             <p class="text-uppercase text-muted fw-semibold mb-1">Resumen ejecutivo</p>
             <h1 class="h3 mb-1">Informes</h1>
-            <p class="text-muted mb-0">Resumen simple del inventario físico por estado y por familia de activo.</p>
+            <p class="text-muted mb-0">Resumen del inventario por estado y por familia de activo, Limitandose al inventario de activos fisicos</p>
         </div>
         <a class="btn btn-outline-secondary" th:href="@{/dashboard}">Dashboard</a>
     </div>
@@ -31,31 +31,31 @@
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted">Asignaciones activas</div>
-                    <div class="h2 mb-0" th:text="${asignacionesActivas}">0</div>
+                    <div class="text-muted">Disponibles</div>
+                    <div class="h2 mb-0" th:text="${activosDisponibles}">0</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted">Familias con activos</div>
-                    <div class="h2 mb-0" th:text="${activosPorCategoria != null ? activosPorCategoria.size() : 0}">0</div>
+                    <div class="text-muted">En mantenimiento</div>
+                    <div class="h2 mb-0" th:text="${activosEnMantenimiento}">0</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted">Estados registrados</div>
-                    <div class="h2 mb-0" th:text="${activosPorEstado != null ? activosPorEstado.size() : 0}">0</div>
+                    <div class="text-muted">Dados de baja</div>
+                    <div class="h2 mb-0" th:text="${activosDadosDeBaja}">0</div>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="row g-3">
-        <div class="col-lg-6">
+        <div class="col-lg-6" id="estado">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white"><strong>Activos por estado</strong></div>
                 <div class="table-responsive">
@@ -74,15 +74,15 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-6" id="categoria">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-white"><strong>Activos por familia</strong></div>
+                <div class="card-header bg-white"><strong>Activos por Categoria</strong></div>
                 <div class="table-responsive">
                     <table class="table mb-0">
-                        <thead class="table-light"><tr><th>Familia</th><th class="text-end">Cantidad</th></tr></thead>
+                        <thead class="table-light"><tr><th>Categoria</th><th class="text-end">Cantidad</th></tr></thead>
                         <tbody>
                         <tr th:each="item : ${activosPorCategoria}">
-                            <td th:text="${item[0]}">Familia</td>
+                            <td th:text="${item[0]}">Categoria</td>
                             <td class="text-end" th:text="${item[1]}">0</td>
                         </tr>
                         <tr th:if="${activosPorCategoria == null or activosPorCategoria.isEmpty()}">

@@ -1,11 +1,13 @@
 package com.sistema.iTsystem.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sistema.iTsystem.model.HardwareInfo;
 import com.sistema.iTsystem.model.Marca;
 import com.sistema.iTsystem.model.Modelo;
+import com.sistema.iTsystem.model.Garantia;
 import com.sistema.iTsystem.model.Proveedores;
+import com.sistema.iTsystem.repository.GarantiaRepository;
 import com.sistema.iTsystem.repository.HardwareInfoRepository;
 import com.sistema.iTsystem.repository.MarcaRepository;
 import com.sistema.iTsystem.repository.ModeloRepository;
@@ -22,6 +26,8 @@ import com.sistema.iTsystem.repository.ProveedoresRepository;
 
 @Service
 public class HardwareInfoService {
+
+    private static final Pattern SERIAL_PATTERN = Pattern.compile("^[A-Z0-9_-]{1,100}$");
 
     @Autowired
     private HardwareInfoRepository hardwareRepository;
@@ -34,6 +40,9 @@ public class HardwareInfoService {
 
     @Autowired
     private MarcaRepository marcaRepository;
+
+    @Autowired
+    private GarantiaRepository garantiaRepository;
 
     public List<HardwareInfo> obtenerTodos() {
         return hardwareRepository.findAll();
@@ -56,7 +65,11 @@ public class HardwareInfoService {
     }
 
     public Optional<HardwareInfo> buscarPorSerial(String serial) {
-        return hardwareRepository.findByHwSerialNum(serial);
+        if (serial == null) {
+            return Optional.empty();
+        }
+
+        return hardwareRepository.findByHwSerialNum(serial.trim().toUpperCase());
     }
 
     @Transactional
@@ -65,7 +78,7 @@ public class HardwareInfoService {
         validarHardware(hardware);
 
         if (hardwareRepository.existsByHwSerialNum(hardware.getHwSerialNum())) {
-            throw new SerialDuplicadoException("Ya existe un hardware con el serial: " + hardware.getHwSerialNum());
+            throw new SerialDuplicadoException("Ya existe un activo con ese número de serie.");
         }
 
         return hardwareRepository.save(hardware);
@@ -81,9 +94,7 @@ public class HardwareInfoService {
 
         if (!hardwareExistente.getHwSerialNum().equals(hardwareActualizado.getHwSerialNum())
                 && hardwareRepository.existsByHwSerialNum(hardwareActualizado.getHwSerialNum())) {
-            throw new SerialDuplicadoException(
-                "Ya existe un hardware con el serial: " + hardwareActualizado.getHwSerialNum()
-            );
+            throw new SerialDuplicadoException("Ya existe un activo con ese número de serie.");
         }
 
         hardwareExistente.setHwSerialNum(hardwareActualizado.getHwSerialNum());
@@ -206,11 +217,44 @@ public class HardwareInfoService {
     }
 
     public boolean existeSerial(String serial) {
-        return hardwareRepository.existsByHwSerialNum(serial);
+        if (serial == null) {
+            return false;
+        }
+
+        return hardwareRepository.existsByHwSerialNum(serial.trim().toUpperCase());
     }
 
     public boolean tieneGarantiaVigente(HardwareInfo hardware) {
         return hardware.getGarantia() != null && hardware.getGarantia().isVigente();
+    }
+
+    @Transactional
+    public Garantia guardarGarantia(HardwareInfo hardware, LocalDate fechaInicio, LocalDate fechaFin, String descripcion) {
+        if (hardware == null || hardware.getHwId() == null) {
+            throw new HardwareInvalidoException("No se puede cargar garantía porque el activo no tiene datos técnicos asociados.");
+        }
+        if (fechaInicio == null) {
+            throw new HardwareInvalidoException("La fecha de inicio de garantía es obligatoria.");
+        }
+        if (fechaFin == null) {
+            throw new HardwareInvalidoException("La fecha de fin de garantía es obligatoria.");
+        }
+        if (fechaFin.isBefore(fechaInicio)) {
+            throw new HardwareInvalidoException("La fecha de fin de garantía no puede ser menor que la fecha de inicio.");
+        }
+
+        Garantia garantia = hardware.getGarantia();
+        if (garantia == null) {
+            garantia = new Garantia();
+            garantia.setHardwareInfo(hardware);
+        }
+
+        garantia.setGaranFechaInicio(fechaInicio);
+        garantia.setGaranFechaFin(fechaFin);
+        garantia.setGaranDescri(descripcion != null && !descripcion.trim().isEmpty() ? descripcion.trim() : null);
+        garantia.setGaranEstado(fechaFin.isBefore(LocalDate.now()) ? "Vencida" : "Vigente");
+
+        return garantiaRepository.save(garantia);
     }
 
     public List<Modelo> obtenerTodosModelos() {
@@ -227,7 +271,16 @@ public class HardwareInfoService {
 
     private void validarHardware(HardwareInfo hardware) {
         if (hardware.getHwSerialNum() == null || hardware.getHwSerialNum().trim().isEmpty()) {
-            throw new HardwareInvalidoException("El numero de serie es obligatorio");
+            throw new HardwareInvalidoException("El número de serie es obligatorio.");
+        }
+        if (hardware.getHwSerialNum().length() > 100) {
+            throw new HardwareInvalidoException("El número de serie admite hasta 100 caracteres.");
+        }
+        if (hardware.getHwSerialNum().chars().anyMatch(Character::isWhitespace)) {
+            throw new HardwareInvalidoException("El número de serie no debe contener espacios.");
+        }
+        if (!SERIAL_PATTERN.matcher(hardware.getHwSerialNum()).matches()) {
+            throw new HardwareInvalidoException("El número de serie solo admite letras, números, guion medio o bajo.");
         }
         if (hardware.getModelo() == null) {
             throw new HardwareInvalidoException("El modelo es obligatorio");
@@ -243,7 +296,7 @@ public class HardwareInfoService {
         }
 
         if (hardware.getHwSerialNum() != null) {
-            hardware.setHwSerialNum(hardware.getHwSerialNum().trim());
+            hardware.setHwSerialNum(hardware.getHwSerialNum().trim().toUpperCase());
         }
     }
 

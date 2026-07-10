@@ -48,6 +48,43 @@ public interface SolicitudesRepository extends JpaRepository<Solicitudes, Long> 
     
     // Buscar por tipo con paginación
     Page<Solicitudes> findBySoliTipo_SoliTipoId(Long tipoId, Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT s FROM Solicitudes s " +
+           "LEFT JOIN s.usuario u " +
+           "LEFT JOIN u.persona p " +
+           "LEFT JOIN s.responsable r " +
+           "LEFT JOIN r.persona rp " +
+           "LEFT JOIN s.soliEstado e " +
+           "LEFT JOIN s.soliTipo t " +
+           "LEFT JOIN s.activo a " +
+           "LEFT JOIN s.marca ma " +
+           "LEFT JOIN s.modelo mo " +
+           "WHERE (:texto IS NULL OR :texto = '' OR " +
+           "LOWER(COALESCE(s.soliDescri, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(COALESCE(s.soliMotivo, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(COALESCE(u.usuLogin, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(CONCAT(COALESCE(p.perNom1, ''), ' ', COALESCE(p.perApe1, ''))) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(COALESCE(r.usuLogin, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(CONCAT(COALESCE(rp.perNom1, ''), ' ', COALESCE(rp.perApe1, ''))) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(COALESCE(a.activoCodigo, '')) LIKE LOWER(CONCAT('%', :texto, '%'))) AND " +
+           "(:tipoId IS NULL OR t.soliTipoId = :tipoId) AND " +
+           "(:estadoId IS NULL OR e.soliEstadoId = :estadoId) AND " +
+           "(:solicitanteId IS NULL OR u.usuId = :solicitanteId) AND " +
+           "(:responsableId IS NULL OR r.usuId = :responsableId) AND " +
+           "(:desde IS NULL OR s.createdAt >= :desde) AND " +
+           "(:hasta IS NULL OR s.createdAt <= :hasta) AND " +
+           "(:scopeUsuarioId IS NULL OR u.usuId = :scopeUsuarioId OR " +
+           "(:scopeResponsableId IS NOT NULL AND r.usuId = :scopeResponsableId))")
+    Page<Solicitudes> findWithFilters(@Param("texto") String texto,
+                                      @Param("tipoId") Long tipoId,
+                                      @Param("estadoId") Long estadoId,
+                                      @Param("solicitanteId") Long solicitanteId,
+                                      @Param("responsableId") Long responsableId,
+                                      @Param("desde") LocalDateTime desde,
+                                      @Param("hasta") LocalDateTime hasta,
+                                      @Param("scopeUsuarioId") Long scopeUsuarioId,
+                                      @Param("scopeResponsableId") Long scopeResponsableId,
+                                      Pageable pageable);
     
     // ==================== BÚSQUEDAS AVANZADAS ====================
     
@@ -81,8 +118,18 @@ public interface SolicitudesRepository extends JpaRepository<Solicitudes, Long> 
     @Query("SELECT s FROM Solicitudes s " +
            "LEFT JOIN FETCH s.usuario u " +
            "LEFT JOIN FETCH u.persona " +
+           "LEFT JOIN FETCH s.responsable r " +
+           "LEFT JOIN FETCH r.persona " +
            "LEFT JOIN FETCH s.soliEstado " +
            "LEFT JOIN FETCH s.soliTipo " +
+           "LEFT JOIN FETCH s.activo a " +
+           "LEFT JOIN FETCH a.categoria " +
+           "LEFT JOIN FETCH a.estado " +
+           "LEFT JOIN FETCH a.hardwareInfo h " +
+           "LEFT JOIN FETCH h.modelo m " +
+           "LEFT JOIN FETCH m.marca " +
+           "LEFT JOIN FETCH s.marca " +
+           "LEFT JOIN FETCH s.modelo " +
            "WHERE s.soliId = :soliId")
     Solicitudes findByIdWithDetails(@Param("soliId") Long soliId);
     
@@ -90,6 +137,8 @@ public interface SolicitudesRepository extends JpaRepository<Solicitudes, Long> 
     @Query("SELECT s FROM Solicitudes s " +
            "LEFT JOIN FETCH s.usuario u " +
            "LEFT JOIN FETCH u.persona " +
+           "LEFT JOIN FETCH s.responsable r " +
+           "LEFT JOIN FETCH r.persona " +
            "LEFT JOIN FETCH s.soliEstado " +
            "LEFT JOIN FETCH s.soliTipo")
     List<Solicitudes> findAllWithDetails();

@@ -49,6 +49,25 @@ public class Solicitudes {
     @JoinColumn(name = "usuario_us_id", nullable = false)
     private Usuario usuario;
 
+    @ManyToOne
+    @JoinColumn(name = "activo_id")
+    private Activo activo;
+
+    @ManyToOne
+    @JoinColumn(name = "marca_id")
+    private Marca marca;
+
+    @ManyToOne
+    @JoinColumn(name = "model_id")
+    private Modelo modelo;
+
+    @Column(name = "soli_cantidad")
+    private Integer soliCantidad;
+
+    @ManyToOne
+    @JoinColumn(name = "usu_responsable_id")
+    private Usuario responsable;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -72,10 +91,21 @@ public class Solicitudes {
      * Obtiene el nombre del usuario solicitante
      */
     public String getUsuarioNombre() {
+        return getSolicitanteNombre();
+    }
+
+    public String getSolicitanteNombre() {
         if (usuario != null && usuario.getPersona() != null) {
             return usuario.getPersona().getPerNom1() + " " + usuario.getPersona().getPerApe1();
         }
-        return "Sin usuario";
+        return usuario != null ? usuario.getUsuLogin() : "Sin usuario";
+    }
+
+    public String getResponsableNombre() {
+        if (responsable != null && responsable.getPersona() != null) {
+            return responsable.getPersona().getPerNom1() + " " + responsable.getPersona().getPerApe1();
+        }
+        return responsable != null ? responsable.getUsuLogin() : "Sin responsable";
     }
 
     /**
@@ -99,6 +129,10 @@ public class Solicitudes {
         return soliEstado != null && "Pendiente".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
     }
 
+    public boolean estaEnAnalisis() {
+        return soliEstado != null && "En análisis".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
+    }
+
     /**
      * Verifica si la solicitud está aprobada
      */
@@ -114,10 +148,18 @@ public class Solicitudes {
     }
 
     /**
-     * Verifica si la solicitud está completada
+     * Verifica si la solicitud está cerrada
      */
     public boolean estaCompletada() {
-        return soliEstado != null && "Completada".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
+        return estaCerrada();
+    }
+
+    public boolean estaCerrada() {
+        return soliEstado != null && "Cerrada".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
+    }
+
+    public boolean estaCancelada() {
+        return soliEstado != null && "Cancelada".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
     }
 
     /**
@@ -144,5 +186,13 @@ public class Solicitudes {
         return soliDescri.length() > 80 
             ? soliDescri.substring(0, 77) + "..." 
             : soliDescri;
+    }
+
+    public String getActivoRelacionadoNombre() {
+        return activo != null ? activo.getActivoNom() : "Sin activo";
+    }
+
+    public String getCantidadTexto() {
+        return soliCantidad != null ? String.valueOf(soliCantidad) : "-";
     }
 }

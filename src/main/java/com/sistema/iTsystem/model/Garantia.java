@@ -70,12 +70,7 @@ public class Garantia {
             return;
         }
         LocalDate hoy = LocalDate.now();
-        if (hoy.isAfter(garanFechaFin)) {
-            garanEstado = "Expirada";
-            return;
-        }
-        long diasRestantes = ChronoUnit.DAYS.between(hoy, garanFechaFin);
-        garanEstado = diasRestantes <= 30 ? "Proxima a vencer" : "Activa";
+        garanEstado = hoy.isAfter(garanFechaFin) ? "Vencida" : "Vigente";
     }
 
     public long getDiasRestantes() {
@@ -95,9 +90,6 @@ public class Garantia {
 
     public boolean isVigente() {
         LocalDate hoy = LocalDate.now();
-        return garanFechaInicio != null
-            && garanFechaFin != null
-            && !hoy.isBefore(garanFechaInicio)
-            && !hoy.isAfter(garanFechaFin);
+        return garanFechaFin != null && !hoy.isAfter(garanFechaFin);
     }
 }

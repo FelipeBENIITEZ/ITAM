@@ -20,6 +20,8 @@
         <a class="btn btn-outline-secondary" th:href="@{/activos}">Volver</a>
     </div>
 
+    <div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+
     <div class="row g-3">
         <div class="col-lg-8">
             <div class="card shadow-sm">
@@ -32,8 +34,18 @@
                             <div class="row g-3">
                                 <div class="col-md-4" th:if="${!modoEdicion}">
                                     <label class="form-label">Codigo *</label>
-                                    <input class="form-control" type="text" name="activoCodigo" th:value="${activo.activoCodigo}" required>
-                                    <div class="form-text">Sin espacios. Se recomienda usar mayusculas.</div>
+                                    <input class="form-control text-uppercase"
+                                           id="codigoActivo"
+                                           type="text"
+                                           name="activoCodigo"
+                                           th:value="${activo.activoCodigo}"
+                                           maxlength="10"
+                                           pattern="[A-Z0-9-]{1,10}"
+                                           autocomplete="off"
+                                           spellcheck="false"
+                                           required>
+                                    <div class="form-text">Maximo 10 caracteres. Use letras, numeros o guion. Sin espacios.</div>
+                                    <div class="text-danger small mt-1" th:if="${codigoError != null}" th:text="${codigoError}"></div>
                                 </div>
                                 <div class="col-md-8" th:classappend="${modoEdicion} ? 'col-md-12' : ''">
                                     <label class="form-label">Nombre *</label>
@@ -53,9 +65,12 @@
                                     <label class="form-label">Categoria *</label>
                                     <select class="form-select" name="categoriaId" required>
                                         <option value="">Seleccionar...</option>
-                                        <option th:each="categoria : ${categorias}" th:value="${categoria.catId}" th:text="${categoria.catNom}" th:selected="${activo.categoria != null and activo.categoria.catId == categoria.catId}"></option>
+                                        <option th:each="categoria : ${categorias}"
+                                                th:value="${categoria.catId}"
+                                                th:text="${categoria.catNom}"
+                                                th:selected="${(activo.categoria != null and activo.categoria.catId == categoria.catId) or (categoriaId != null and categoriaId == categoria.catId)}"></option>
                                     </select>
-                                    <div class="form-text">La categoría agrupa el activo por familia general.</div>
+                                    <div class="form-text">La categoria agrupa el activo por familia general.</div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="card border-0 bg-body-tertiary h-100">
@@ -109,13 +124,16 @@
 
                         <div class="mb-4" th:if="${!modoEdicion}">
                             <h2 class="h5 mb-2">Datos tecnicos</h2>
-                            <p class="text-muted mb-3">La marca, el modelo y el número de serie identifican técnicamente el equipo físico.</p>
+                            <p class="text-muted mb-3">La marca, el modelo y el numero de serie identifican tecnicamente el equipo fisico.</p>
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Marca *</label>
                                     <select class="form-select" name="marcaId" id="marcaSelect" required>
                                         <option value="">Seleccionar...</option>
-                                        <option th:each="marca : ${marcas}" th:value="${marca.marcaId}" th:text="${marca.marcaNom}"></option>
+                                        <option th:each="marca : ${marcas}"
+                                                th:value="${marca.marcaId}"
+                                                th:text="${marca.marcaNom}"
+                                                th:selected="${marcaId != null and marcaId == marca.marcaId}"></option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
@@ -125,21 +143,32 @@
                                         <option th:each="modelo : ${modelos}"
                                                 th:value="${modelo.modelId}"
                                                 th:text="${modelo.marca != null ? modelo.marca.marcaNom + ' - ' + modelo.modelNom : modelo.modelNom}"
-                                                th:attr="data-marca=${modelo.marca != null ? modelo.marca.marcaId : ''}">
+                                                th:attr="data-marca=${modelo.marca != null ? modelo.marca.marcaId : ''}"
+                                                th:selected="${modeloId != null and modeloId == modelo.modelId}">
                                         </option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Numero de serie *</label>
-                                    <input class="form-control" type="text" name="numeroSerie" required>
-                                    <div class="form-text">Debe ser unico y no puede repetirse.</div>
+                                    <input class="form-control text-uppercase"
+                                           id="serialActivo"
+                                           type="text"
+                                           name="numeroSerie"
+                                           th:value="${numeroSerie}"
+                                           maxlength="100"
+                                           pattern="[A-Z0-9_-]{1,100}"
+                                           autocomplete="off"
+                                           spellcheck="false"
+                                           required>
+                                    <div class="form-text">Sin espacios. Se guardara en mayusculas.</div>
+                                    <div class="text-danger small mt-1" th:if="${serialError != null}" th:text="${serialError}"></div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-4" th:if="${modoEdicion}">
                             <h2 class="h5 mb-2">Datos tecnicos</h2>
-                            <p class="text-muted mb-3">La marca, el modelo y el número de serie identifican técnicamente el equipo físico.</p>
+                            <p class="text-muted mb-3">La marca, el modelo y el numero de serie identifican tecnicamente el equipo fisico.</p>
                             <div th:if="${hardwareInfo != null}" class="row g-3">
                                 <div class="col-md-4">
                                     <div class="card border-0 bg-body-tertiary h-100">
@@ -178,7 +207,10 @@
                                     <label class="form-label">Proveedor</label>
                                     <select class="form-select" name="proveedorId">
                                         <option value="">Sin proveedor</option>
-                                        <option th:each="proveedor : ${proveedores}" th:value="${proveedor.provId}" th:text="${proveedor.provNom}" th:selected="${activo.proveedor != null and activo.proveedor.provId == proveedor.provId}"></option>
+                                        <option th:each="proveedor : ${proveedores}"
+                                                th:value="${proveedor.provId}"
+                                                th:text="${proveedor.provNom}"
+                                                th:selected="${(activo.proveedor != null and activo.proveedor.provId == proveedor.provId) or (proveedorId != null and proveedorId == proveedor.provId)}"></option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -205,9 +237,9 @@
         <div class="col-lg-4">
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <h2 class="h5">Criterio de captura</h2>
+                    <h2 class="h5">Criterios para agregar un activo</h2>
                     <p class="text-muted mb-0">
-                        La categoría define la familia del activo. El código identifica la ficha y el proveedor ayuda a trazar origen y soporte.
+                        La categoria define la familia del activo. El codigo identifica la ficha y el proveedor ayuda a trazar origen.
                     </p>
                 </div>
             </div>
@@ -229,6 +261,21 @@
     (function () {
         const marcaSelect = document.getElementById('marcaSelect');
         const modeloSelect = document.getElementById('modeloSelect');
+        const codigoActivo = document.getElementById('codigoActivo');
+        const serialActivo = document.getElementById('serialActivo');
+
+        function normalizarInput(input, patronEliminar) {
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('input', function () {
+                this.value = this.value.toUpperCase().replace(/\s+/g, '').replace(patronEliminar, '');
+            });
+        }
+
+        normalizarInput(codigoActivo, /[^A-Z0-9-]/g);
+        normalizarInput(serialActivo, /[^A-Z0-9_-]/g);
 
         if (!marcaSelect || !modeloSelect) {
             return;

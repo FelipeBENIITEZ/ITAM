@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,9 @@ import com.sistema.iTsystem.repository.ProveedoresRepository;
 
 @Service
 public class ActivoService {
+
+    private static final Pattern CODIGO_PATTERN = Pattern.compile("^[A-Z0-9-]{1,10}$");
+    private static final Pattern SERIAL_PATTERN = Pattern.compile("^[A-Z0-9_-]{1,100}$");
 
     public static class ActivoNoEncontradoException extends RuntimeException {
         public ActivoNoEncontradoException(String mensaje) {
@@ -106,6 +110,7 @@ public class ActivoService {
     public Activo crear(Activo activo, Long marcaId, Long modeloId, String numeroSerie) {
         validarActivo(activo, null);
         activo.setActivoCodigo(normalizarCodigo(activo.getActivoCodigo()));
+        String serialNormalizado = normalizarSerial(numeroSerie);
 
         if (activo.getEstado() == null) {
             activo.setEstado(obtenerEstadoInicial());
@@ -119,8 +124,8 @@ public class ActivoService {
 
         Activo activoGuardado = activoRepository.save(activo);
 
-        if (marcaId != null || modeloId != null || numeroSerie != null) {
-            HardwareInfo hardware = crearHardwareParaActivo(activoGuardado, marcaId, modeloId, numeroSerie);
+        if (marcaId != null || modeloId != null || serialNormalizado != null) {
+            HardwareInfo hardware = crearHardwareParaActivo(activoGuardado, marcaId, modeloId, serialNormalizado);
             hardwareInfoService.crear(hardware);
         }
 
@@ -238,22 +243,33 @@ public class ActivoService {
     private void validarActivo(Activo activo, Long idActual) {
         String codigoNormalizado = normalizarCodigo(activo.getActivoCodigo());
         if (codigoNormalizado == null || codigoNormalizado.isEmpty()) {
-            throw new ActivoInvalidoException("El codigo del activo es obligatorio");
+            throw new ActivoInvalidoException("El código del activo es obligatorio.");
         }
 
-        if (contieneEspacios(activo.getActivoCodigo())) {
-            throw new ActivoInvalidoException("El codigo del activo no puede contener espacios");
+        if (contieneEspacios(codigoNormalizado)) {
+            throw new ActivoInvalidoException("El código no debe contener espacios.");
         }
 
-        Optional<Activo> activoConCodigo = activoRepository.findByActivoCodigoIgnoreCase(codigoNormalizado);
-        if (activoConCodigo.isPresent() && !activoConCodigo.get().getActivoId().equals(idActual)) {
-            throw new ActivoInvalidoException("Ya existe un activo con el codigo: " + codigoNormalizado);
+        if (codigoNormalizado.length() > 10) {
+            throw new ActivoInvalidoException("El código admite hasta 10 caracteres, sin espacios. Use letras, números o guion.");
         }
+
+        if (!CODIGO_PATTERN.matcher(codigoNormalizado).matches()) {
+            throw new ActivoInvalidoException("El código admite hasta 10 caracteres, sin espacios. Use letras, números o guion.");
+        }
+
+        if (activoRepository.existsByActivoCodigo(codigoNormalizado)) {
+            Optional<Activo> activoConCodigo = activoRepository.findByActivoCodigoIgnoreCase(codigoNormalizado);
+            if (activoConCodigo.isPresent() && !activoConCodigo.get().getActivoId().equals(idActual)) {
+                throw new ActivoInvalidoException("Ya existe un activo con ese código.");
+            }
+        }
+
         if (activo.getActivoNom() == null || activo.getActivoNom().trim().isEmpty()) {
-            throw new ActivoInvalidoException("El nombre del activo es obligatorio");
+            throw new ActivoInvalidoException("El nombre del activo es obligatorio.");
         }
         if (activo.getCategoria() == null) {
-            throw new ActivoInvalidoException("La categoria es obligatoria");
+            throw new ActivoInvalidoException("La categoría es obligatoria.");
         }
     }
 
@@ -269,6 +285,16 @@ public class ActivoService {
 
     public List<EstadoActivo> obtenerTodosEstados() {
         return estadoActivoRepository.findAllByOrderByEstadoNomAsc();
+    }
+
+    public Long obtenerEstadoIdPorNombre(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return null;
+        }
+
+        return estadoActivoRepository.findByEstadoNom(nombre)
+            .map(EstadoActivo::getEstadoId)
+            .orElse(null);
     }
 
     public List<EstadoActivo> obtenerEstadosInicialesPermitidos() {
@@ -331,13 +357,21 @@ public class ActivoService {
         return activoCodigo.trim().toUpperCase();
     }
 
+    private String normalizarSerial(String numeroSerie) {
+        if (numeroSerie == null) {
+            return null;
+        }
+
+        return numeroSerie.trim().toUpperCase();
+    }
+
     private boolean contieneEspacios(String activoCodigo) {
         return activoCodigo != null && activoCodigo.chars().anyMatch(Character::isWhitespace);
     }
 
     private HardwareInfo crearHardwareParaActivo(Activo activo, Long marcaId, Long modeloId, String numeroSerie) {
-        if (marcaId == null || modeloId == null || numeroSerie == null || numeroSerie.trim().isEmpty()) {
-            throw new ActivoInvalidoException("Marca, modelo y numero de serie son obligatorios para un activo fisico");
+        if (marcaId == null || modeloId == null || numeroSerie == null || numeroSerie.isBlank()) {
+            throw new ActivoInvalidoException("Marca, modelo y número de serie son obligatorios para un activo físico");
         }
 
         Marca marca = marcaRepository.findById(marcaId)
@@ -350,15 +384,24 @@ public class ActivoService {
             throw new ActivoInvalidoException("El modelo seleccionado no pertenece a la marca indicada");
         }
 
-        String serialNormalizado = numeroSerie.trim();
-        if (hardwareInfoService.existeSerial(serialNormalizado)) {
-            throw new ActivoInvalidoException("Ya existe un hardware con el numero de serie: " + serialNormalizado);
+        if (contieneEspacios(numeroSerie)) {
+            throw new ActivoInvalidoException("El número de serie no debe contener espacios.");
+        }
+        if (numeroSerie.length() > 100) {
+            throw new ActivoInvalidoException("El número de serie admite hasta 100 caracteres.");
+        }
+        if (!SERIAL_PATTERN.matcher(numeroSerie).matches()) {
+            throw new ActivoInvalidoException("El número de serie solo admite letras, números, guion medio o bajo.");
+        }
+
+        if (hardwareInfoService.existeSerial(numeroSerie)) {
+            throw new ActivoInvalidoException("Ya existe un activo con ese número de serie.");
         }
 
         HardwareInfo hardware = new HardwareInfo();
         hardware.setActivo(activo);
         hardware.setModelo(modelo);
-        hardware.setHwSerialNum(serialNormalizado);
+        hardware.setHwSerialNum(numeroSerie);
         hardware.setHwDescri(null);
         return hardware;
     }

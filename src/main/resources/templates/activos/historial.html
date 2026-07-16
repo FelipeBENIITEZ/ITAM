@@ -20,32 +20,46 @@
     </div>
 
     <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table mb-0 align-middle">
-                <thead class="table-dark">
-                <tr>
-                    <th>Fecha</th>
-                    <th>Operacion</th>
-                    <th>Estado anterior</th>
-                    <th>Estado nuevo</th>
-                    <th>Usuario</th>
-                    <th>Motivo</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="item : ${historial}">
-                    <td th:text="${#temporals.format(item.fechaCambio, 'dd/MM/yyyy HH:mm')}">Fecha</td>
-                    <td th:text="${item.operacionResumen}">Operacion</td>
-                    <td th:text="${item.estadoAnteriorNombre}">Anterior</td>
-                    <td th:text="${item.estadoNuevoNombre}">Nuevo</td>
-                    <td th:text="${item.usuarioNombre}">Usuario</td>
-                    <td th:text="${item.motivo != null ? item.motivo : '-'}">Motivo</td>
-                </tr>
-                <tr th:if="${historial == null or historial.isEmpty()}">
-                    <td colspan="6" class="text-center text-muted py-4">Sin registros.</td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="card-body" th:if="${historialOperativo != null and !historialOperativo.isEmpty()}">
+            <div class="border rounded-3 bg-body-tertiary p-3 mb-3" th:each="item : ${historialOperativo}">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-2">
+                    <div>
+                        <span class="badge text-bg-primary mb-2" th:text="${item.tipoEvento}">EVENTO</span>
+                        <div class="fw-semibold" th:text="${item.titulo}">Titulo</div>
+                    </div>
+                    <div class="text-muted small" th:text="${item.fecha != null ? #temporals.format(item.fecha, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</div>
+                </div>
+                <div class="mb-2" th:text="${item.descripcion}">Descripcion</div>
+                <div class="row g-2 small text-muted">
+                    <div class="col-md-6" th:if="${item.usuarioAnterior != null}">
+                        <strong>Usuario anterior:</strong>
+                        <span th:text="${item.usuarioAnterior}">-</span>
+                    </div>
+                    <div class="col-md-6" th:if="${item.usuarioNuevo != null}">
+                        <strong>Usuario nuevo:</strong>
+                        <span th:text="${item.usuarioNuevo}">-</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Ejecutado por:</strong>
+                        <span th:text="${item.usuarioEjecutor != null ? item.usuarioEjecutor : 'No registrado'}">No registrado</span>
+                    </div>
+                    <div class="col-md-6" th:if="${item.solicitudId != null}">
+                        <strong>Solicitud relacionada:</strong>
+                        <span th:text="|#${item.solicitudId}|">#0</span>
+                    </div>
+                    <div class="col-12" th:if="${item.motivo != null and !#strings.isEmpty(item.motivo)}">
+                        <strong>Motivo:</strong>
+                        <span th:text="${item.motivo}">Motivo</span>
+                    </div>
+                    <div class="col-12" th:if="${item.observacion != null and !#strings.isEmpty(item.observacion)}">
+                        <strong>Observacion:</strong>
+                        <span th:text="${item.observacion}">Observacion</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" th:if="${historialOperativo == null or historialOperativo.isEmpty()}">
+            <div class="alert alert-light border mb-0">Sin registros.</div>
         </div>
     </div>
 </main>

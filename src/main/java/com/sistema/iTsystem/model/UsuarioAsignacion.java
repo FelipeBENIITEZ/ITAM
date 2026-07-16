@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "usuario_asignaciones")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioAsignacion {
@@ -27,6 +29,7 @@ public class UsuarioAsignacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "asignacion_id")
+    @EqualsAndHashCode.Include
     private Long asignacionId;
 
     @ManyToOne
@@ -36,6 +39,14 @@ public class UsuarioAsignacion {
     @ManyToOne
     @JoinColumn(name = "activo_id", nullable = false)
     private Activo activo;
+
+    @ManyToOne
+    @JoinColumn(name = "usu_ejecutor_id")
+    private Usuario usuarioEjecutor;
+
+    @ManyToOne
+    @JoinColumn(name = "solicitud_id")
+    private Solicitudes solicitud;
 
     @Column(name = "asignacion_fecha", nullable = false)
     private LocalDate asignacionFecha = LocalDate.now();

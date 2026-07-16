@@ -67,8 +67,14 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <a class="btn btn-outline-secondary" th:href="@{/activos/{codigo}(codigo=${activo.activoCodigo})}">Cancelar</a>
-                    <button class="btn btn-primary" type="submit">Confirmar operacion</button>
+                    <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" th:href="@{/activos/{codigo}(codigo=${activo.activoCodigo})}">
+                        <span class="itas-icon icon-volver icon-button"></span>
+                        <span>Cancelar</span>
+                    </a>
+                    <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
+                        <span class="itas-icon icon-enviar icon-button"></span>
+                        <span>Confirmar operacion</span>
+                    </button>
                 </div>
             </form>
         </div>

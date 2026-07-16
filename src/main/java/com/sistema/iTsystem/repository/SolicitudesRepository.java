@@ -54,27 +54,31 @@ public interface SolicitudesRepository extends JpaRepository<Solicitudes, Long> 
            "LEFT JOIN u.persona p " +
            "LEFT JOIN s.responsable r " +
            "LEFT JOIN r.persona rp " +
+           "LEFT JOIN s.usuarioDestino d " +
+           "LEFT JOIN d.persona dp " +
            "LEFT JOIN s.soliEstado e " +
            "LEFT JOIN s.soliTipo t " +
            "LEFT JOIN s.activo a " +
            "LEFT JOIN s.marca ma " +
            "LEFT JOIN s.modelo mo " +
-           "WHERE (:texto IS NULL OR :texto = '' OR " +
+           "WHERE (:texto = '' OR " +
            "LOWER(COALESCE(s.soliDescri, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(COALESCE(s.soliMotivo, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(COALESCE(u.usuLogin, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(CONCAT(COALESCE(p.perNom1, ''), ' ', COALESCE(p.perApe1, ''))) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(COALESCE(r.usuLogin, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(CONCAT(COALESCE(rp.perNom1, ''), ' ', COALESCE(rp.perApe1, ''))) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(COALESCE(d.usuLogin, '')) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+           "LOWER(CONCAT(COALESCE(dp.perNom1, ''), ' ', COALESCE(dp.perApe1, ''))) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(COALESCE(a.activoCodigo, '')) LIKE LOWER(CONCAT('%', :texto, '%'))) AND " +
-           "(:tipoId IS NULL OR t.soliTipoId = :tipoId) AND " +
-           "(:estadoId IS NULL OR e.soliEstadoId = :estadoId) AND " +
-           "(:solicitanteId IS NULL OR u.usuId = :solicitanteId) AND " +
-           "(:responsableId IS NULL OR r.usuId = :responsableId) AND " +
-           "(:desde IS NULL OR s.createdAt >= :desde) AND " +
-           "(:hasta IS NULL OR s.createdAt <= :hasta) AND " +
-           "(:scopeUsuarioId IS NULL OR u.usuId = :scopeUsuarioId OR " +
-           "(:scopeResponsableId IS NOT NULL AND r.usuId = :scopeResponsableId))")
+           "(:tipoId = -1 OR t.soliTipoId = :tipoId) AND " +
+           "(:estadoId = -1 OR e.soliEstadoId = :estadoId) AND " +
+           "(:solicitanteId = -1 OR u.usuId = :solicitanteId) AND " +
+           "(:responsableId = -1 OR r.usuId = :responsableId) AND " +
+           "s.createdAt >= :desde AND " +
+           "s.createdAt <= :hasta AND " +
+           "(:scopeUsuarioId = -1 OR u.usuId = :scopeUsuarioId OR " +
+           "(:scopeResponsableId <> -1 AND r.usuId = :scopeResponsableId))")
     Page<Solicitudes> findWithFilters(@Param("texto") String texto,
                                       @Param("tipoId") Long tipoId,
                                       @Param("estadoId") Long estadoId,
@@ -120,6 +124,8 @@ public interface SolicitudesRepository extends JpaRepository<Solicitudes, Long> 
            "LEFT JOIN FETCH u.persona " +
            "LEFT JOIN FETCH s.responsable r " +
            "LEFT JOIN FETCH r.persona " +
+           "LEFT JOIN FETCH s.usuarioDestino d " +
+           "LEFT JOIN FETCH d.persona " +
            "LEFT JOIN FETCH s.soliEstado " +
            "LEFT JOIN FETCH s.soliTipo " +
            "LEFT JOIN FETCH s.activo a " +
@@ -139,6 +145,8 @@ public interface SolicitudesRepository extends JpaRepository<Solicitudes, Long> 
            "LEFT JOIN FETCH u.persona " +
            "LEFT JOIN FETCH s.responsable r " +
            "LEFT JOIN FETCH r.persona " +
+           "LEFT JOIN FETCH s.usuarioDestino d " +
+           "LEFT JOIN FETCH d.persona " +
            "LEFT JOIN FETCH s.soliEstado " +
            "LEFT JOIN FETCH s.soliTipo")
     List<Solicitudes> findAllWithDetails();
@@ -168,6 +176,16 @@ public interface SolicitudesRepository extends JpaRepository<Solicitudes, Long> 
     
     // Obtener últimas solicitudes
     List<Solicitudes> findTop10ByOrderByCreatedAtDesc();
+
+    @Query("SELECT DISTINCT s FROM Solicitudes s " +
+           "LEFT JOIN FETCH s.usuario u " +
+           "LEFT JOIN FETCH u.persona " +
+           "LEFT JOIN FETCH s.responsable r " +
+           "LEFT JOIN FETCH r.persona " +
+           "LEFT JOIN FETCH s.soliEstado " +
+           "LEFT JOIN FETCH s.soliTipo " +
+           "ORDER BY s.createdAt DESC")
+    List<Solicitudes> findUltimasConDetalles(Pageable pageable);
     
     // Obtener solicitudes de un usuario ordenadas
     List<Solicitudes> findByUsuario_UsuIdOrderByCreatedAtDesc(Long usuarioId);

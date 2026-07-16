@@ -23,17 +23,25 @@ public interface UsuarioAsignacionRepository extends JpaRepository<UsuarioAsigna
 
     @Query("SELECT ua FROM UsuarioAsignacion ua " +
            "LEFT JOIN FETCH ua.usuario u " +
+           "LEFT JOIN FETCH ua.usuarioEjecutor ue " +
            "LEFT JOIN FETCH u.persona " +
+           "LEFT JOIN FETCH ue.persona " +
            "LEFT JOIN FETCH ua.activo a " +
            "LEFT JOIN FETCH a.estado " +
+           "LEFT JOIN FETCH ua.solicitud s " +
+           "LEFT JOIN FETCH s.soliTipo " +
            "WHERE ua.asignacionActiva = true " +
            "ORDER BY ua.asignacionFecha DESC")
     List<UsuarioAsignacion> findAsignacionesActivasConDetalles();
 
     @Query("SELECT ua FROM UsuarioAsignacion ua " +
            "LEFT JOIN FETCH ua.usuario u " +
+           "LEFT JOIN FETCH ua.usuarioEjecutor ue " +
            "LEFT JOIN FETCH u.persona " +
+           "LEFT JOIN FETCH ue.persona " +
            "LEFT JOIN FETCH u.departamento " +
+           "LEFT JOIN FETCH ua.solicitud s " +
+           "LEFT JOIN FETCH s.soliTipo " +
            "WHERE ua.activo.activoId = :activoId " +
            "ORDER BY ua.asignacionActiva DESC, ua.asignacionFecha DESC")
     List<UsuarioAsignacion> findByActivoIdWithUserDetails(@Param("activoId") Long activoId);

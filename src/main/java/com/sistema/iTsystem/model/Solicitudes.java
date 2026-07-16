@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "solicitudes")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Solicitudes {
@@ -26,6 +28,7 @@ public class Solicitudes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "soli_id")
+    @EqualsAndHashCode.Include
     private Long soliId;
 
     @Column(name = "soli_descri", columnDefinition = "TEXT")
@@ -63,6 +66,10 @@ public class Solicitudes {
 
     @Column(name = "soli_cantidad")
     private Integer soliCantidad;
+
+    @ManyToOne
+    @JoinColumn(name = "usu_destino_id")
+    private Usuario usuarioDestino;
 
     @ManyToOne
     @JoinColumn(name = "usu_responsable_id")
@@ -108,6 +115,13 @@ public class Solicitudes {
         return responsable != null ? responsable.getUsuLogin() : "Sin responsable";
     }
 
+    public String getUsuarioDestinoNombre() {
+        if (usuarioDestino != null && usuarioDestino.getPersona() != null) {
+            return usuarioDestino.getPersona().getPerNom1() + " " + usuarioDestino.getPersona().getPerApe1();
+        }
+        return usuarioDestino != null ? usuarioDestino.getUsuLogin() : "Sin destinatario";
+    }
+
     /**
      * Obtiene el tipo de solicitud
      */
@@ -138,6 +152,14 @@ public class Solicitudes {
      */
     public boolean estaAprobada() {
         return soliEstado != null && "Aprobada".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
+    }
+
+    public boolean estaEnEjecucion() {
+        return soliEstado != null && "En ejecución".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
+    }
+
+    public boolean estaResuelta() {
+        return soliEstado != null && "Resuelta".equalsIgnoreCase(soliEstado.getSoliEstadoNom());
     }
 
     /**

@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "solicitud_historial_estados")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class SolicitudHistorialEstados {
@@ -25,6 +27,7 @@ public class SolicitudHistorialEstados {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "historial_id")
+    @EqualsAndHashCode.Include
     private Long historialId;
 
     @ManyToOne

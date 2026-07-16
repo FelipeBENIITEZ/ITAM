@@ -3,6 +3,7 @@ package com.sistema.iTsystem.model;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,12 +21,16 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "hardware_info")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class HardwareInfo {
@@ -33,6 +38,8 @@ public class HardwareInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "hw_id")
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long hwId;
 
     @OneToOne
@@ -44,6 +51,7 @@ public class HardwareInfo {
     private Modelo modelo;
 
     @Column(name = "hw_serial_num", length = 100, unique = true, nullable = false)
+    @ToString.Include
     private String hwSerialNum;
 
     @Column(name = "hw_descri", columnDefinition = "TEXT")
@@ -83,5 +91,21 @@ public class HardwareInfo {
         return activo != null && activo.getProveedor() != null
             ? activo.getProveedor().getProvNom()
             : "Sin proveedor";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof HardwareInfo hardwareInfo)) {
+            return false;
+        }
+        return hwId != null && Objects.equals(hwId, hardwareInfo.hwId);
+    }
+
+    @Override
+    public int hashCode() {
+        return hwId != null ? Objects.hash(hwId) : System.identityHashCode(this);
     }
 }

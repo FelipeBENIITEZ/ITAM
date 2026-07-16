@@ -32,6 +32,7 @@ import com.sistema.iTsystem.repository.ProveedoresRepository;
 import com.sistema.iTsystem.repository.UsuarioRepository;
 import com.sistema.iTsystem.service.ActivoService;
 import com.sistema.iTsystem.service.EstadoTransicionService;
+import com.sistema.iTsystem.service.HistorialActivoService;
 import com.sistema.iTsystem.service.HardwareInfoService;
 import com.sistema.iTsystem.service.MovimientosService;
 
@@ -50,6 +51,9 @@ public class ActivoController {
 
     @Autowired
     private MovimientosService movimientosService;
+
+    @Autowired
+    private HistorialActivoService historialActivoService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -116,7 +120,7 @@ public class ActivoController {
             UsuarioAsignacion asignacionActiva = movimientosService.obtenerAsignacionActiva(activo.getActivoId()).orElse(null);
             if (asignacionActiva != null || activo.getEstado() == null
                     || !"Disponible".equalsIgnoreCase(activo.getEstado().getEstadoNom())) {
-                flash.addFlashAttribute("error", "El activo no está disponible para asignación.");
+                flash.addFlashAttribute("error", "El activo no esta disponible para asignacion.");
                 return "redirect:/activos/" + activo.getActivoCodigo();
             }
 
@@ -193,13 +197,13 @@ public class ActivoController {
             HardwareInfo hardware = hardwareService.buscarPorActivoIdConDetalles(activo.getActivoId()).orElse(null);
             if (hardware == null) {
                 cargarDetalleActivo(model, activo, null, null, true,
-                    "No se puede cargar garantía porque el activo no tiene datos técnicos asociados.",
+                    "No se puede cargar garantia porque el activo no tiene datos tecnicos asociados.",
                     fechaInicio, fechaFin, descripcion);
                 return "activo-detalle";
             }
 
             hardwareService.guardarGarantia(hardware, fechaInicio, fechaFin, descripcion);
-            flash.addFlashAttribute("success", "Garantía guardada exitosamente.");
+            flash.addFlashAttribute("success", "Garantia guardada exitosamente.");
             return "redirect:/activos/" + activo.getActivoCodigo();
         } catch (ActivoService.ActivoNoEncontradoException e) {
             flash.addFlashAttribute("error", e.getMessage());
@@ -277,7 +281,7 @@ public class ActivoController {
             return "activos/nuevo";
         } catch (DataIntegrityViolationException e) {
             prepararFormularioAlta(model, activo, marcaId, modeloId, numeroSerie, categoriaId, proveedorId);
-            model.addAttribute("error", "Ya existe un activo con ese código o ese número de serie.");
+            model.addAttribute("error", "Ya existe un activo con ese codigo o ese numero de serie.");
             return "activos/nuevo";
         } catch (Exception e) {
             prepararFormularioAlta(model, activo, marcaId, modeloId, numeroSerie, categoriaId, proveedorId);
@@ -418,7 +422,7 @@ public class ActivoController {
                 .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
             model.addAttribute("activo", activo);
-            model.addAttribute("historial", estadoTransicionService.obtenerHistorialEstados(activo.getActivoId()));
+            model.addAttribute("historialOperativo", historialActivoService.obtenerHistorialOperativo(activo.getActivoId()));
 
             return "activos/historial";
         } catch (Exception e) {
@@ -459,17 +463,17 @@ public class ActivoController {
             case "mantenimiento" -> {
                 titulo = "Enviar a mantenimiento";
                 estadoResultante = "En mantenimiento";
-                descripcion = "El activo pasará a mantenimiento y quedará fuera de uso operativo.";
+                descripcion = "El activo pasara a mantenimiento y quedara fuera de uso operativo.";
             }
             case "finalizar-mantenimiento" -> {
                 titulo = "Finalizar mantenimiento";
                 estadoResultante = "Disponible";
-                descripcion = "El activo volverá a estar disponible para uso operativo.";
+                descripcion = "El activo volvera a estar disponible para uso operativo.";
             }
             case "baja" -> {
                 titulo = "Dar de baja";
                 estadoResultante = "Dado de baja";
-                descripcion = "La baja es lógica. El activo seguirá visible con su historial.";
+                descripcion = "La baja es logica. El activo seguira visible con su historial.";
             }
             default -> throw new RuntimeException("Operacion no reconocida");
         }
@@ -535,6 +539,7 @@ public class ActivoController {
             model.addAttribute("error", errorGarantia);
         }
 
+        model.addAttribute("historialOperativo", historialActivoService.obtenerHistorialOperativo(activo.getActivoId()));
         model.addAttribute("historialEstados", estadoTransicionService.obtenerHistorialEstados(activo.getActivoId()));
     }
 

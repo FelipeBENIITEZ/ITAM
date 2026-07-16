@@ -10,6 +10,8 @@ public class SolicitudFormDTO {
     private Long marcaId;
     private Long modelId;
     private Integer soliCantidad;
+    private Long usuarioDestinoId;
+    private Long usuarioActualId;
     private Long responsableId;
     private String soliMotivo;
     private String soliDescri;

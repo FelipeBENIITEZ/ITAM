@@ -1,6 +1,7 @@
 package com.sistema.iTsystem.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,13 +16,17 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "activo")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Activo {
@@ -29,9 +34,12 @@ public class Activo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "activo_id")
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long activoId;
 
     @Column(name = "activo_codigo", nullable = false, unique = true, length = 50)
+    @ToString.Include
     private String activoCodigo;
 
     @ManyToOne
@@ -89,5 +97,21 @@ public class Activo {
 
     public String getSerial() {
         return hardwareInfo != null ? hardwareInfo.getHwSerialNum() : "Sin serial";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Activo activo)) {
+            return false;
+        }
+        return activoId != null && Objects.equals(activoId, activo.activoId);
+    }
+
+    @Override
+    public int hashCode() {
+        return activoId != null ? Objects.hash(activoId) : System.identityHashCode(this);
     }
 }

@@ -3,39 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITASSET | Solicitud</title>
+    <title>ITASSET | Nueva solicitud</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <div th:replace="~{fragments/app-nav :: nav('solicitudes')}"></div>
 
-<main class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <p class="text-uppercase text-muted fw-semibold mb-1">Alta o edición</p>
-            <h1 class="h4">Nueva solicitud</h1>
-            <form th:action="${solicitud.soliId != null} ? @{/solicitudes/actualizar/{id}(id=${solicitud.soliId})} : @{/solicitudes/guardar}" method="post">
+<main class="container-fluid py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-xl-5">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3 mb-4">
+                <div>
+                    <p class="text-uppercase text-muted fw-semibold mb-1">Soporte / Solicitudes</p>
+                    <h1 class="h3 mb-2">Nueva solicitud</h1>
+                    <p class="text-muted mb-0">La solicitud registra la necesidad. El sistema completa y valida lo que ya conoce.</p>
+                </div>
+                <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" th:href="@{/solicitudes}">
+                    <span class="itas-icon icon-volver icon-button"></span>
+                    <span>Volver al listado</span>
+                </a>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+            <form th:action="@{/solicitudes/guardar}" method="post" th:object="${solicitud}" id="formSolicitud" novalidate>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Tipo</label>
-                        <select class="form-select" name="soliTipo.soliTipoId" required>
-                            <option value="">Seleccionar...</option>
-                            <option th:each="tipo : ${tipos}" th:value="${tipo.soliTipoId}" th:text="${tipo.soliTipoNom}" th:selected="${solicitud.soliTipo != null and solicitud.soliTipo.soliTipoId == tipo.soliTipoId}"></option>
-                        </select>
+                <div class="row g-4">
+                    <div class="col-xl-8">
+                        <div class="card border-0 bg-body-tertiary mb-4">
+                            <div class="card-body">
+                                <h2 class="h6 text-uppercase text-muted mb-3">Datos comunes</h2>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Tipo</label>
+                                        <select class="form-select" th:field="*{tipoId}" id="tipoId" required>
+                                            <option value="">Seleccionar...</option>
+                                            <option th:each="tipo : ${tipos}"
+                                                    th:value="${tipo.soliTipoId}"
+                                                    th:text="${tipo.soliTipoNom}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label">Motivo</label>
+                                        <input class="form-control" type="text" th:field="*{soliMotivo}" maxlength="200" required>
+                                        <div class="form-text">Explica de forma breve por que se genera la solicitud.</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Descripcion</label>
+                                        <textarea class="form-control" th:field="*{soliDescri}" rows="5" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 bg-body-tertiary mb-4 solicitud-bloque" data-tipos="Mantenimiento,Baja">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                    <div>
+                                        <h2 class="h6 text-uppercase text-muted mb-1">Activo relacionado</h2>
+                                        <p class="text-muted mb-0">Selecciona el activo que origino la solicitud.</p>
+                                    </div>
+                                </div>
+                                <label class="form-label">Activo</label>
+                                <select class="form-select campo-dinamico" name="activoId" data-required="true" disabled>
+                                    <option value="">Seleccionar...</option>
+                                    <option th:each="activo : ${activosReferencia}"
+                                            th:value="${activo.activoId}"
+                                            th:text="${activo.activoCodigo + ' - ' + activo.activoNom}"></option>
+                                </select>
+                                <div class="form-text">Solo activos activos y no dados de baja.</div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 bg-body-tertiary mb-4 solicitud-bloque" data-tipos="Compra">
+                            <div class="card-body">
+                                <h2 class="h6 text-uppercase text-muted mb-3">Solicitud de compra</h2>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Cantidad</label>
+                                        <input class="form-control" type="number" th:field="*{soliCantidad}" min="1" step="1" data-required="true">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label">Activo de referencia</label>
+                                        <select class="form-select campo-dinamico" name="activoId" id="activoCompra" data-required="false" disabled>
+                                            <option value="">Opcional</option>
+                                            <option th:each="activo : ${activosReferenciaCompra}"
+                                                    th:value="${activo.activoId}"
+                                                    th:text="${activo.activoCodigo + ' - ' + activo.activoNom}"></option>
+                                        </select>
+                                        <div class="form-text">Si eliges un activo de referencia, el sistema completa marca y modelo.</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="border rounded bg-white p-3" id="referenciaCompraResumen">
+                                            Selecciona un activo de referencia para ver sus datos tecnicos.
+                                        </div>
+                                    </div>
+                                    <input type="hidden" th:field="*{marcaId}" id="marcaIdHidden">
+                                    <input type="hidden" th:field="*{modelId}" id="modelIdHidden">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Marca</label>
+                                        <select class="form-select" id="marcaIdUi">
+                                            <option value="">Opcional</option>
+                                            <option th:each="marca : ${marcas}"
+                                                    th:value="${marca.marcaId}"
+                                                    th:text="${marca.marcaNom}"
+                                                    th:selected="${solicitud.marcaId != null and solicitud.marcaId == marca.marcaId}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Modelo</label>
+                                        <select class="form-select" id="modelIdUi">
+                                            <option value="">Opcional</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <div class="form-text">La marca y el modelo pueden derivarse del activo de referencia o cargarse manualmente.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 bg-body-tertiary mb-4 solicitud-bloque" data-tipos="Asignacion">
+                            <div class="card-body">
+                                <h2 class="h6 text-uppercase text-muted mb-3">Asignacion</h2>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Activo disponible</label>
+                                        <select class="form-select campo-dinamico" name="activoId" data-required="true" disabled>
+                                            <option value="">Seleccionar...</option>
+                                            <option th:each="activo : ${activosDisponibles}"
+                                                    th:value="${activo.activoId}"
+                                                    th:text="${activo.activoCodigo + ' - ' + activo.activoNom}"></option>
+                                        </select>
+                                        <div class="form-text">Solo activos disponibles y sin asignacion activa.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Usuario destinatario</label>
+                                        <select class="form-select campo-dinamico" name="usuarioDestinoId" data-required="true" disabled>
+                                            <option value="">Seleccionar...</option>
+                                            <option th:each="usuario : ${usuariosDestinatarios}"
+                                                    th:value="${usuario.usuId}"
+                                                    th:text="${usuario.usuLogin}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 bg-body-tertiary mb-4 solicitud-bloque" data-tipos="Reasignacion">
+                            <div class="card-body">
+                                <h2 class="h6 text-uppercase text-muted mb-3">Reasignacion</h2>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Activo asignado</label>
+                                        <select class="form-select campo-dinamico" name="activoId" id="activoReasignacion" data-required="true" disabled>
+                                            <option value="">Seleccionar...</option>
+                                            <option th:each="activo : ${activosAsignados}"
+                                                    th:value="${activo.activoId}"
+                                                    th:text="${activo.activoCodigo + ' - ' + activo.activoNom}"
+                                                    th:attr="data-usuario=${usuariosAsignadosPorActivo[activo.activoId]}"></option>
+                                        </select>
+                                        <div class="form-text">Solo activos con asignacion activa.</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Usuario actual</label>
+                                        <input class="form-control" type="text" id="usuarioActualReasignacion" readonly placeholder="Selecciona un activo">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Nuevo destinatario</label>
+                                        <select class="form-select campo-dinamico" name="usuarioDestinoId" data-required="true" disabled>
+                                            <option value="">Seleccionar...</option>
+                                            <option th:each="usuario : ${usuariosDestinatarios}"
+                                                    th:value="${usuario.usuId}"
+                                                    th:text="${usuario.usuLogin}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-8">
-                        <label class="form-label">Motivo</label>
-                        <input class="form-control" type="text" name="soliMotivo" th:value="${solicitud.soliMotivo}">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Descripción</label>
-                        <textarea class="form-control" name="soliDescri" rows="5" th:text="${solicitud.soliDescri}" required></textarea>
+
+                    <div class="col-xl-4">
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <h2 class="h6 text-uppercase text-muted">Guia rapida</h2>
+                                <div id="guiaTipo" class="text-muted small">
+                                    Selecciona un tipo para ver solo los campos necesarios.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h2 class="h6 text-uppercase text-muted mb-3">Estado inicial</h2>
+                                <div class="alert alert-info mb-0">
+                                    La solicitud se guarda inicialmente en <strong>Pendiente</strong>.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
                 <div class="d-flex justify-content-end gap-2 mt-4">
                     <a class="btn btn-outline-secondary" th:href="@{/solicitudes}">Cancelar</a>
-                    <button class="btn btn-primary" type="submit" th:text="${solicitud.soliId != null} ? 'Actualizar' : 'Guardar'">Guardar</button>
+                    <button class="btn btn-primary btn-icon-inline" type="submit">
+                        <img th:src="@{/iconos/botones/agregar_icon_button.svg}" class="icon icon-button" alt="">
+                        <span>Guardar solicitud</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -43,5 +217,236 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+    const tipoSelect = document.getElementById('tipoId');
+    const bloques = document.querySelectorAll('.solicitud-bloque');
+    const guiaTipo = document.getElementById('guiaTipo');
+    const activoCompra = document.getElementById('activoCompra');
+    const referenciaResumen = document.getElementById('referenciaCompraResumen');
+    const marcaUi = document.getElementById('marcaIdUi');
+    const modelUi = document.getElementById('modelIdUi');
+    const marcaHidden = document.getElementById('marcaIdHidden');
+    const modelHidden = document.getElementById('modelIdHidden');
+    const activoReasignacion = document.getElementById('activoReasignacion');
+    const usuarioActualReasignacion = document.getElementById('usuarioActualReasignacion');
+    const form = document.getElementById('formSolicitud');
+
+    const guias = {
+        'Mantenimiento': 'La categoria agrupa el activo por familia general. Selecciona el activo que requiere atencion.',
+        'Baja': 'La solicitud sirve para dar de baja un activo fisico especifico.',
+        'Compra': 'La marca, el modelo y el numero de serie identifican tecnicamente el equipo fisico.',
+        'Asignacion': 'Selecciona un activo disponible y el usuario que lo recibira.',
+        'Reasignacion': 'Selecciona un activo ya asignado y define el nuevo destinatario.'
+    };
+
+    function tipoActual() {
+        if (!tipoSelect || !tipoSelect.value) {
+            return '';
+        }
+        const option = tipoSelect.options[tipoSelect.selectedIndex];
+        return option ? normalizarTexto(option.textContent) : '';
+    }
+
+    function normalizarTexto(valor) {
+        if (!valor) {
+            return '';
+        }
+        return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    function actualizarGuia() {
+        const tipo = tipoActual();
+        guiaTipo.textContent = guias[tipo] || 'Selecciona un tipo para ver solo los campos necesarios.';
+    }
+
+    function mostrarBloques() {
+        const tipo = tipoActual();
+        bloques.forEach(bloque => {
+            const tipos = (bloque.getAttribute('data-tipos') || '').split(',');
+            const visible = !!tipo && tipos.includes(tipo);
+            bloque.classList.toggle('d-none', !visible);
+            bloque.querySelectorAll('input, select, textarea').forEach(campo => {
+                campo.disabled = !visible;
+                if (campo.hasAttribute('data-required')) {
+                    campo.required = visible && campo.getAttribute('data-required') === 'true';
+                } else {
+                    campo.required = false;
+                }
+            });
+        });
+
+        if (tipo !== 'Compra') {
+            if (marcaHidden) marcaHidden.value = '';
+            if (modelHidden) modelHidden.value = '';
+        }
+
+        if (tipo !== 'Reasignacion' && usuarioActualReasignacion) {
+            usuarioActualReasignacion.value = '';
+        }
+    }
+
+    async function cargarModelos(marcaId, seleccionado) {
+        if (!modelUi) {
+            return;
+        }
+        modelUi.innerHTML = '<option value="">Opcional</option>';
+        if (!marcaId) {
+            if (modelHidden) {
+                modelHidden.value = '';
+            }
+            return;
+        }
+        try {
+            const respuesta = await fetch('/api/modelos?marcaId=' + encodeURIComponent(marcaId));
+            const modelos = await respuesta.json();
+            modelos.forEach(modelo => {
+                const option = document.createElement('option');
+                option.value = modelo.modelId;
+                option.textContent = modelo.modelNom;
+                if (String(modelo.modelId) === String(seleccionado)) {
+                    option.selected = true;
+                }
+                modelUi.appendChild(option);
+            });
+        } catch (error) {
+            console.error('No se pudieron cargar los modelos', error);
+        }
+    }
+
+    async function actualizarReferenciaCompra() {
+        if (!activoCompra || !referenciaResumen) {
+            return;
+        }
+        const activoId = activoCompra.value;
+        if (!activoId) {
+            referenciaResumen.textContent = 'Selecciona un activo de referencia para ver sus datos tecnicos.';
+            if (marcaUi) marcaUi.disabled = false;
+            if (modelUi) modelUi.disabled = false;
+            if (marcaHidden) marcaHidden.value = marcaUi ? marcaUi.value : '';
+            if (modelHidden) modelHidden.value = modelUi ? modelUi.value : '';
+            return;
+        }
+        try {
+            const respuesta = await fetch('/api/activos/' + encodeURIComponent(activoId) + '/referencia');
+            const data = await respuesta.json();
+            referenciaResumen.innerHTML = [
+                '<strong>' + (data.codigo || 'Sin codigo') + '</strong> - ' + (data.nombre || 'Sin nombre'),
+                '<div class="text-muted small">' + (data.categoria || 'Sin categoria') + ' | ' + (data.estado || 'Sin estado') + '</div>',
+                '<div class="text-muted small">Marca: ' + (data.marca || 'Sin informacion tecnica registrada') + '</div>',
+                '<div class="text-muted small">Modelo: ' + (data.modelo || 'Sin informacion tecnica registrada') + '</div>',
+                '<div class="text-muted small">Serial: ' + (data.serial || 'Sin informacion tecnica registrada') + '</div>'
+            ].join('');
+
+            if (marcaHidden) {
+                marcaHidden.value = data.marcaId || '';
+            }
+            if (modelHidden) {
+                modelHidden.value = data.modeloId || '';
+            }
+            if (marcaUi) {
+                marcaUi.disabled = true;
+                marcaUi.value = data.marcaId || '';
+            }
+            if (modelUi) {
+                modelUi.disabled = true;
+            }
+            if (data.marcaId) {
+                await cargarModelos(data.marcaId, data.modeloId || '');
+                if (modelUi) {
+                    modelUi.value = data.modeloId || '';
+                }
+            }
+        } catch (error) {
+            console.error('No se pudo cargar la referencia del activo', error);
+        }
+    }
+
+    function sincronizarMarcaManual() {
+        if (!marcaUi || !modelUi || !marcaHidden || !modelHidden) {
+            return;
+        }
+        if (activoCompra && activoCompra.value) {
+            return;
+        }
+        marcaHidden.value = marcaUi.value || '';
+        modelHidden.value = modelUi.value || '';
+    }
+
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', () => {
+            mostrarBloques();
+            actualizarGuia();
+            actualizarReferenciaCompra();
+        });
+    }
+
+    if (marcaUi) {
+        marcaUi.addEventListener('change', async () => {
+            if (activoCompra && activoCompra.value) {
+                return;
+            }
+            marcaHidden.value = marcaUi.value || '';
+            modelHidden.value = '';
+            await cargarModelos(marcaUi.value, '');
+            modelUi.disabled = false;
+        });
+    }
+
+    if (modelUi) {
+        modelUi.addEventListener('change', () => {
+            if (activoCompra && activoCompra.value) {
+                return;
+            }
+            modelHidden.value = modelUi.value || '';
+        });
+    }
+
+    if (activoCompra) {
+        activoCompra.addEventListener('change', actualizarReferenciaCompra);
+    }
+
+    if (activoReasignacion) {
+        activoReasignacion.addEventListener('change', () => {
+            const option = activoReasignacion.options[activoReasignacion.selectedIndex];
+            usuarioActualReasignacion.value = option ? (option.getAttribute('data-usuario') || '') : '';
+        });
+    }
+
+    if (marcaUi && marcaHidden && marcaUi.value) {
+        marcaHidden.value = marcaUi.value;
+        cargarModelos(marcaUi.value, modelHidden ? modelHidden.value : '');
+    }
+
+    function obtenerPrimerCampoInvalidoVisible() {
+        if (!form) {
+            return null;
+        }
+        return Array.from(form.querySelectorAll(':invalid'))
+            .find(campo => !campo.disabled && campo.getClientRects().length > 0) || null;
+    }
+
+    if (form) {
+        form.addEventListener('submit', (event) => {
+            mostrarBloques();
+
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+
+                const primerCampo = obtenerPrimerCampoInvalidoVisible();
+                if (primerCampo && typeof primerCampo.focus === 'function') {
+                    primerCampo.focus({ preventScroll: false });
+                }
+                return;
+            }
+        });
+    }
+
+    mostrarBloques();
+    actualizarGuia();
+    sincronizarMarcaManual();
+})();
+</script>
 </body>
 </html>

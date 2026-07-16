@@ -15,6 +15,7 @@ import com.sistema.iTsystem.model.Activo;
 import com.sistema.iTsystem.model.EstadoActivo;
 import com.sistema.iTsystem.model.Usuario;
 import com.sistema.iTsystem.model.UsuarioAsignacion;
+import com.sistema.iTsystem.model.Solicitudes;
 import com.sistema.iTsystem.repository.ActivoRepository;
 import com.sistema.iTsystem.repository.EstadoActivoRepository;
 import com.sistema.iTsystem.repository.UsuarioAsignacionRepository;
@@ -77,6 +78,13 @@ public class MovimientosService {
     @Transactional
     public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId, LocalDate fechaAsignacion,
                                            String motivo, String observacion, Usuario usuarioOperador) {
+        return asignarActivo(activoId, usuarioId, fechaAsignacion, motivo, observacion, usuarioOperador, null);
+    }
+
+    @Transactional
+    public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId, LocalDate fechaAsignacion,
+                                           String motivo, String observacion, Usuario usuarioOperador,
+                                           Solicitudes solicitud) {
         Activo activo = activoRepository.findById(activoId)
             .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
 
@@ -116,6 +124,8 @@ public class MovimientosService {
         UsuarioAsignacion asignacion = new UsuarioAsignacion();
         asignacion.setActivo(activo);
         asignacion.setUsuario(usuarioAsignado);
+        asignacion.setUsuarioEjecutor(usuarioOperador);
+        asignacion.setSolicitud(solicitud);
         asignacion.setAsignacionFecha(fechaAsignacion);
         asignacion.setAsignacionMotivo(motivo);
         asignacion.setAsignacionObservacion(observacion);
@@ -151,8 +161,89 @@ public class MovimientosService {
         if (motivo != null && !motivo.trim().isEmpty()) {
             asignacion.setAsignacionMotivo(motivo);
         }
+        asignacion.setUsuarioEjecutor(usuarioOperador);
 
         return usuarioAsignacionRepository.save(asignacion);
+    }
+
+    @Transactional
+    public UsuarioAsignacion cerrarAsignacionActiva(Long activoId, String motivo,
+                                                    String observacion, Usuario usuarioOperador) {
+        return cerrarAsignacionActiva(activoId, motivo, observacion, usuarioOperador, null);
+    }
+
+    @Transactional
+    public UsuarioAsignacion cerrarAsignacionActiva(Long activoId, String motivo,
+                                                    String observacion, Usuario usuarioOperador,
+                                                    Solicitudes solicitud) {
+        UsuarioAsignacion asignacion = obtenerAsignacionActiva(activoId)
+            .orElseThrow(() -> new RuntimeException("El activo no tiene una asignación activa."));
+
+        if (!Boolean.TRUE.equals(asignacion.getAsignacionActiva())) {
+            throw new RuntimeException("La asignación ya fue finalizada.");
+        }
+
+        if (motivo != null && !motivo.trim().isEmpty()) {
+            asignacion.setAsignacionMotivo(motivo);
+        }
+        if (observacion != null && !observacion.trim().isEmpty()) {
+            asignacion.setAsignacionObservacion(observacion);
+        }
+        asignacion.setUsuarioEjecutor(usuarioOperador);
+        if (solicitud != null) {
+            asignacion.setSolicitud(solicitud);
+        }
+        asignacion.setAsignacionActiva(false);
+        asignacion.setDevolucionFecha(LocalDate.now());
+        return usuarioAsignacionRepository.saveAndFlush(asignacion);
+    }
+
+    @Transactional
+    public UsuarioAsignacion reasignarActivo(Long activoId, Long nuevoUsuarioId, LocalDate fechaReasignacion,
+                                             String motivo, String observacion, Usuario usuarioOperador) {
+        return reasignarActivo(activoId, nuevoUsuarioId, fechaReasignacion, motivo, observacion, usuarioOperador, null);
+    }
+
+    @Transactional
+    public UsuarioAsignacion reasignarActivo(Long activoId, Long nuevoUsuarioId, LocalDate fechaReasignacion,
+                                             String motivo, String observacion, Usuario usuarioOperador,
+                                             Solicitudes solicitud) {
+        Activo activo = activoRepository.findById(activoId)
+            .orElseThrow(() -> new RuntimeException("Activo no encontrado"));
+
+        if (activo.getEstado() == null || !"Asignado".equalsIgnoreCase(activo.getEstado().getEstadoNom())) {
+            throw new RuntimeException("El activo seleccionado no está asignado.");
+        }
+
+        UsuarioAsignacion asignacionActual = obtenerAsignacionActiva(activoId)
+            .orElseThrow(() -> new RuntimeException("El activo no tiene una asignación activa."));
+
+        Usuario usuarioActual = asignacionActual.getUsuario();
+        Usuario nuevoUsuario = usuarioRepository.findById(nuevoUsuarioId)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (nuevoUsuario.getUsuActivo() == null || !Boolean.TRUE.equals(nuevoUsuario.getUsuActivo())) {
+            throw new RuntimeException("El usuario seleccionado no está activo.");
+        }
+
+        if (usuarioActual != null && usuarioActual.getUsuId() != null
+                && usuarioActual.getUsuId().equals(nuevoUsuario.getUsuId())) {
+            throw new RuntimeException("El nuevo usuario destinatario debe ser distinto al usuario actual.");
+        }
+
+        cerrarAsignacionActiva(activoId, motivo, observacion, usuarioOperador, solicitud);
+
+        UsuarioAsignacion nuevaAsignacion = new UsuarioAsignacion();
+        nuevaAsignacion.setActivo(activo);
+        nuevaAsignacion.setUsuario(nuevoUsuario);
+        nuevaAsignacion.setUsuarioEjecutor(usuarioOperador);
+        nuevaAsignacion.setSolicitud(solicitud);
+        nuevaAsignacion.setAsignacionFecha(fechaReasignacion != null ? fechaReasignacion : LocalDate.now());
+        nuevaAsignacion.setAsignacionMotivo(motivo);
+        nuevaAsignacion.setAsignacionObservacion(observacion);
+        nuevaAsignacion.setAsignacionActiva(true);
+
+        return usuarioAsignacionRepository.save(nuevaAsignacion);
     }
 
     @Transactional

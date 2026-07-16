@@ -1,7 +1,5 @@
 package com.sistema.iTsystem.controller;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,19 +17,19 @@ public class DashboardController {
 
     @GetMapping
     public String dashboard(Model model) {
-        cargarDashboard(model);
+        model.addAttribute("dashboard", dashboardService.obtenerDashboard());
         return "dashboard";
     }
 
     @GetMapping("/activos")
     public String dashboardActivos(Model model) {
-        cargarDashboard(model);
+        model.addAttribute("dashboard", dashboardService.obtenerDashboard());
         return "dashboard";
     }
 
     @GetMapping("/hardware")
     public String dashboardHardware(Model model) {
-        cargarDashboard(model);
+        model.addAttribute("dashboard", dashboardService.obtenerDashboard());
         return "dashboard";
     }
 
@@ -63,10 +61,5 @@ public class DashboardController {
     @GetMapping("/alertas")
     public String dashboardAlertas() {
         return "redirect:/dashboard";
-    }
-
-    private void cargarDashboard(Model model) {
-        Map<String, Object> dashboard = dashboardService.obtenerResumenDashboard();
-        dashboard.forEach(model::addAttribute);
     }
 }

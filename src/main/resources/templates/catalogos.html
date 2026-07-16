@@ -16,7 +16,10 @@
             <h1 class="h3 mb-1">Catalogos / Configuracion</h1>
             <p class="text-muted mb-0">Las categorias agrupan el activo por familia general; marca y modelo describen el equipo fisico.</p>
         </div>
-        <a class="btn btn-outline-secondary" th:href="@{/dashboard}">Volver al dashboard</a>
+        <a class="btn btn-outline-secondary btn-icon-inline" th:href="@{/dashboard}">
+            <span class="itas-icon icon-volver icon-button"></span>
+            <span>Volver al dashboard</span>
+        </a>
     </div>
 
     <div class="alert alert-info border-0 shadow-sm mb-3">
@@ -56,7 +59,10 @@
         </div>
         <div class="col-lg-4" id="proveedores">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-white"><strong>Proveedores</strong></div>
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <img th:src="@{/iconos/navegacion/proveedor_icon.svg}" class="icon icon-submenu" alt="">
+                    <strong>Proveedores</strong>
+                </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item" th:each="item : ${proveedores}" th:text="${item.provNom}">Proveedor</li>
                     <li class="list-group-item text-muted" th:if="${proveedores == null or proveedores.isEmpty()}">Sin proveedores</li>
@@ -65,7 +71,10 @@
         </div>
         <div class="col-lg-6" id="marcas">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-white"><strong>Marcas</strong></div>
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <img th:src="@{/iconos/navegacion/marca_icon.svg}" class="icon icon-submenu" alt="">
+                    <strong>Marcas</strong>
+                </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item" th:each="item : ${marcas}" th:text="${item.marcaNom}">Marca</li>
                     <li class="list-group-item text-muted" th:if="${marcas == null or marcas.isEmpty()}">Sin marcas</li>
@@ -74,7 +83,10 @@
         </div>
         <div class="col-lg-6" id="modelos">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-white"><strong>Modelos</strong></div>
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <img th:src="@{/iconos/navegacion/modelo_icon.svg}" class="icon icon-submenu" alt="">
+                    <strong>Modelos</strong>
+                </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item" th:each="item : ${modelos}" th:text="${item.modelNom}">Modelo</li>
                     <li class="list-group-item text-muted" th:if="${modelos == null or modelos.isEmpty()}">Sin modelos</li>

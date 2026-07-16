@@ -5,290 +5,296 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITASSET | Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background:
-                radial-gradient(circle at top left, rgba(59, 130, 246, .08), transparent 26%),
-                linear-gradient(180deg, #eef3f9 0%, #f8fafc 100%);
-        }
-
-        .hero-panel,
-        .section-panel {
-            border: 0;
-            border-radius: 1.25rem;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
-        }
-
-        .hero-panel {
-            background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 65%, #2563eb 100%);
-            color: #fff;
-            overflow: hidden;
-        }
-
-        .hero-panel::after {
-            content: "";
-            position: absolute;
-            inset: auto -12% -30% auto;
-            width: 18rem;
-            height: 18rem;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, .08);
-            filter: blur(8px);
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: .45rem;
-            padding: .4rem .8rem;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, .12);
-            font-size: .85rem;
-            font-weight: 600;
-        }
-
-        .metric-card {
-            border: 0;
-            border-radius: 1rem;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, .07);
-            height: 100%;
-        }
-
-        .metric-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: .95rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            flex: 0 0 auto;
-        }
-
-        .section-label {
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            font-size: .75rem;
-            font-weight: 700;
-            color: #64748b;
-        }
-
-        .section-panel .card-header {
-            background: #fff;
-            border-bottom: 1px solid rgba(148, 163, 184, .18);
-        }
-
-        .quick-link {
-            border: 1px solid rgba(148, 163, 184, .2);
-            border-radius: 1rem;
-            background: #fff;
-            transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-        }
-
-        .quick-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 18px rgba(15, 23, 42, .08);
-            border-color: rgba(37, 99, 235, .25);
-        }
-
-        .subtle-note {
-            border-left: 4px solid #93c5fd;
-            background: #eff6ff;
-            border-radius: 1rem;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
 <body>
 <div th:replace="~{fragments/app-nav :: nav('dashboard')}"></div>
 
-<main class="container-fluid py-4">
-    <section class="hero-panel position-relative p-4 p-lg-5 mb-4">
-        <div class="row align-items-center g-4 position-relative">
-            <div class="col-lg-8">
-                <div class="hero-badge mb-3">
-                    <i class="fa-solid fa-chart-line"></i>
-                    Vista general del inventario físico
-                </div>
-                <h1 class="display-6 fw-bold mb-3">Dashboard operativo</h1>
-                <p class="lead mb-0 text-white-50">
-                    Vista general del inventario físico y su estado operativo. Consultá rápidamente el volumen de activos, su disponibilidad y la distribución por categoría.
-                </p>
-            </div>
-            <div class="col-lg-4 text-lg-end">
-                <a class="btn btn-light btn-lg me-2 mb-2" th:href="@{/activos}">
-                    <i class="fa-solid fa-list me-1"></i>Ver activos
-                </a>
-                <a class="btn btn-outline-light btn-lg mb-2" th:href="@{/activos/nuevo}">
-                    <i class="fa-solid fa-plus me-1"></i>Nuevo activo
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section class="mb-4">
-        <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-3">
+<main class="dashboard-page container-fluid py-3 py-lg-4">
+    <header class="dashboard-page-header">
+        <div class="dashboard-page-header-copy">
+            <span class="dashboard-page-icon" aria-hidden="true">
+                <span class="itas-icon icon-dashboard dashboard-page-icon-svg"></span>
+            </span>
             <div>
-                <div class="section-label">Resumen operativo</div>
-                <h2 class="h4 mb-0">Indicadores principales</h2>
+                <p class="dashboard-page-kicker mb-1">Dashboard</p>
+                <h1 class="dashboard-page-title mb-1">Dashboard</h1>
+                <p class="dashboard-page-subtitle mb-0">Resumen general del inventario y las solicitudes</p>
             </div>
         </div>
-        <div class="row g-3">
-            <div class="col-md-6 col-xl-3">
-                <div class="card metric-card">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <div class="metric-icon bg-primary"><i class="fa-solid fa-boxes-stacked"></i></div>
-                        <div>
-                            <div class="text-muted">Total de activos</div>
-                            <div class="h2 mb-0" th:text="${totalActivos}">0</div>
-                        </div>
-                    </div>
+    </header>
+
+    <section class="dashboard-kpi-row" aria-label="Indicadores principales">
+        <a class="dashboard-kpi" th:href="${dashboard.tarjetas[0].url}" th:classappend="${dashboard.tarjetas[0].colorClase}">
+            <span class="dashboard-kpi-accent"></span>
+            <div class="dashboard-kpi-main">
+                <span class="dashboard-kpi-icon">
+                    <span class="itas-icon icon-activos dashboard-kpi-icon-svg"></span>
+                </span>
+                <div class="dashboard-kpi-copy">
+                    <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[0].cantidad}">0</div>
+                    <div class="dashboard-kpi-label" th:text="${dashboard.tarjetas[0].nombre}">Total de activos</div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card metric-card">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <div class="metric-icon bg-success"><i class="fa-solid fa-circle-check"></i></div>
-                        <div>
-                            <div class="text-muted">Activos disponibles</div>
-                            <div class="h2 mb-0" th:text="${activosDisponibles}">0</div>
-                        </div>
-                    </div>
+            <div class="dashboard-kpi-footer">
+                <span>Ver detalles</span>
+                <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="icon icon-button" alt="">
+            </div>
+        </a>
+
+        <a class="dashboard-kpi" th:href="${dashboard.tarjetas[1].url}" th:classappend="${dashboard.tarjetas[1].colorClase}">
+            <span class="dashboard-kpi-accent"></span>
+            <div class="dashboard-kpi-main">
+                <span class="dashboard-kpi-icon">
+                    <span class="itas-icon icon-activos dashboard-kpi-icon-svg"></span>
+                </span>
+                <div class="dashboard-kpi-copy">
+                    <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[1].cantidad}">0</div>
+                    <div class="dashboard-kpi-label" th:text="${dashboard.tarjetas[1].nombre}">Activos disponibles</div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card metric-card">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <div class="metric-icon bg-warning"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-                        <div>
-                            <div class="text-muted">En mantenimiento</div>
-                            <div class="h2 mb-0" th:text="${activosEnMantenimiento}">0</div>
-                        </div>
-                    </div>
+            <div class="dashboard-kpi-footer">
+                <span>Ver detalles</span>
+                <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="icon icon-button" alt="">
+            </div>
+        </a>
+
+        <a class="dashboard-kpi" th:href="${dashboard.tarjetas[2].url}" th:classappend="${dashboard.tarjetas[2].colorClase}">
+            <span class="dashboard-kpi-accent"></span>
+            <div class="dashboard-kpi-main">
+                <span class="dashboard-kpi-icon">
+                    <span class="itas-icon icon-activos dashboard-kpi-icon-svg"></span>
+                </span>
+                <div class="dashboard-kpi-copy">
+                    <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[2].cantidad}">0</div>
+                    <div class="dashboard-kpi-label" th:text="${dashboard.tarjetas[2].nombre}">Activos asignados</div>
                 </div>
             </div>
-            <div class="col-md-6 col-xl-3">
-                <div class="card metric-card">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <div class="metric-icon bg-danger-subtle text-danger"><i class="fa-solid fa-ban"></i></div>
-                        <div>
-                            <div class="text-muted">Dados de baja</div>
-                            <div class="h2 mb-0" th:text="${activosDadosDeBaja}">0</div>
-                        </div>
-                    </div>
+            <div class="dashboard-kpi-footer">
+                <span>Ver detalles</span>
+                <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="icon icon-button" alt="">
+            </div>
+        </a>
+
+        <a class="dashboard-kpi" th:href="${dashboard.tarjetas[3].url}" th:classappend="${dashboard.tarjetas[3].colorClase}">
+            <span class="dashboard-kpi-accent"></span>
+            <div class="dashboard-kpi-main">
+                <span class="dashboard-kpi-icon">
+                    <span class="itas-icon icon-solicitudes dashboard-kpi-icon-svg"></span>
+                </span>
+                <div class="dashboard-kpi-copy">
+                    <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[3].cantidad}">0</div>
+                    <div class="dashboard-kpi-label" th:text="${dashboard.tarjetas[3].nombre}">Solicitudes pendientes</div>
                 </div>
             </div>
-        </div>
+            <div class="dashboard-kpi-footer">
+                <span>Ver detalles</span>
+                <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="icon icon-button" alt="">
+            </div>
+        </a>
     </section>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-7">
-            <section class="card section-panel h-100">
-                <div class="card-header py-3">
-                    <div class="section-label mb-1">Estado del inventario</div>
-                    <h2 class="h5 mb-0">Activos por estado</h2>
+    <section class="dashboard-layout dashboard-layout--dual mb-4">
+        <article class="dashboard-panel dashboard-layout-main">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <p class="dashboard-panel-kicker mb-1">Inventario fisico</p>
+                    <h2 class="dashboard-panel-title mb-1">Estado general del inventario</h2>
+                    <p class="dashboard-panel-subtitle mb-0">Distribucion actual de los activos registrados.</p>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table mb-0 align-middle">
-                            <thead class="table-light">
-                            <tr>
-                                <th>Estado</th>
-                                <th class="text-end">Cantidad</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="entry : ${activosPorEstado}">
-                                <td th:text="${entry.key}">Disponible</td>
-                                <td class="text-end fw-semibold" th:text="${entry.value}">0</td>
-                            </tr>
-                            <tr th:if="${activosPorEstado == null or activosPorEstado.isEmpty()}">
-                                <td colspan="2" class="text-center text-muted py-4">Sin registros para mostrar</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="dashboard-panel-badge">
+                    <span class="dashboard-panel-badge-value" th:text="${dashboard.totalActivos}">0</span>
+                    <span class="dashboard-panel-badge-label">Activos</span>
                 </div>
-            </section>
-        </div>
-        <div class="col-lg-5">
-            <section class="card section-panel h-100">
-                <div class="card-header py-3">
-                    <div class="section-label mb-1">Accesos rápidos</div>
-                    <h2 class="h5 mb-0">Acciones útiles</h2>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <a class="quick-link d-flex flex-column justify-content-between text-decoration-none text-dark p-3 h-100" th:href="@{/activos/nuevo}">
-                                <div class="text-primary fs-4 mb-3"><i class="fa-solid fa-plus"></i></div>
-                                <div>
-                                    <div class="fw-semibold">Registrar activo</div>
-                                    <div class="text-muted small">Alta de un nuevo equipo.</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a class="quick-link d-flex flex-column justify-content-between text-decoration-none text-dark p-3 h-100" th:href="@{/activos}">
-                                <div class="text-primary fs-4 mb-3"><i class="fa-solid fa-list"></i></div>
-                                <div>
-                                    <div class="fw-semibold">Consultar inventario</div>
-                                    <div class="text-muted small">Listado general de activos.</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a class="quick-link d-flex flex-column justify-content-between text-decoration-none text-dark p-3 h-100" th:href="@{/catalogos}">
-                                <div class="text-primary fs-4 mb-3"><i class="fa-solid fa-gear"></i></div>
-                                <div>
-                                    <div class="fw-semibold">Configuración</div>
-                                    <div class="text-muted small">Parámetros base del sistema.</div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a class="quick-link d-flex flex-column justify-content-between text-decoration-none text-dark p-3 h-100" th:href="@{/informes}">
-                                <div class="text-primary fs-4 mb-3"><i class="fa-solid fa-chart-column"></i></div>
-                                <div>
-                                    <div class="fw-semibold">Informes</div>
-                                    <div class="text-muted small">Resumenes simples para revisión.</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="subtle-note p-3 mt-3">
-                        <div class="fw-semibold mb-1">Vista inicial del sistema</div>
-                        <div class="text-muted small mb-0">El panel resume el inventario físico y su estado operativo. Las tareas de gestión se realizan desde los módulos correspondientes.</div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
+            </div>
 
-    <section class="card section-panel mb-4">
-        <div class="card-header py-3">
-            <div class="section-label mb-1">Distribución por categoría</div>
-            <h2 class="h5 mb-0">Activos por familia</h2>
+            <div class="dashboard-panel-body">
+                <div class="dashboard-inventory-total">
+                    <div class="dashboard-inventory-total-label">Total registrado</div>
+                    <div class="dashboard-inventory-total-value" th:text="${dashboard.totalActivos}">0</div>
+                    <div class="dashboard-inventory-total-note">Vista rapida del inventario fisico.</div>
+                </div>
+
+                <div class="dashboard-state-grid dashboard-state-grid--inventory"
+                     th:if="${dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
+                    <article class="dashboard-state-card" th:each="item : ${dashboard.activosPorEstado}" th:classappend="${item.colorClase}">
+                        <div class="dashboard-state-card-head">
+                            <div class="dashboard-state-card-label" th:text="${item.nombre}">Disponible</div>
+                            <div class="dashboard-state-card-value" th:text="${item.cantidad}">0</div>
+                        </div>
+                        <div class="dashboard-state-card-meta" th:text="|${#numbers.formatDecimal(item.porcentaje, 1, 1)}% del total|">0.0% del total</div>
+                    </article>
+                </div>
+
+                <div class="dashboard-inventory-stack"
+                     th:if="${dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
+                    <span class="dashboard-inventory-segment"
+                          th:each="item : ${dashboard.activosPorEstado}"
+                          th:classappend="${item.colorClase}"
+                          th:style="|width:${item.porcentaje}%|"></span>
+                </div>
+
+                <div class="dashboard-inventory-legend"
+                     th:if="${dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
+                    <a class="dashboard-legend-item"
+                       th:each="item : ${dashboard.activosPorEstado}"
+                       th:href="${item.url != null ? item.url : '/activos'}">
+                        <span class="dashboard-legend-dot" th:classappend="${item.colorClase}"></span>
+                        <div class="dashboard-legend-copy">
+                            <span class="dashboard-legend-name" th:text="${item.nombre}">Disponible</span>
+                            <span class="dashboard-legend-meta" th:text="|${item.cantidad} activos &middot; ${#numbers.formatDecimal(item.porcentaje, 1, 1)}%|">0 activos &middot; 0.0%</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="dashboard-empty-state" th:if="${dashboard.activosPorEstado == null or dashboard.activosPorEstado.isEmpty()}">
+                    No hay activos registrados.
+                </div>
+            </div>
+        </article>
+
+        <aside class="dashboard-panel dashboard-layout-side">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <p class="dashboard-panel-kicker mb-1">Atencion</p>
+                    <h2 class="dashboard-panel-title mb-1">Solicitudes que requieren atencion</h2>
+                    <p class="dashboard-panel-subtitle mb-0">Pendientes de seguimiento operativo.</p>
+                </div>
+            </div>
+
+            <div class="dashboard-panel-body">
+                <div class="dashboard-attention-list"
+                     th:if="${dashboard.solicitudesAtencion != null and !dashboard.solicitudesAtencion.isEmpty()}">
+                    <a class="dashboard-attention-item"
+                       th:each="item : ${dashboard.solicitudesAtencion}"
+                       th:href="${item.url != null ? item.url : '/solicitudes'}">
+                        <span class="dashboard-attention-dot" th:classappend="${item.colorClase}"></span>
+                        <div class="dashboard-attention-copy">
+                            <span class="dashboard-attention-label" th:text="${item.nombre}">Pendiente</span>
+                            <span class="dashboard-attention-meta" th:text="|${item.cantidad} solicitudes &middot; ${#numbers.formatDecimal(item.porcentaje, 1, 1)}%|">0 solicitudes &middot; 0.0%</span>
+                        </div>
+                        <span class="dashboard-attention-count" th:text="${item.cantidad}">0</span>
+                    </a>
+                </div>
+
+                <div class="dashboard-empty-state" th:if="${dashboard.solicitudesAtencion == null or dashboard.solicitudesAtencion.isEmpty()}">
+                    No hay solicitudes que requieran atencion.
+                </div>
+            </div>
+        </aside>
+    </section>
+
+    <section class="dashboard-layout dashboard-layout--dual mb-4">
+        <article class="dashboard-panel dashboard-layout-main">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <p class="dashboard-panel-kicker mb-1">Actividad reciente</p>
+                    <h2 class="dashboard-panel-title mb-1">Solicitudes recientes</h2>
+                    <p class="dashboard-panel-subtitle mb-0">Ultimas cinco solicitudes registradas.</p>
+                </div>
+                <a class="dashboard-panel-link" th:href="@{/solicitudes}">Ir al listado</a>
+            </div>
+
+            <div class="dashboard-panel-body dashboard-panel-body--table">
+                <div class="dashboard-table-wrap">
+                    <table class="table dashboard-recent-table mb-0 align-middle">
+                        <thead>
+                        <tr>
+                            <th>Numero</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Solicitante</th>
+                            <th>Responsable</th>
+                            <th>Estado</th>
+                            <th class="text-end">Accion</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="solicitud : ${dashboard.solicitudesRecientes}">
+                            <td class="fw-semibold" th:text="${solicitud.id}">1</td>
+                            <td th:text="${solicitud.fecha != null ? #temporals.format(solicitud.fecha, 'dd/MM/yyyy HH:mm') : '-'}">01/01/2026 10:30</td>
+                            <td th:text="${solicitud.tipo}">Compra</td>
+                            <td th:text="${solicitud.solicitante}">Usuario</td>
+                            <td th:text="${solicitud.responsable != null ? solicitud.responsable : 'Sin responsable'}">Sin responsable</td>
+                            <td>
+                                <span class="badge rounded-pill" th:classappend="${solicitud.badgeClase}" th:text="${solicitud.estado}">Pendiente</span>
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary dashboard-view-btn" th:href="${solicitud.url}">Ver</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${dashboard.solicitudesRecientes == null or dashboard.solicitudesRecientes.isEmpty()}">
+                            <td colspan="7" class="dashboard-empty-state dashboard-empty-state--table">No hay solicitudes registradas.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </article>
+
+        <aside class="dashboard-panel dashboard-layout-side">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <p class="dashboard-panel-kicker mb-1">Estados</p>
+                    <h2 class="dashboard-panel-title mb-1">Solicitudes por estado</h2>
+                    <p class="dashboard-panel-subtitle mb-0">Estados vigentes del flujo actual.</p>
+                </div>
+            </div>
+
+            <div class="dashboard-panel-body">
+                <div class="dashboard-state-list"
+                     th:if="${dashboard.solicitudesPorEstado != null and !dashboard.solicitudesPorEstado.isEmpty()}">
+                    <a class="dashboard-state-line"
+                       th:each="item : ${dashboard.solicitudesPorEstado}"
+                       th:href="${item.url != null ? item.url : '/solicitudes'}">
+                        <div class="dashboard-state-line-head">
+                            <span class="dashboard-state-line-dot" th:classappend="${item.colorClase}"></span>
+                            <span class="dashboard-state-line-label" th:text="${item.nombre}">Pendiente</span>
+                        </div>
+                        <div class="dashboard-state-line-value" th:text="${item.cantidad}">0</div>
+                        <div class="dashboard-state-line-track">
+                            <span class="dashboard-state-line-fill" th:classappend="${item.colorClase}" th:style="|width:${item.porcentaje}%|"></span>
+                        </div>
+                        <div class="dashboard-state-line-meta" th:text="|${#numbers.formatDecimal(item.porcentaje, 1, 1)}% del total|">0.0% del total</div>
+                    </a>
+                </div>
+
+                <div class="dashboard-empty-state" th:if="${dashboard.solicitudesPorEstado == null or dashboard.solicitudesPorEstado.isEmpty()}">
+                    No hay solicitudes registradas.
+                </div>
+            </div>
+        </aside>
+    </section>
+
+    <section class="dashboard-panel dashboard-panel--full">
+        <div class="dashboard-panel-heading">
+            <div>
+                <p class="dashboard-panel-kicker mb-1">Catalogos</p>
+                <h2 class="dashboard-panel-title mb-1">Activos por categoria</h2>
+                <p class="dashboard-panel-subtitle mb-0">Principales categorias del inventario.</p>
+            </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table mb-0 align-middle">
-                    <thead class="table-light">
-                    <tr>
-                        <th>Categoria</th>
-                        <th class="text-end">Cantidad</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="fila : ${activosPorCategoria}">
-                        <td th:text="${fila[0]}">Notebook</td>
-                        <td class="text-end fw-semibold" th:text="${fila[1]}">0</td>
-                    </tr>
-                    <tr th:if="${activosPorCategoria == null or activosPorCategoria.isEmpty()}">
-                        <td colspan="2" class="text-center text-muted py-4">Sin registros para mostrar</td>
-                    </tr>
-                    </tbody>
-                </table>
+
+        <div class="dashboard-panel-body">
+            <div class="dashboard-category-grid"
+                 th:if="${dashboard.activosPorCategoria != null and !dashboard.activosPorCategoria.isEmpty()}">
+                <a class="dashboard-category-card"
+                   th:each="item : ${dashboard.activosPorCategoria}"
+                   th:href="${item.url != null ? item.url : '#'}"
+                   th:classappend="${item.colorClase}">
+                    <div class="dashboard-category-card-top">
+                        <span class="dashboard-category-name" th:text="${item.nombre}">Notebook</span>
+                        <span class="dashboard-category-count" th:text="${item.cantidad}">0</span>
+                    </div>
+                    <div class="dashboard-category-card-meta" th:text="|${#numbers.formatDecimal(item.porcentaje, 1, 1)}% del total|">0.0% del total</div>
+                    <div class="dashboard-category-card-track">
+                        <span class="dashboard-category-card-fill" th:classappend="${item.colorClase}" th:style="|width:${item.porcentaje}%|"></span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="dashboard-empty-state" th:if="${dashboard.activosPorCategoria == null or dashboard.activosPorCategoria.isEmpty()}">
+                No hay activos registrados.
             </div>
         </div>
     </section>

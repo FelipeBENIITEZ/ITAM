@@ -5,6 +5,103 @@
             z-index: 1030;
         }
 
+        .itas-icon {
+            display: inline-block;
+            flex-shrink: 0;
+            background-color: currentColor;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+
+        .icon {
+            display: inline-block;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .icon-dashboard {
+            -webkit-mask-image: url('/iconos/navegacion/dashboard_icon.svg');
+            mask-image: url('/iconos/navegacion/dashboard_icon.svg');
+        }
+
+        .icon-activos {
+            -webkit-mask-image: url('/iconos/navegacion/activos_icon.svg');
+            mask-image: url('/iconos/navegacion/activos_icon.svg');
+        }
+
+        .icon-solicitudes {
+            -webkit-mask-image: url('/iconos/navegacion/solicitudes_icon.svg');
+            mask-image: url('/iconos/navegacion/solicitudes_icon.svg');
+        }
+
+        .icon-config {
+            -webkit-mask-image: url('/iconos/navegacion/config_icon.svg');
+            mask-image: url('/iconos/navegacion/config_icon.svg');
+        }
+
+        .icon-informes {
+            -webkit-mask-image: url('/iconos/navegacion/informes_icon.svg');
+            mask-image: url('/iconos/navegacion/informes_icon.svg');
+        }
+
+        .icon-enviar {
+            -webkit-mask-image: url('/iconos/botones/enviar_button.svg');
+            mask-image: url('/iconos/botones/enviar_button.svg');
+        }
+
+        .icon-volver {
+            -webkit-mask-image: url('/iconos/botones/volver_button.svg');
+            mask-image: url('/iconos/botones/volver_button.svg');
+        }
+
+        .icon-salir {
+            -webkit-mask-image: url('/iconos/botones/salir_button.svg');
+            mask-image: url('/iconos/botones/salir_button.svg');
+        }
+
+        .icon-nav {
+            width: 18px;
+            height: 18px;
+        }
+
+        .icon-submenu {
+            width: 15px;
+            height: 15px;
+        }
+
+        .icon-button {
+            width: 16px;
+            height: 16px;
+        }
+
+        .icon-button-lg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .icon-kpi {
+            width: 28px;
+            height: 28px;
+        }
+
+        .btn.btn-primary .icon-button,
+        .btn.btn-success .icon-button,
+        .btn.btn-danger .icon-button,
+        .btn.btn-dark .icon-button,
+        .btn.btn-warning .icon-button {
+            filter: brightness(0) invert(1);
+        }
+
+        .btn-icon-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
         .itas-nav .navbar-brand {
             letter-spacing: .03em;
         }
@@ -16,6 +113,7 @@
         .itas-nav .nav-link-main {
             display: inline-flex;
             align-items: center;
+            gap: .5rem;
             padding: .5rem .7rem;
             border-radius: .75rem;
             text-decoration: none;
@@ -44,18 +142,17 @@
             transition: background-color .15s ease, transform .15s ease;
         }
 
-        .itas-nav .nav-module-trigger::before {
-            content: "▾";
-            font-size: .78rem;
-            line-height: 1;
-        }
-
         .itas-nav .nav-module-trigger:hover,
         .itas-nav .nav-module-trigger:focus-visible {
             background: rgba(255, 255, 255, .16);
             color: #fff;
             outline: none;
             transform: translateY(-1px);
+        }
+
+        .itas-nav .nav-caret {
+            font-size: .78rem;
+            line-height: 1;
         }
 
         .itas-nav .nav-module-menu {
@@ -96,11 +193,14 @@
         }
 
         .itas-nav .nav-module-item {
-            display: block;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
             border-radius: .6rem;
             padding: .55rem .7rem;
             color: #0f172a;
             text-decoration: none;
+            width: 100%;
         }
 
         .itas-nav .nav-module-item:hover,
@@ -125,6 +225,17 @@
         .itas-nav .nav-divider {
             margin: .4rem 0;
             border-color: rgba(148, 163, 184, .22);
+        }
+
+        .itas-nav .nav-icon--light,
+        .itas-nav .nav-caret {
+            color: rgba(255, 255, 255, .95);
+        }
+
+        .itas-nav .dropdown-item {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
         }
 
         @media (max-width: 991.98px) {
@@ -155,96 +266,142 @@
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
                     <li class="nav-item">
-                        <a class="nav-link-main" th:classappend="${activePage == 'dashboard'} ? ' active' : ''" th:href="@{/dashboard}">Dashboard</a>
+                        <a class="nav-link-main" th:classappend="${activePage == 'dashboard'} ? ' active' : ''" th:href="@{/dashboard}">
+                            <span class="itas-icon icon-dashboard icon-nav nav-icon--light"></span>
+                            <span class="nav-label">Dashboard</span>
+                        </a>
                     </li>
 
                     <li class="nav-item nav-module">
                         <div class="d-flex align-items-center gap-1">
-                            <a class="nav-link-main" th:classappend="${activePage == 'activos' or activePage == 'inventario'} ? ' active' : ''" th:href="@{/activos}">Inventario</a>
-                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Inventario" data-nav-toggle></button>
+                            <a class="nav-link-main" th:classappend="${activePage == 'activos' or activePage == 'inventario'} ? ' active' : ''" th:href="@{/activos}">
+                                <span class="itas-icon icon-activos icon-nav nav-icon--light"></span>
+                                <span class="nav-label">Inventario</span>
+                            </a>
+                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Inventario" data-nav-toggle>
+                                <span class="nav-caret">▾</span>
+                            </button>
                         </div>
                         <ul class="nav-module-menu">
                             <li class="nav-module-header">
                                 <div class="nav-module-title">Inventario</div>
-                                <p class="nav-module-desc">Gestión del inventario físico.</p>
+                                <p class="nav-module-desc">Gestion del inventario fisico.</p>
                             </li>
-                            <li><a class="nav-module-item" th:href="@{/activos}">Ver Inventario</a></li>
-                            <li><a class="nav-module-item" th:href="@{/activos/nuevo}">Nuevo activo</a></li>
+                            <li>
+                                <a class="nav-module-item" th:href="@{/activos}">
+                                    <span class="itas-icon icon-activos icon-submenu"></span>
+                                    <span>Ver inventario</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-module-item" th:href="@{/activos/nuevo}">
+                                    <img th:src="@{/iconos/botones/agregar_icon_button.svg}" class="icon icon-submenu" alt="">
+                                    <span>Nuevo activo</span>
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
                     <li class="nav-item nav-module">
                         <div class="d-flex align-items-center gap-1">
-                            <a class="nav-link-main" th:classappend="${activePage == 'solicitudes'} ? ' active' : ''" th:href="@{/solicitudes}">Soporte</a>
-                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Soporte" data-nav-toggle></button>
+                            <a class="nav-link-main" th:classappend="${activePage == 'solicitudes'} ? ' active' : ''" th:href="@{/solicitudes}">
+                                <span class="itas-icon icon-solicitudes icon-nav nav-icon--light"></span>
+                                <span class="nav-label">Soporte</span>
+                            </a>
+                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Soporte" data-nav-toggle>
+                                <span class="nav-caret">▾</span>
+                            </button>
                         </div>
                         <ul class="nav-module-menu">
                             <li class="nav-module-header">
                                 <div class="nav-module-title">Soporte</div>
                                 <p class="nav-module-desc">Seguimiento de solicitudes relacionadas con activos y procesos internos.</p>
                             </li>
-                            <li><a class="nav-module-item" th:href="@{/solicitudes}">Solicitudes</a></li>
-                            <li><a class="nav-module-item" th:href="@{/solicitudes/nueva}">Nueva solicitud</a></li>
+                            <li>
+                                <a class="nav-module-item" th:href="@{/solicitudes}">
+                                    <span class="itas-icon icon-solicitudes icon-submenu"></span>
+                                    <span>Solicitudes</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-module-item" th:href="@{/solicitudes/nueva}">
+                                    <img th:src="@{/iconos/botones/agregar_icon_button.svg}" class="icon icon-submenu" alt="">
+                                    <span>Nueva solicitud</span>
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
                     <li class="nav-item nav-module">
                         <div class="d-flex align-items-center gap-1">
-                            <a class="nav-link-main" th:classappend="${activePage == 'gestion' or activePage == 'catalogos' or activePage == 'administracion' or activePage == 'configuracion'} ? ' active' : ''" th:href="@{/gestion}">Gestión</a>
-                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Gestión" data-nav-toggle></button>
+                            <a class="nav-link-main" th:classappend="${activePage == 'gestion' or activePage == 'catalogos' or activePage == 'administracion' or activePage == 'configuracion'} ? ' active' : ''" th:href="@{/gestion}">
+                                <span class="itas-icon icon-config icon-nav nav-icon--light"></span>
+                                <span class="nav-label">Gestion</span>
+                            </a>
+                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Gestion" data-nav-toggle>
+                                <span class="nav-caret">▾</span>
+                            </button>
                         </div>
                         <ul class="nav-module-menu">
                             <li class="nav-module-header">
-                                <div class="nav-module-title">Gestión</div>
-                                <p class="nav-module-desc">Administración de parámetros base, usuarios y estructura del sistema.</p>
+                                <div class="nav-module-title">Gestion</div>
+                                <p class="nav-module-desc">Administracion de parametros base, usuarios y estructura del sistema.</p>
                             </li>
                             <li class="nav-module-header pt-2">
-                                <div class="nav-module-title">Configuración de activos</div>
+                                <div class="nav-module-title">Configuracion de activos</div>
                             </li>
-                            <li><a class="nav-module-item" th:href="@{/catalogos#categorias}">Categorias</a></li>
-                            <li><a class="nav-module-item" th:href="@{/catalogos#marcas}">Marcas</a></li>
-                            <li><a class="nav-module-item" th:href="@{/catalogos#modelos}">Modelos</a></li>
-                            <li><a class="nav-module-item" th:href="@{/catalogos#estados}">Estados de activo</a></li>
-                            <li><a class="nav-module-item" th:href="@{/catalogos#proveedores}">Proveedores</a></li>
+                            <li><a class="nav-module-item" th:href="@{/catalogos#categorias}"><span class="itas-icon icon-config icon-submenu"></span><span>Categorias</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/catalogos#marcas}"><img th:src="@{/iconos/navegacion/marca_icon.svg}" class="icon icon-submenu" alt=""><span>Marcas</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/catalogos#modelos}"><img th:src="@{/iconos/navegacion/modelo_icon.svg}" class="icon icon-submenu" alt=""><span>Modelos</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/catalogos#estados}"><span class="itas-icon icon-config icon-submenu"></span><span>Estados de activo</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/catalogos#proveedores}"><img th:src="@{/iconos/navegacion/proveedor_icon.svg}" class="icon icon-submenu" alt=""><span>Proveedores</span></a></li>
                             <li><hr class="nav-divider"></li>
                             <li class="nav-module-header pt-1">
-                                <div class="nav-module-title">Administración del sistema</div>
+                                <div class="nav-module-title">Administracion del sistema</div>
                             </li>
-                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1">Usuarios <span class="nav-module-note">Próximo</span></a></li>
-                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1">Departamentos <span class="nav-module-note">Próximo</span></a></li>
-                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1">Roles <span class="nav-module-note">Próximo</span></a></li>
-                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1">Permisos <span class="nav-module-note">Próximo</span></a></li>
+                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-config icon-submenu"></span><span>Usuarios</span><span class="nav-module-note">Proximo</span></a></li>
+                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-config icon-submenu"></span><span>Departamentos</span><span class="nav-module-note">Proximo</span></a></li>
+                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-config icon-submenu"></span><span>Roles</span><span class="nav-module-note">Proximo</span></a></li>
+                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-config icon-submenu"></span><span>Permisos</span><span class="nav-module-note">Proximo</span></a></li>
                         </ul>
                     </li>
 
                     <li class="nav-item nav-module">
                         <div class="d-flex align-items-center gap-1">
-                            <a class="nav-link-main" th:classappend="${activePage == 'informes'} ? ' active' : ''" th:href="@{/informes}">Informes</a>
-                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Informes" data-nav-toggle></button>
+                            <a class="nav-link-main" th:classappend="${activePage == 'informes'} ? ' active' : ''" th:href="@{/informes}">
+                                <span class="itas-icon icon-informes icon-nav nav-icon--light"></span>
+                                <span class="nav-label">Informes</span>
+                            </a>
+                            <button class="nav-module-trigger" type="button" aria-expanded="false" aria-label="Abrir menu de Informes" data-nav-toggle>
+                                <span class="nav-caret">▾</span>
+                            </button>
                         </div>
                         <ul class="nav-module-menu">
                             <li class="nav-module-header">
                                 <div class="nav-module-title">Informes</div>
-                                <p class="nav-module-desc">Consulta consolidada del inventario físico.</p>
+                                <p class="nav-module-desc">Consulta consolidada del inventario fisico.</p>
                             </li>
-                            <li><a class="nav-module-item" th:href="@{/informes}">Resumen de inventario</a></li>
-                            <li><a class="nav-module-item" th:href="@{/informes#estado}">Inventario por estado</a></li>
-                            <li><a class="nav-module-item" th:href="@{/informes#categoria}">Inventario por categoría</a></li>
-                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1">Inventario por proveedor <span class="nav-module-note">Próximo</span></a></li>
-                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1">Historial operativo <span class="nav-module-note">Próximo</span></a></li>
-                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1">Garantías <span class="nav-module-note">Próximo</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/informes}"><span class="itas-icon icon-informes icon-submenu"></span><span>Resumen de inventario</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/informes#estado}"><span class="itas-icon icon-informes icon-submenu"></span><span>Inventario por estado</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/informes#categoria}"><span class="itas-icon icon-informes icon-submenu"></span><span>Inventario por categoria</span></a></li>
+                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-informes icon-submenu"></span><span>Inventario por proveedor</span><span class="nav-module-note">Proximo</span></a></li>
+                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-informes icon-submenu"></span><span>Historial operativo</span><span class="nav-module-note">Proximo</span></a></li>
+                            <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-informes icon-submenu"></span><span>Garantias</span><span class="nav-module-note">Proximo</span></a></li>
                         </ul>
                     </li>
                 </ul>
                 <div class="dropdown">
-                    <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" type="button">
+                    <button class="btn btn-outline-light dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown" type="button">
                         <span class="me-1">Usuario:</span><span sec:authentication="name">admin</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <form th:action="@{/logout}" method="post" class="m-0">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                <button type="submit" class="dropdown-item text-danger">Cerrar sesión</button>
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <span class="itas-icon icon-salir icon-button"></span>
+                                    <span>Cerrar sesion</span>
+                                </button>
                             </form>
                         </li>
                     </ul>

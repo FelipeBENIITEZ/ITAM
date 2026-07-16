@@ -1,6 +1,7 @@
 package com.sistema.iTsystem.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +21,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "modelo")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Modelo {
@@ -26,6 +29,7 @@ public class Modelo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "model_id")
+    @EqualsAndHashCode.Include
     private Long modelId;
 
     @Column(name = "model_nom", nullable = false, length = 100)
@@ -60,5 +64,21 @@ public class Modelo {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Modelo modelo)) {
+            return false;
+        }
+        return modelId != null && Objects.equals(modelId, modelo.modelId);
+    }
+
+    @Override
+    public int hashCode() {
+        return modelId != null ? Objects.hash(modelId) : System.identityHashCode(this);
     }
 }

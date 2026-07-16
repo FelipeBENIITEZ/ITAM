@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "garantias")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Garantia {
@@ -28,6 +30,7 @@ public class Garantia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "garan_id")
+    @EqualsAndHashCode.Include
     private Long garanId;
 
     @ManyToOne

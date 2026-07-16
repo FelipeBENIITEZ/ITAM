@@ -39,7 +39,7 @@ public class SoftwareController {
     @GetMapping
     public String listar(Model model) {
         try {
-            // ✅ Obtener todos los software
+            //Obtener todos los software
             model.addAttribute("softwareList", softwareService.obtenerTodos());
             
             // Estadísticas básicas
@@ -58,18 +58,18 @@ public class SoftwareController {
     @GetMapping("/{id}")
     public String verDetalle(@PathVariable Long id, Model model) {
         try {
-            // ✅ Obtener software con todas las relaciones
+            //Obtener software con todas las relaciones
             SoftwareInfo software = softwareService.buscarPorIdConDetalles(id)
                 .orElseThrow(() -> new RuntimeException("Software no encontrado"));
             
             model.addAttribute("software", software);
             model.addAttribute("activo", software.getActivo());
             
-            // ✅ Verificar si tiene licencias asociadas
+            //Verificar si tiene licencias asociadas
             model.addAttribute("tieneLicencias", 
                 softwareService.tieneLicenciasAsociadas(software));
             
-            // ✅ Verificar si tiene licencias activas
+            //Verificar si tiene licencias activas
             model.addAttribute("tieneLicenciasActivas", 
                 softwareService.tieneLicenciasActivas(id));
             
@@ -107,7 +107,7 @@ public class SoftwareController {
             
             model.addAttribute("software", software);
             
-            // ✅ Catálogos que SÍ existen
+            //Catálogos que SÍ existen
             model.addAttribute("tipos", softwareService.obtenerTodosTipos());
             model.addAttribute("proveedores", softwareService.obtenerTodosProveedores());
             
@@ -135,7 +135,7 @@ public class SoftwareController {
                 software.setActivo(activo);
             }
             
-            // ✅ Delegado al service
+            //Delegado al service
             SoftwareInfo softwareGuardado = softwareService.crear(software);
             
             flash.addFlashAttribute("success", 
@@ -181,7 +181,7 @@ public class SoftwareController {
             RedirectAttributes flash) {
         
         try {
-            // ✅ Delegado al service
+            // Delegado al service
             SoftwareInfo softwareActualizado = softwareService.actualizar(id, software);
             
             flash.addFlashAttribute("success", 
@@ -208,10 +208,10 @@ public class SoftwareController {
             RedirectAttributes flash) {
         
         try {
-            // ✅ Validar que sea administrador
+            //Validar que sea administrador
             validarEsAdministrador(principal);
             
-            // ✅ Delegado al service (valida que no tenga licencias)
+            //Delegado al service (valida que no tenga licencias)
             softwareService.eliminar(id);
             
             flash.addFlashAttribute("success", "Software eliminado exitosamente");

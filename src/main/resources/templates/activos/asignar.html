@@ -90,7 +90,7 @@
                         </div>
 
                         <div class="col-12 d-flex justify-content-end gap-2">
-                            <a class="btn btn-outline-secondary" th:href="@{/activos/{codigo}(codigo=${activo.activoCodigo})}">Cancelar</a>
+                            <a class="btn btn-outline-secondary btn-icon-inline" th:href="@{/activos/{codigo}(codigo=${activo.activoCodigo})}"><img th:src="@{/iconos/botones/cancel_operation_button.svg}" class="icon icon-button" alt=""><span>Cancelar</span></a>
                             <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
                                 <span class="itas-icon icon-enviar icon-button"></span>
                                 <span>Confirmar asignacion</span>
@@ -104,7 +104,7 @@
         <div class="col-lg-5">
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">Resumen del activo</h2>
+                    <h2 class="h5 mb-3 icon-label-inline"><img th:src="@{/iconos/navegacion/resumen_icon.svg}" class="icon icon-section" alt=""><span>Resumen del activo</span></h2>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2"><strong>Código:</strong> <span th:text="${activo.activoCodigo}">ACT-001</span></li>
                         <li class="mb-2"><strong>Nombre:</strong> <span th:text="${activo.activoNom}">Activo</span></li>

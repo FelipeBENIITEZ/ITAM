@@ -94,7 +94,7 @@
                             <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="icon icon-button" alt="">
                             <span>Ver</span>
                         </a>
-                        <a class="btn btn-sm btn-outline-secondary" th:if="${activo.estado == null or activo.estado.estadoNom != 'Dado de baja'}" th:href="@{/activos/{codigo}/editar(codigo=${activo.activoCodigo})}">Editar</a>
+                        <a class="btn btn-sm btn-outline-secondary btn-icon-inline" th:if="${activo.estado == null or activo.estado.estadoNom != 'Dado de baja'}" th:href="@{/activos/{codigo}/editar(codigo=${activo.activoCodigo})}"><img th:src="@{/iconos/botones/editar_button.svg}" class="icon icon-button" alt=""><span>Editar</span></a>
                         <a class="btn btn-sm btn-success" th:if="${activo.estado != null and activo.estado.estadoNom == 'Disponible'}" th:href="@{/activos/{codigo}/asignar(codigo=${activo.activoCodigo})}">Asignar</a>
                     </td>
                 </tr>

@@ -23,11 +23,11 @@
         </div>
         <div class="d-flex gap-2 flex-wrap">
         <a class="btn btn-outline-secondary btn-icon-inline" th:href="@{/activos/{codigo}/editar(codigo=${activo.activoCodigo})}">
-            <span class="itas-icon icon-config icon-button"></span>
+            <img th:src="@{/iconos/botones/editar_button.svg}" class="icon icon-button" alt="">
             <span>Editar datos generales</span>
         </a>
         <a class="btn btn-outline-dark btn-icon-inline" th:href="@{/activos/{codigo}/historial(codigo=${activo.activoCodigo})}">
-            <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="icon icon-button" alt="">
+            <img th:src="@{/iconos/navegacion/historial_icon.svg}" class="icon icon-button" alt="">
             <span>Historial</span>
         </a>
         </div>
@@ -39,8 +39,8 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="text-muted">Estado actual</div>
-                            <div class="fw-semibold" th:text="${activo.estado != null ? activo.estado.estadoNom : 'Sin estado'}">Disponible</div>
+                            <div class="text-muted icon-label-inline"><img th:src="@{/iconos/navegacion/estado_icon.svg}" class="icon icon-state" alt=""><span>Estado actual</span></div>
+                            <div class="fw-semibold icon-label-inline"><img th:if="${activo.estado != null and activo.estado.estadoNom == 'Asignado'}" th:src="@{/iconos/estados/asignado_icon.svg}" class="icon icon-state" alt=""><span th:text="${activo.estado != null ? activo.estado.estadoNom : 'Sin estado'}">Disponible</span></div>
                         </div>
                         <div class="col-md-6">
                             <div class="text-muted">Proveedor</div>
@@ -88,7 +88,7 @@
                                 <div class="small text-muted" th:text="${garantia.garanFechaFin != null ? 'Fin: ' + #temporals.format(garantia.garanFechaFin, 'dd/MM/yyyy') : 'Fin: -'}">Fin</div>
                                 <div class="small text-muted mt-1" th:if="${garantia.garanDescri != null and !#strings.isEmpty(garantia.garanDescri)}" th:text="${garantia.garanDescri}">Descripcion</div>
                                 <button class="btn btn-outline-primary btn-sm mt-2 btn-icon-inline" type="button" data-garantia-toggle th:attr="aria-label=${mostrarFormularioGarantia} ? 'Ocultar formulario' : 'Editar garantia'">
-                                    <span class="itas-icon icon-config icon-button"></span>
+                                    <img th:src="@{/iconos/botones/editar_button.svg}" class="icon icon-button" alt="">
                                     <span th:text="${mostrarFormularioGarantia} ? 'Ocultar formulario' : 'Editar garantia'">Editar garantia</span>
                                 </button>
                             </div>
@@ -116,7 +116,7 @@
                                     </div>
                                     <div class="col-12 d-flex gap-2 justify-content-end">
                                         <button class="btn btn-outline-secondary btn-icon-inline" type="button" data-garantia-toggle>
-                                            <span class="itas-icon icon-volver icon-button"></span>
+                                            <img th:src="@{/iconos/botones/cancel_operation_button.svg}" class="icon icon-button" alt="">
                                             <span>Cancelar</span>
                                         </button>
                                         <button class="btn btn-primary btn-icon-inline" type="submit">
@@ -136,7 +136,7 @@
 
             <div class="card shadow-sm mb-3">
                 <div class="card-header bg-white">
-                    <strong>Asignacion actual</strong>
+                    <strong class="icon-label-inline"><img th:src="@{/iconos/estados/asignado_icon.svg}" class="icon icon-state" alt=""><span>Asignacion actual</span></strong>
                 </div>
                 <div class="card-body" th:if="${asignacionActiva != null}">
                     <div class="row g-3">
@@ -165,7 +165,7 @@
 
             <div class="card shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <strong>Historial operativo</strong>
+                    <strong class="icon-label-inline"><img th:src="@{/iconos/navegacion/historial_icon.svg}" class="icon icon-section" alt=""><span>Historial operativo</span></strong>
                     <span class="text-muted small" th:text="|${historialOperativo != null ? historialOperativo.size() : 0} eventos|">0 eventos</span>
                 </div>
                 <div class="card-body" th:if="${historialOperativo != null and !historialOperativo.isEmpty()}">
@@ -232,11 +232,11 @@
                                 <span>Asignar activo</span>
                             </a>
                             <a class="btn btn-warning btn-icon-inline" th:href="@{/activos/{codigo}/operacion(codigo=${activo.activoCodigo}, operacion='mantenimiento')}">
-                                <span class="itas-icon icon-config icon-button"></span>
+                                <img th:src="@{/iconos/botones/mantenimiento_boton_icono.svg}" class="icon icon-button" alt="">
                                 <span>Enviar a mantenimiento</span>
                             </a>
                             <a class="btn btn-outline-danger btn-icon-inline" th:href="@{/activos/{codigo}/operacion(codigo=${activo.activoCodigo}, operacion='baja')}">
-                                <span class="itas-icon icon-activos icon-button"></span>
+                                <img th:src="@{/iconos/botones/baja_activo_icon_boton.svg}" class="icon icon-button" alt="">
                                 <span>Dar de baja</span>
                             </a>
                         </div>
@@ -245,7 +245,7 @@
                         </div>
                         <div th:case="'En mantenimiento'" class="d-grid gap-2">
                             <a class="btn btn-success btn-icon-inline" th:href="@{/activos/{codigo}/operacion(codigo=${activo.activoCodigo}, operacion='finalizar-mantenimiento')}">
-                                <span class="itas-icon icon-enviar icon-button"></span>
+                                <img th:src="@{/iconos/botones/mantenimiento_boton_icono.svg}" class="icon icon-button" alt="">
                                 <span>Finalizar mantenimiento</span>
                             </a>
                         </div>
@@ -261,7 +261,7 @@
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h2 class="h5">Resumen</h2>
+                    <h2 class="h5 icon-label-inline"><img th:src="@{/iconos/navegacion/resumen_icon.svg}" class="icon icon-section" alt=""><span>Resumen</span></h2>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2"><strong>Codigo:</strong> <span th:text="${activo.activoCodigo}">ACT-001</span></li>
                         <li class="mb-2"><strong>Categoria:</strong> <span th:text="${activo.categoria != null ? activo.categoria.catNom : 'Sin categoria'}">Categoria</span></li>

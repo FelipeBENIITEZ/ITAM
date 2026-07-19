@@ -13,7 +13,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <p class="text-uppercase text-muted fw-semibold mb-1">Operacion del activo</p>
-            <h1 class="h4" th:text="${tituloOperacion}">Operacion</h1>
+            <h1 class="h4 icon-label-inline"><img th:src="@{/iconos/navegacion/estado_icon.svg}" class="icon icon-section" alt=""><span th:text="${tituloOperacion}">Operacion</span></h1>
             <p class="text-muted mb-3" th:text="${descripcionOperacion}">Descripcion</p>
 
             <div class="row g-3 mb-4">
@@ -36,7 +36,7 @@
                 <div class="col-md-6">
                     <div class="card border-0 bg-body-tertiary h-100">
                         <div class="card-body">
-                            <div class="text-muted small mb-1">Estado actual</div>
+                            <div class="text-muted small mb-1 icon-label-inline"><img th:src="@{/iconos/navegacion/estado_icon.svg}" class="icon icon-state" alt=""><span>Estado actual</span></div>
                             <div class="fw-semibold" th:text="${estadoActual}">Disponible</div>
                         </div>
                     </div>
@@ -68,7 +68,7 @@
 
                 <div class="d-flex justify-content-end gap-2">
                     <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" th:href="@{/activos/{codigo}(codigo=${activo.activoCodigo})}">
-                        <span class="itas-icon icon-volver icon-button"></span>
+                        <img th:src="@{/iconos/botones/cancel_operation_button.svg}" class="icon icon-button" alt="">
                         <span>Cancelar</span>
                     </a>
                     <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">

@@ -41,7 +41,7 @@
     <div class="row g-3">
         <div class="col-lg-4" id="categorias">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-white"><strong>Categorias</strong></div>
+                <div class="card-header bg-white icon-label-inline"><img th:src="@{/iconos/navegacion/categoria_icon.svg}" class="icon icon-section" alt=""><strong>Categorias</strong></div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item" th:each="item : ${categorias}" th:text="${item.catNom}">Categoria</li>
                     <li class="list-group-item text-muted" th:if="${categorias == null or categorias.isEmpty()}">Sin categorias</li>
@@ -50,7 +50,7 @@
         </div>
         <div class="col-lg-4" id="estados">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-white"><strong>Estados del activo</strong></div>
+                <div class="card-header bg-white icon-label-inline"><img th:src="@{/iconos/navegacion/estado_icon.svg}" class="icon icon-section" alt=""><strong>Estados del activo</strong></div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item" th:each="item : ${estados}" th:text="${item.estadoNom}">Estado</li>
                     <li class="list-group-item text-muted" th:if="${estados == null or estados.isEmpty()}">Sin estados</li>

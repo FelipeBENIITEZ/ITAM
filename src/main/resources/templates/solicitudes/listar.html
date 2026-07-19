@@ -146,6 +146,7 @@
                     <td th:text="${solicitud.getUsuarioDestinoNombre()}">Destinatario</td>
                     <td th:text="${solicitud.getResponsableNombre()}">Responsable</td>
                     <td>
+                        <img th:if="${solicitud.getEstadoSolicitud() == 'Pendiente'}" th:src="@{/iconos/estados/solicitud_pendiente_icon.svg}" class="icon icon-state me-1" alt="">
                         <span class="badge text-bg-secondary" th:text="${solicitud.getEstadoSolicitud()}">Estado</span>
                     </td>
                     <td class="text-end">

@@ -83,6 +83,22 @@
             height: 18px;
         }
 
+        .icon-section {
+            width: 20px;
+            height: 20px;
+        }
+
+        .icon-state {
+            width: 18px;
+            height: 18px;
+        }
+
+        .icon-label-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
         .icon-kpi {
             width: 28px;
             height: 28px;
@@ -350,10 +366,10 @@
                             <li class="nav-module-header pt-2">
                                 <div class="nav-module-title">Configuracion de activos</div>
                             </li>
-                            <li><a class="nav-module-item" th:href="@{/catalogos#categorias}"><span class="itas-icon icon-config icon-submenu"></span><span>Categorias</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/catalogos#categorias}"><img th:src="@{/iconos/navegacion/categoria_icon.svg}" class="icon icon-submenu" alt=""><span>Categorias</span></a></li>
                             <li><a class="nav-module-item" th:href="@{/catalogos#marcas}"><img th:src="@{/iconos/navegacion/marca_icon.svg}" class="icon icon-submenu" alt=""><span>Marcas</span></a></li>
                             <li><a class="nav-module-item" th:href="@{/catalogos#modelos}"><img th:src="@{/iconos/navegacion/modelo_icon.svg}" class="icon icon-submenu" alt=""><span>Modelos</span></a></li>
-                            <li><a class="nav-module-item" th:href="@{/catalogos#estados}"><span class="itas-icon icon-config icon-submenu"></span><span>Estados de activo</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/catalogos#estados}"><img th:src="@{/iconos/navegacion/estado_icon.svg}" class="icon icon-submenu" alt=""><span>Estados de activo</span></a></li>
                             <li><a class="nav-module-item" th:href="@{/catalogos#proveedores}"><img th:src="@{/iconos/navegacion/proveedor_icon.svg}" class="icon icon-submenu" alt=""><span>Proveedores</span></a></li>
                             <li><hr class="nav-divider"></li>
                             <li class="nav-module-header pt-1">
@@ -381,9 +397,9 @@
                                 <div class="nav-module-title">Informes</div>
                                 <p class="nav-module-desc">Consulta consolidada del inventario fisico.</p>
                             </li>
-                            <li><a class="nav-module-item" th:href="@{/informes}"><span class="itas-icon icon-informes icon-submenu"></span><span>Resumen de inventario</span></a></li>
-                            <li><a class="nav-module-item" th:href="@{/informes#estado}"><span class="itas-icon icon-informes icon-submenu"></span><span>Inventario por estado</span></a></li>
-                            <li><a class="nav-module-item" th:href="@{/informes#categoria}"><span class="itas-icon icon-informes icon-submenu"></span><span>Inventario por categoria</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/informes}"><img th:src="@{/iconos/navegacion/resumen_icon.svg}" class="icon icon-submenu" alt=""><span>Resumen de inventario</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/informes#estado}"><img th:src="@{/iconos/navegacion/estado_icon.svg}" class="icon icon-submenu" alt=""><span>Inventario por estado</span></a></li>
+                            <li><a class="nav-module-item" th:href="@{/informes#categoria}"><img th:src="@{/iconos/navegacion/categoria_icon.svg}" class="icon icon-submenu" alt=""><span>Inventario por categoria</span></a></li>
                             <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-informes icon-submenu"></span><span>Inventario por proveedor</span><span class="nav-module-note">Proximo</span></a></li>
                             <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-informes icon-submenu"></span><span>Historial operativo</span><span class="nav-module-note">Proximo</span></a></li>
                             <li><a class="nav-module-item disabled" href="#" aria-disabled="true" tabindex="-1"><span class="itas-icon icon-informes icon-submenu"></span><span>Garantias</span><span class="nav-module-note">Proximo</span></a></li>

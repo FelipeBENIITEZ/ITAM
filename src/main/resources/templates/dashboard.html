@@ -63,7 +63,7 @@
             <span class="dashboard-kpi-accent"></span>
             <div class="dashboard-kpi-main">
                 <span class="dashboard-kpi-icon">
-                    <span class="itas-icon icon-activos dashboard-kpi-icon-svg"></span>
+                    <img th:src="@{/iconos/estados/asignado_icon.svg}" class="icon dashboard-kpi-icon-svg" alt="">
                 </span>
                 <div class="dashboard-kpi-copy">
                     <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[2].cantidad}">0</div>
@@ -80,7 +80,7 @@
             <span class="dashboard-kpi-accent"></span>
             <div class="dashboard-kpi-main">
                 <span class="dashboard-kpi-icon">
-                    <span class="itas-icon icon-solicitudes dashboard-kpi-icon-svg"></span>
+                    <img th:src="@{/iconos/estados/solicitud_pendiente_icon.svg}" class="icon dashboard-kpi-icon-svg" alt="">
                 </span>
                 <div class="dashboard-kpi-copy">
                     <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[3].cantidad}">0</div>
@@ -270,7 +270,7 @@
         <div class="dashboard-panel-heading">
             <div>
                 <p class="dashboard-panel-kicker mb-1">Catalogos</p>
-                <h2 class="dashboard-panel-title mb-1">Activos por categoria</h2>
+                <h2 class="dashboard-panel-title mb-1 icon-label-inline"><img th:src="@{/iconos/navegacion/categoria_icon.svg}" class="icon icon-section" alt=""><span>Activos por categoria</span></h2>
                 <p class="dashboard-panel-subtitle mb-0">Principales categorias del inventario.</p>
             </div>
         </div>

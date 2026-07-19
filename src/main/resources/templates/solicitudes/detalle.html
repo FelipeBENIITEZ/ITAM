@@ -40,6 +40,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="text-muted small text-uppercase">Estado</div>
+                            <img th:if="${solicitud.getEstadoSolicitud() == 'Pendiente'}" th:src="@{/iconos/estados/solicitud_pendiente_icon.svg}" class="icon icon-state me-1" alt="">
                             <span class="badge text-bg-secondary fs-6" th:text="${solicitud.getEstadoSolicitud()}">Estado</span>
                         </div>
                     </div>
@@ -131,7 +132,7 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2 class="h6 text-uppercase text-muted mb-0">Historial</h2>
+                        <h2 class="h6 text-uppercase text-muted mb-0 icon-label-inline"><img th:src="@{/iconos/navegacion/historial_icon.svg}" class="icon icon-section" alt=""><span>Historial</span></h2>
                         <span class="text-muted small" th:text="|${historial != null ? historial.size() : 0} movimientos|">0 movimientos</span>
                     </div>
                     <div class="table-responsive">
@@ -164,7 +165,7 @@
         <div class="col-xl-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
-                    <h2 class="h6 text-uppercase text-muted mb-3">Resumen</h2>
+                    <h2 class="h6 text-uppercase text-muted mb-3 icon-label-inline"><img th:src="@{/iconos/navegacion/resumen_icon.svg}" class="icon icon-section" alt=""><span>Resumen</span></h2>
                     <div class="mb-2">
                         <div class="text-muted small">Tipo</div>
                         <div class="fw-semibold" th:text="${solicitud.getTipoSolicitud()}">Tipo</div>
@@ -225,7 +226,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <label class="form-label">Observacion</label>
                         <input class="form-control mb-3" type="text" name="observacion" placeholder="Opcional">
-                        <button class="btn btn-primary w-100" type="submit">Iniciar mantenimiento</button>
+                        <button class="btn btn-primary w-100 btn-icon-inline justify-content-center" type="submit"><img th:src="@{/iconos/botones/mantenimiento_boton_icono.svg}" class="icon icon-button" alt=""><span>Iniciar mantenimiento</span></button>
                     </form>
 
                     <form th:if="${puedeIniciarOperacion and esCompra}" th:action="@{/solicitudes/{id}/iniciar-operacion(id=${solicitud.soliId})}" method="post" class="mb-3">
@@ -239,7 +240,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <label class="form-label">Observacion</label>
                         <input class="form-control mb-3" type="text" name="observacion" placeholder="Opcional">
-                        <button class="btn btn-danger w-100" type="submit">Ejecutar baja</button>
+                        <button class="btn btn-danger w-100 btn-icon-inline justify-content-center" type="submit"><img th:src="@{/iconos/botones/baja_activo_icon_boton.svg}" class="icon icon-button" alt=""><span>Ejecutar baja</span></button>
                     </form>
 
                     <form th:if="${puedeIniciarOperacion and esAsignacion}" th:action="@{/solicitudes/{id}/ejecutar-asignacion(id=${solicitud.soliId})}" method="post" class="mb-3">
@@ -260,7 +261,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <label class="form-label">Observacion</label>
                         <input class="form-control mb-3" type="text" name="observacion" placeholder="Opcional">
-                        <button class="btn btn-success w-100" type="submit">Finalizar mantenimiento</button>
+                        <button class="btn btn-success w-100 btn-icon-inline justify-content-center" type="submit"><img th:src="@{/iconos/botones/mantenimiento_boton_icono.svg}" class="icon icon-button" alt=""><span>Finalizar mantenimiento</span></button>
                     </form>
 
                     <form th:if="${puedeResolverOperacion and esCompra}" th:action="@{/solicitudes/{id}/resolver-operacion(id=${solicitud.soliId})}" method="post">
@@ -301,7 +302,7 @@
                     <textarea class="form-control" name="observacion" rows="4" required></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary btn-icon-inline" data-bs-dismiss="modal"><img th:src="@{/iconos/botones/cancel_operation_button.svg}" class="icon icon-button" alt=""><span>Cancelar</span></button>
                     <button type="submit" class="btn btn-danger">Rechazar</button>
                 </div>
             </form>

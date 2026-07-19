@@ -228,7 +228,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a class="btn btn-outline-secondary" th:href="@{/activos}">Cancelar</a>
+                            <a class="btn btn-outline-secondary btn-icon-inline" th:href="@{/activos}"><img th:src="@{/iconos/botones/cancel_operation_button.svg}" class="icon icon-button" alt=""><span>Cancelar</span></a>
                             <button class="btn btn-primary btn-icon-inline" type="submit">
                                 <img th:src="@{/iconos/botones/agregar_icon_button.svg}" class="icon icon-button" alt="" th:if="${!modoEdicion}">
                                 <span th:if="${modoEdicion}">Guardar cambios</span>

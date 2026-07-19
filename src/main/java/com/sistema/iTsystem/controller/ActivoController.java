@@ -519,7 +519,7 @@ public class ActivoController {
         model.addAttribute("activo", activo);
         model.addAttribute("hardwareInfo", hardwareInfo);
         model.addAttribute("asignacionActiva", asignacionActiva);
-        model.addAttribute("puedeAsignar", activo != null && activo.getEstado() != null
+        model.addAttribute("puedeAsignar", activo.getEstado() != null
             && "Disponible".equalsIgnoreCase(activo.getEstado().getEstadoNom())
             && asignacionActiva == null);
 

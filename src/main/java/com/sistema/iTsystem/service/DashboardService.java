@@ -3,6 +3,7 @@ package com.sistema.iTsystem.service;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -75,16 +76,21 @@ public class DashboardService {
         Map<String, Long> activosPorEstadoRaw = aMapa(activoRepository.countActivosPorEstado());
         Map<String, Long> activosPorCategoriaRaw = aMapa(activoRepository.countActivosPorCategoria());
         Map<String, Long> solicitudesPorEstadoRaw = normalizarEstadosSolicitudesVista(aMapa(solicitudesRepository.countSolicitudesPorEstado()));
+        List<EstadoActivo> estadosActivos = estadoActivoRepository.findAll();
+        List<SoliEstados> estadosSolicitudes = soliEstadosRepository.findAll();
+        List<CategoriasActivo> categorias = categoriasActivoRepository.findAll();
 
         long totalActivos = activoRepository.count();
         long totalSolicitudes = solicitudesRepository.count();
 
-        Long idDisponible = buscarEstadoActivoId("Disponible");
-        Long idAsignado = buscarEstadoActivoId("Asignado");
-        Long idMantenimiento = buscarEstadoActivoId("En mantenimiento");
-        Long idPendiente = buscarSoliEstadoId("Pendiente");
-        Long idEnAnalisis = buscarSoliEstadoId("En analisis");
-        Map<String, Long> categoriasIds = categoriasActivoRepository.findAll().stream().collect(Collectors.toMap(
+        Long idDisponible = buscarEstadoActivoId("Disponible", estadosActivos);
+        Long idAsignado = buscarEstadoActivoId("Asignado", estadosActivos);
+        Long idMantenimiento = buscarEstadoActivoId("En mantenimiento", estadosActivos);
+        Long idDadoDeBaja = buscarEstadoActivoId("Dado de baja", estadosActivos);
+        Long idPendiente = buscarSoliEstadoId("Pendiente", estadosSolicitudes);
+        Long idEnAnalisis = buscarSoliEstadoId("En analisis", estadosSolicitudes);
+        Long idEnEjecucion = buscarSoliEstadoId("En ejecucion", estadosSolicitudes);
+        Map<String, Long> categoriasIds = categorias.stream().collect(Collectors.toMap(
             categoria -> normalizarTextoSeguro(categoria.getCatNom()),
             CategoriasActivo::getCatId,
             (a, b) -> a,
@@ -92,11 +98,14 @@ public class DashboardService {
         ));
 
         dashboard.setTotalActivos(totalActivos);
+        dashboard.setTotalSolicitudes(totalSolicitudes);
         dashboard.setActivosDisponibles(valorDe(activosPorEstadoRaw, "Disponible"));
         dashboard.setActivosAsignados(valorDe(activosPorEstadoRaw, "Asignado"));
         dashboard.setActivosEnMantenimiento(valorDe(activosPorEstadoRaw, "En mantenimiento"));
+        dashboard.setActivosDadosDeBaja(valorDe(activosPorEstadoRaw, "Dado de baja"));
         dashboard.setSolicitudesPendientes(valorDe(solicitudesPorEstadoRaw, "Pendiente"));
         dashboard.setSolicitudesEnAnalisis(valorDe(solicitudesPorEstadoRaw, "En analisis"));
+        dashboard.setSolicitudesEnEjecucion(valorDe(solicitudesPorEstadoRaw, "En ejecucion"));
 
         dashboard.setTarjetas(List.of(
             crearKpi("total_activos", "Total de activos", totalActivos, "/activos", "icon-activos", "dashboard-accent-primary"),
@@ -106,7 +115,7 @@ public class DashboardService {
         ));
 
         dashboard.setActivosPorEstado(construirMetricasPorEstado(activosPorEstadoRaw, ESTADOS_ACTIVO_ORDEN, totalActivos,
-            estadoActivoRepository.findAll().stream().collect(Collectors.toMap(
+            estadosActivos.stream().collect(Collectors.toMap(
                 estado -> normalizarTextoSeguro(estado.getEstadoNom()),
                 estado -> estado.getEstadoId(),
                 (a, b) -> a,
@@ -116,7 +125,7 @@ public class DashboardService {
         dashboard.setActivosPorCategoria(construirCategorias(activosPorCategoriaRaw, totalActivos, categoriasIds));
 
         dashboard.setSolicitudesPorEstado(construirMetricasPorEstado(solicitudesPorEstadoRaw, ESTADOS_SOLICITUD_ORDEN, totalSolicitudes,
-            soliEstadosRepository.findAll().stream().collect(Collectors.toMap(
+            estadosSolicitudes.stream().collect(Collectors.toMap(
                 estado -> normalizarTextoSeguro(estado.getSoliEstadoNom()),
                 estado -> estado.getSoliEstadoId(),
                 (a, b) -> a,
@@ -124,6 +133,16 @@ public class DashboardService {
             )), this::urlSolicitudesPorEstado, this::colorClaseEstadoSolicitud, false));
 
         dashboard.setSolicitudesAtencion(construirSolicitudesAtencion(dashboard.getSolicitudesPorEstado()));
+        dashboard.setIndicadoresSecundarios(construirIndicadoresSecundarios(
+            dashboard.getActivosEnMantenimiento(),
+            dashboard.getActivosDadosDeBaja(),
+            dashboard.getSolicitudesEnAnalisis(),
+            dashboard.getSolicitudesEnEjecucion(),
+            urlActivosPorEstado(idMantenimiento),
+            urlActivosPorEstado(idDadoDeBaja),
+            urlSolicitudesPorEstado(idEnAnalisis),
+            urlSolicitudesPorEstado(idEnEjecucion)
+        ));
 
         dashboard.setSolicitudesRecientes(construirSolicitudesRecientes());
 
@@ -131,7 +150,12 @@ public class DashboardService {
     }
 
     private List<SolicitudRecienteDTO> construirSolicitudesRecientes() {
-        return solicitudesRepository.findUltimasConDetalles(PageRequest.of(0, 5)).stream()
+        List<Solicitudes> recientes = solicitudesRepository.findUltimasConDetalles(PageRequest.of(0, 5));
+        if (recientes == null || recientes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return recientes.stream()
             .map(solicitud -> {
                 SolicitudRecienteDTO dto = new SolicitudRecienteDTO();
                 dto.setId(solicitud.getSoliId());
@@ -167,6 +191,24 @@ public class DashboardService {
             .toList();
     }
 
+    private List<MetricaDashboardDTO> construirIndicadoresSecundarios(
+            Long activosEnMantenimiento,
+            Long activosDadosDeBaja,
+            Long solicitudesEnAnalisis,
+            Long solicitudesEnEjecucion,
+            String urlActivosEnMantenimiento,
+            String urlActivosDadosDeBaja,
+            String urlSolicitudesEnAnalisis,
+            String urlSolicitudesEnEjecucion) {
+
+        List<MetricaDashboardDTO> indicadores = new ArrayList<>();
+        indicadores.add(crearMetrica("sec_activos_mantenimiento", "Activos en mantenimiento", activosEnMantenimiento, 0.0, urlActivosEnMantenimiento, "dashboard-accent-warning"));
+        indicadores.add(crearMetrica("sec_activos_baja", "Activos dados de baja", activosDadosDeBaja, 0.0, urlActivosDadosDeBaja, "dashboard-accent-danger"));
+        indicadores.add(crearMetrica("sec_solicitudes_analisis", "Solicitudes en analisis", solicitudesEnAnalisis, 0.0, urlSolicitudesEnAnalisis, "dashboard-accent-warning"));
+        indicadores.add(crearMetrica("sec_solicitudes_ejecucion", "Solicitudes en ejecucion", solicitudesEnEjecucion, 0.0, urlSolicitudesEnEjecucion, "dashboard-accent-info"));
+        return indicadores;
+    }
+
     private Map<String, Long> normalizarEstadosSolicitudesVista(Map<String, Long> valoresRaw) {
         Map<String, Long> resultado = new LinkedHashMap<>();
         if (valoresRaw == null) {
@@ -190,25 +232,30 @@ public class DashboardService {
         List<MetricaDashboardDTO> resultado = new ArrayList<>();
         long otros = 0L;
 
-        for (int i = 0; i < ordenadas.size(); i++) {
-            Map.Entry<String, Long> entrada = ordenadas.get(i);
-            if (i < 8) {
+        for (Map.Entry<String, Long> entrada : ordenadas) {
+            Long cantidad = entrada.getValue() != null ? entrada.getValue() : 0L;
+            if (esCategoriaOtros(entrada.getKey())) {
+                otros += cantidad;
+                continue;
+            }
+
+            if (resultado.size() < 8) {
                 Long categoriaId = ids.get(normalizarTextoSeguro(entrada.getKey()));
                 resultado.add(crearMetrica(
-                    "cat_" + i,
+                    "cat_" + resultado.size(),
                     entrada.getKey(),
-                    entrada.getValue(),
-                    porcentaje(entrada.getValue(), total),
+                    cantidad,
+                    porcentaje(cantidad, total),
                     categoriaId != null ? "/activos?categoria=" + categoriaId : null,
-                    colorPorIndice(i)
+                    colorPorIndice(resultado.size())
                 ));
             } else {
-                otros += entrada.getValue();
+                otros += cantidad;
             }
         }
 
         if (otros > 0) {
-            resultado.add(crearMetrica("cat_otros", "Otros", otros, porcentaje(otros, total), null, "metric-secondary"));
+            resultado.add(crearMetrica("cat_otros", "Otros", otros, porcentaje(otros, total), null, "dashboard-accent-muted"));
         }
 
         return resultado;
@@ -375,22 +422,32 @@ public class DashboardService {
         };
     }
 
-    private Long buscarEstadoActivoId(String nombre) {
+    private Long buscarEstadoActivoId(String nombre, List<EstadoActivo> estadosActivos) {
         String buscado = normalizarTextoSeguro(nombre);
-        return estadoActivoRepository.findAll().stream()
+        if (estadosActivos == null || estadosActivos.isEmpty()) {
+            return null;
+        }
+        return estadosActivos.stream()
             .filter(estado -> normalizarTextoSeguro(estado.getEstadoNom()).equals(buscado))
             .map(EstadoActivo::getEstadoId)
             .findFirst()
             .orElse(null);
     }
 
-    private Long buscarSoliEstadoId(String nombre) {
+    private Long buscarSoliEstadoId(String nombre, List<SoliEstados> estadosSolicitudes) {
         String buscado = normalizarTextoSeguro(nombre);
-        return soliEstadosRepository.findAll().stream()
+        if (estadosSolicitudes == null || estadosSolicitudes.isEmpty()) {
+            return null;
+        }
+        return estadosSolicitudes.stream()
             .filter(estado -> normalizarTextoSeguro(estado.getSoliEstadoNom()).equals(buscado))
             .map(SoliEstados::getSoliEstadoId)
             .findFirst()
             .orElse(null);
+    }
+
+    private boolean esCategoriaOtros(String valor) {
+        return "otros".equals(normalizarTextoSeguro(valor));
     }
 
     private String normalizarTextoSeguro(String valor) {

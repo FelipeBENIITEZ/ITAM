@@ -14,7 +14,7 @@
     <header class="dashboard-page-header">
         <div class="dashboard-page-header-copy">
             <span class="dashboard-page-icon" aria-hidden="true">
-                <span class="itas-icon icon-dashboard dashboard-page-icon-svg"></span>
+                <img th:src="@{/iconos/navegacion/dashboard_icon.svg}" class="dashboard-page-icon-svg" alt="">
             </span>
             <div>
                 <p class="dashboard-page-kicker mb-1">Dashboard</p>
@@ -29,7 +29,7 @@
             <span class="dashboard-kpi-accent"></span>
             <div class="dashboard-kpi-main">
                 <span class="dashboard-kpi-icon">
-                    <span class="itas-icon icon-activos dashboard-kpi-icon-svg"></span>
+                    <img th:src="@{/iconos/navegacion/activos_icon.svg}" class="dashboard-kpi-icon-svg" alt="">
                 </span>
                 <div class="dashboard-kpi-copy">
                     <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[0].cantidad}">0</div>
@@ -46,7 +46,7 @@
             <span class="dashboard-kpi-accent"></span>
             <div class="dashboard-kpi-main">
                 <span class="dashboard-kpi-icon">
-                    <span class="itas-icon icon-activos dashboard-kpi-icon-svg"></span>
+                    <img th:src="@{/iconos/navegacion/activos_icon.svg}" class="dashboard-kpi-icon-svg" alt="">
                 </span>
                 <div class="dashboard-kpi-copy">
                     <div class="dashboard-kpi-value" th:text="${dashboard.tarjetas[1].cantidad}">0</div>
@@ -95,12 +95,15 @@
     </section>
 
     <section class="dashboard-layout dashboard-layout--dual mb-4">
-        <article class="dashboard-panel dashboard-layout-main">
+        <article class="dashboard-panel dashboard-chart-panel dashboard-layout-main">
             <div class="dashboard-panel-heading">
                 <div>
                     <p class="dashboard-panel-kicker mb-1">Inventario fisico</p>
-                    <h2 class="dashboard-panel-title mb-1">Estado general del inventario</h2>
-                    <p class="dashboard-panel-subtitle mb-0">Distribucion actual de los activos registrados.</p>
+                    <h2 class="dashboard-panel-title mb-1 icon-label-inline">
+                        <img th:src="@{/iconos/navegacion/categoria_icon.svg}" class="icon icon-section" alt="">
+                        <span>Activos por categoria</span>
+                    </h2>
+                    <p class="dashboard-panel-subtitle mb-0">Principales categorias del inventario.</p>
                 </div>
                 <div class="dashboard-panel-badge">
                     <span class="dashboard-panel-badge-value" th:text="${dashboard.totalActivos}">0</span>
@@ -109,76 +112,54 @@
             </div>
 
             <div class="dashboard-panel-body">
-                <div class="dashboard-inventory-total">
-                    <div class="dashboard-inventory-total-label">Total registrado</div>
-                    <div class="dashboard-inventory-total-value" th:text="${dashboard.totalActivos}">0</div>
-                    <div class="dashboard-inventory-total-note">Vista rapida del inventario fisico.</div>
+                <div class="dashboard-chart-container dashboard-chart-container--large dashboard-chart-container--scroll"
+                     th:if="${dashboard.totalActivos != null and dashboard.totalActivos > 0 and dashboard.activosPorCategoria != null and !dashboard.activosPorCategoria.isEmpty()}">
+                    <canvas id="activosCategoriaChart" class="dashboard-chart-canvas"></canvas>
                 </div>
 
-                <div class="dashboard-state-grid dashboard-state-grid--inventory"
-                     th:if="${dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
-                    <article class="dashboard-state-card" th:each="item : ${dashboard.activosPorEstado}" th:classappend="${item.colorClase}">
-                        <div class="dashboard-state-card-head">
-                            <div class="dashboard-state-card-label" th:text="${item.nombre}">Disponible</div>
-                            <div class="dashboard-state-card-value" th:text="${item.cantidad}">0</div>
-                        </div>
-                        <div class="dashboard-state-card-meta" th:text="|${#numbers.formatDecimal(item.porcentaje, 1, 1)}% del total|">0.0% del total</div>
-                    </article>
-                </div>
-
-                <div class="dashboard-inventory-stack"
-                     th:if="${dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
-                    <span class="dashboard-inventory-segment"
-                          th:each="item : ${dashboard.activosPorEstado}"
-                          th:classappend="${item.colorClase}"
-                          th:style="|width:${item.porcentaje}%|"></span>
-                </div>
-
-                <div class="dashboard-inventory-legend"
-                     th:if="${dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
-                    <a class="dashboard-legend-item"
-                       th:each="item : ${dashboard.activosPorEstado}"
-                       th:href="${item.url != null ? item.url : '/activos'}">
-                        <span class="dashboard-legend-dot" th:classappend="${item.colorClase}"></span>
-                        <div class="dashboard-legend-copy">
-                            <span class="dashboard-legend-name" th:text="${item.nombre}">Disponible</span>
-                            <span class="dashboard-legend-meta" th:text="|${item.cantidad} activos &middot; ${#numbers.formatDecimal(item.porcentaje, 1, 1)}%|">0 activos &middot; 0.0%</span>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="dashboard-empty-state" th:if="${dashboard.activosPorEstado == null or dashboard.activosPorEstado.isEmpty()}">
+                <div class="dashboard-empty-state" th:if="${dashboard.totalActivos == null or dashboard.totalActivos <= 0 or dashboard.activosPorCategoria == null or dashboard.activosPorCategoria.isEmpty()}">
                     No hay activos registrados.
                 </div>
             </div>
         </article>
 
-        <aside class="dashboard-panel dashboard-layout-side">
+        <aside class="dashboard-panel dashboard-chart-panel dashboard-layout-side">
             <div class="dashboard-panel-heading">
                 <div>
-                    <p class="dashboard-panel-kicker mb-1">Atencion</p>
-                    <h2 class="dashboard-panel-title mb-1">Solicitudes que requieren atencion</h2>
-                    <p class="dashboard-panel-subtitle mb-0">Pendientes de seguimiento operativo.</p>
+                    <p class="dashboard-panel-kicker mb-1">Estado</p>
+                    <h2 class="dashboard-panel-title mb-1 icon-label-inline">
+                        <img th:src="@{/iconos/navegacion/estado_icon.svg}" class="icon icon-section" alt="">
+                        <span>Activos por estado</span>
+                    </h2>
+                    <p class="dashboard-panel-subtitle mb-0">Distribucion actual del inventario.</p>
+                </div>
+                <div class="dashboard-panel-badge">
+                    <span class="dashboard-panel-badge-value" th:text="${dashboard.totalActivos}">0</span>
+                    <span class="dashboard-panel-badge-label">Activos</span>
                 </div>
             </div>
 
             <div class="dashboard-panel-body">
-                <div class="dashboard-attention-list"
-                     th:if="${dashboard.solicitudesAtencion != null and !dashboard.solicitudesAtencion.isEmpty()}">
-                    <a class="dashboard-attention-item"
-                       th:each="item : ${dashboard.solicitudesAtencion}"
-                       th:href="${item.url != null ? item.url : '/solicitudes'}">
-                        <span class="dashboard-attention-dot" th:classappend="${item.colorClase}"></span>
-                        <div class="dashboard-attention-copy">
-                            <span class="dashboard-attention-label" th:text="${item.nombre}">Pendiente</span>
-                            <span class="dashboard-attention-meta" th:text="|${item.cantidad} solicitudes &middot; ${#numbers.formatDecimal(item.porcentaje, 1, 1)}%|">0 solicitudes &middot; 0.0%</span>
+                <div class="dashboard-chart-container dashboard-chart-container--medium dashboard-donut-wrapper"
+                     th:if="${dashboard.totalActivos != null and dashboard.totalActivos > 0 and dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
+                    <canvas id="activosEstadoChart" class="dashboard-chart-canvas"></canvas>
+                </div>
+
+                <div class="dashboard-donut-legend"
+                     th:if="${dashboard.totalActivos != null and dashboard.totalActivos > 0 and dashboard.activosPorEstado != null and !dashboard.activosPorEstado.isEmpty()}">
+                    <a class="dashboard-donut-legend-item"
+                       th:each="item : ${dashboard.activosPorEstado}"
+                       th:href="${item.url != null ? item.url : '/activos'}">
+                        <span class="dashboard-donut-legend-dot" th:classappend="${item.colorClase}"></span>
+                        <div class="dashboard-donut-legend-copy">
+                            <span class="dashboard-donut-legend-name" th:text="${item.nombre}">Disponible</span>
+                            <span class="dashboard-donut-legend-meta" th:text="|${item.cantidad} activos · ${#numbers.formatDecimal(item.porcentaje, 1, 1)}%|">0 activos · 0.0%</span>
                         </div>
-                        <span class="dashboard-attention-count" th:text="${item.cantidad}">0</span>
                     </a>
                 </div>
 
-                <div class="dashboard-empty-state" th:if="${dashboard.solicitudesAtencion == null or dashboard.solicitudesAtencion.isEmpty()}">
-                    No hay solicitudes que requieran atencion.
+                <div class="dashboard-empty-state" th:if="${dashboard.totalActivos == null or dashboard.totalActivos <= 0 or dashboard.activosPorEstado == null or dashboard.activosPorEstado.isEmpty()}">
+                    No hay activos registrados.
                 </div>
             </div>
         </aside>
@@ -220,7 +201,10 @@
                                 <span class="badge rounded-pill" th:classappend="${solicitud.badgeClase}" th:text="${solicitud.estado}">Pendiente</span>
                             </td>
                             <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary dashboard-view-btn" th:href="${solicitud.url}">Ver</a>
+                                <a class="btn btn-sm btn-outline-primary dashboard-view-btn" th:href="${solicitud.url}">
+                                    <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="dashboard-view-btn-icon" alt="">
+                                    <span>Ver</span>
+                                </a>
                             </td>
                         </tr>
                         <tr th:if="${dashboard.solicitudesRecientes == null or dashboard.solicitudesRecientes.isEmpty()}">
@@ -235,71 +219,105 @@
         <aside class="dashboard-panel dashboard-layout-side">
             <div class="dashboard-panel-heading">
                 <div>
-                    <p class="dashboard-panel-kicker mb-1">Estados</p>
-                    <h2 class="dashboard-panel-title mb-1">Solicitudes por estado</h2>
-                    <p class="dashboard-panel-subtitle mb-0">Estados vigentes del flujo actual.</p>
+                    <p class="dashboard-panel-kicker mb-1">Atencion</p>
+                    <h2 class="dashboard-panel-title mb-1">Solicitudes que requieren atencion</h2>
+                    <p class="dashboard-panel-subtitle mb-0">Pendientes de seguimiento operativo.</p>
                 </div>
             </div>
 
             <div class="dashboard-panel-body">
-                <div class="dashboard-state-list"
-                     th:if="${dashboard.solicitudesPorEstado != null and !dashboard.solicitudesPorEstado.isEmpty()}">
-                    <a class="dashboard-state-line"
-                       th:each="item : ${dashboard.solicitudesPorEstado}"
+                <div class="dashboard-attention-list"
+                     th:if="${dashboard.solicitudesAtencion != null and !dashboard.solicitudesAtencion.isEmpty()}">
+                    <a class="dashboard-attention-item"
+                       th:each="item : ${dashboard.solicitudesAtencion}"
                        th:href="${item.url != null ? item.url : '/solicitudes'}">
-                        <div class="dashboard-state-line-head">
-                            <span class="dashboard-state-line-dot" th:classappend="${item.colorClase}"></span>
-                            <span class="dashboard-state-line-label" th:text="${item.nombre}">Pendiente</span>
+                        <span class="dashboard-attention-dot" th:classappend="${item.colorClase}"></span>
+                        <div class="dashboard-attention-copy">
+                            <span class="dashboard-attention-label" th:text="${item.nombre}">Pendiente</span>
+                            <span class="dashboard-attention-meta" th:text="|${item.cantidad} solicitudes · ${#numbers.formatDecimal(item.porcentaje, 1, 1)}%|">0 solicitudes · 0.0%</span>
                         </div>
-                        <div class="dashboard-state-line-value" th:text="${item.cantidad}">0</div>
-                        <div class="dashboard-state-line-track">
-                            <span class="dashboard-state-line-fill" th:classappend="${item.colorClase}" th:style="|width:${item.porcentaje}%|"></span>
-                        </div>
-                        <div class="dashboard-state-line-meta" th:text="|${#numbers.formatDecimal(item.porcentaje, 1, 1)}% del total|">0.0% del total</div>
+                        <span class="dashboard-attention-count" th:text="${item.cantidad}">0</span>
                     </a>
                 </div>
 
-                <div class="dashboard-empty-state" th:if="${dashboard.solicitudesPorEstado == null or dashboard.solicitudesPorEstado.isEmpty()}">
-                    No hay solicitudes registradas.
+                <div class="dashboard-empty-state" th:if="${dashboard.solicitudesAtencion == null or dashboard.solicitudesAtencion.isEmpty()}">
+                    No hay solicitudes que requieran atencion.
                 </div>
             </div>
         </aside>
     </section>
 
-    <section class="dashboard-panel dashboard-panel--full">
-        <div class="dashboard-panel-heading">
-            <div>
-                <p class="dashboard-panel-kicker mb-1">Catalogos</p>
-                <h2 class="dashboard-panel-title mb-1 icon-label-inline"><img th:src="@{/iconos/navegacion/categoria_icon.svg}" class="icon icon-section" alt=""><span>Activos por categoria</span></h2>
-                <p class="dashboard-panel-subtitle mb-0">Principales categorias del inventario.</p>
-            </div>
-        </div>
-
-        <div class="dashboard-panel-body">
-            <div class="dashboard-category-grid"
-                 th:if="${dashboard.activosPorCategoria != null and !dashboard.activosPorCategoria.isEmpty()}">
-                <a class="dashboard-category-card"
-                   th:each="item : ${dashboard.activosPorCategoria}"
-                   th:href="${item.url != null ? item.url : '#'}"
-                   th:classappend="${item.colorClase}">
-                    <div class="dashboard-category-card-top">
-                        <span class="dashboard-category-name" th:text="${item.nombre}">Notebook</span>
-                        <span class="dashboard-category-count" th:text="${item.cantidad}">0</span>
-                    </div>
-                    <div class="dashboard-category-card-meta" th:text="|${#numbers.formatDecimal(item.porcentaje, 1, 1)}% del total|">0.0% del total</div>
-                    <div class="dashboard-category-card-track">
-                        <span class="dashboard-category-card-fill" th:classappend="${item.colorClase}" th:style="|width:${item.porcentaje}%|"></span>
-                    </div>
-                </a>
+    <section class="dashboard-layout dashboard-layout--dual mb-4">
+        <article class="dashboard-panel dashboard-chart-panel dashboard-layout-main">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <p class="dashboard-panel-kicker mb-1">Estados</p>
+                    <h2 class="dashboard-panel-title mb-1">Solicitudes por estado</h2>
+                    <p class="dashboard-panel-subtitle mb-0">Distribucion de solicitudes registradas.</p>
+                </div>
+                <div class="dashboard-panel-badge">
+                    <span class="dashboard-panel-badge-value" th:text="${dashboard.totalSolicitudes}">0</span>
+                    <span class="dashboard-panel-badge-label">Solicitudes</span>
+                </div>
             </div>
 
-            <div class="dashboard-empty-state" th:if="${dashboard.activosPorCategoria == null or dashboard.activosPorCategoria.isEmpty()}">
-                No hay activos registrados.
+            <div class="dashboard-panel-body">
+                <div class="dashboard-chart-scroll"
+                     th:if="${dashboard.totalSolicitudes != null and dashboard.totalSolicitudes > 0 and dashboard.solicitudesPorEstado != null and !dashboard.solicitudesPorEstado.isEmpty()}">
+                    <div class="dashboard-chart-container dashboard-chart-container--medium dashboard-chart-container--scroll">
+                        <canvas id="solicitudesEstadoChart" class="dashboard-chart-canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="dashboard-empty-state" th:if="${dashboard.totalSolicitudes == null or dashboard.totalSolicitudes <= 0 or dashboard.solicitudesPorEstado == null or dashboard.solicitudesPorEstado.isEmpty()}">
+                    No hay solicitudes registradas.
+                </div>
             </div>
-        </div>
+        </article>
+
+        <aside class="dashboard-panel dashboard-layout-side">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <p class="dashboard-panel-kicker mb-1">Secundarios</p>
+                    <h2 class="dashboard-panel-title mb-1">Indicadores secundarios</h2>
+                    <p class="dashboard-panel-subtitle mb-0">Estados relevantes del trabajo operativo.</p>
+                </div>
+            </div>
+
+            <div class="dashboard-panel-body">
+                <div class="dashboard-secondary-grid"
+                     th:if="${dashboard.indicadoresSecundarios != null and !dashboard.indicadoresSecundarios.isEmpty()}">
+                    <a class="dashboard-secondary-card"
+                       th:each="item : ${dashboard.indicadoresSecundarios}"
+                       th:href="${item.url != null ? item.url : '#'}"
+                       th:classappend="${item.colorClase}">
+                        <div class="dashboard-secondary-card-head">
+                            <span class="dashboard-secondary-card-mark" th:classappend="${item.colorClase}"></span>
+                            <div class="dashboard-secondary-card-copy">
+                                <span class="dashboard-secondary-card-label" th:text="${item.nombre}">Indicador</span>
+                                <span class="dashboard-secondary-card-value" th:text="${item.cantidad}">0</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-secondary-card-footer">
+                            <span>Ver detalles</span>
+                            <img th:src="@{/iconos/botones/ver_icon_button.svg}" class="dashboard-view-btn-icon" alt="">
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </aside>
     </section>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    window.ITASSET_DASHBOARD = {
+        activosPorCategoria: /*[[${dashboard.activosPorCategoria}]]*/ [],
+        activosPorEstado: /*[[${dashboard.activosPorEstado}]]*/ [],
+        solicitudesPorEstado: /*[[${dashboard.solicitudesPorEstado}]]*/ [],
+        indicadoresSecundarios: /*[[${dashboard.indicadoresSecundarios}]]*/ []
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<script th:src="@{/js/dashboard.js}" defer></script>
 </body>
 </html>

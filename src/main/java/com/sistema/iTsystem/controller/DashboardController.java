@@ -17,20 +17,17 @@ public class DashboardController {
 
     @GetMapping
     public String dashboard(Model model) {
-        model.addAttribute("dashboard", dashboardService.obtenerDashboard());
-        return "dashboard";
+        return renderDashboard(model);
     }
 
     @GetMapping("/activos")
     public String dashboardActivos(Model model) {
-        model.addAttribute("dashboard", dashboardService.obtenerDashboard());
-        return "dashboard";
+        return renderDashboard(model);
     }
 
     @GetMapping("/hardware")
     public String dashboardHardware(Model model) {
-        model.addAttribute("dashboard", dashboardService.obtenerDashboard());
-        return "dashboard";
+        return renderDashboard(model);
     }
 
     @GetMapping("/software-licencias")
@@ -61,5 +58,10 @@ public class DashboardController {
     @GetMapping("/alertas")
     public String dashboardAlertas() {
         return "redirect:/dashboard";
+    }
+
+    private String renderDashboard(Model model) {
+        model.addAttribute("dashboard", dashboardService.obtenerDashboard());
+        return "dashboard";
     }
 }

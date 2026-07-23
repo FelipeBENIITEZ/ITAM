@@ -568,7 +568,6 @@ public class SolicitudesService {
             movimientosService.asignarActivo(
                 solicitud.getActivo().getActivoId(),
                 solicitud.getUsuarioDestino().getUsuId(),
-                LocalDate.now(),
                 solicitud.getSoliMotivo(),
                 observacion,
                 usuarioAutenticado,

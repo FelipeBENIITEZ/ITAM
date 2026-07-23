@@ -76,13 +76,13 @@ public class MovimientosService {
     }
 
     @Transactional
-    public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId, LocalDate fechaAsignacion,
+    public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId,
                                            String motivo, String observacion, Usuario usuarioOperador) {
-        return asignarActivo(activoId, usuarioId, fechaAsignacion, motivo, observacion, usuarioOperador, null);
+        return asignarActivo(activoId, usuarioId, motivo, observacion, usuarioOperador, null);
     }
 
     @Transactional
-    public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId, LocalDate fechaAsignacion,
+    public UsuarioAsignacion asignarActivo(Long activoId, Long usuarioId,
                                            String motivo, String observacion, Usuario usuarioOperador,
                                            Solicitudes solicitud) {
         Activo activo = activoRepository.findById(activoId)
@@ -90,15 +90,6 @@ public class MovimientosService {
 
         Usuario usuarioAsignado = usuarioRepository.findById(usuarioId)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        if (fechaAsignacion == null) {
-            throw new RuntimeException("Debe ingresar una fecha de asignación.");
-        }
-
-        if (activo.getActivoFechaIngreso() != null
-                && fechaAsignacion.isBefore(activo.getActivoFechaIngreso().toLocalDate())) {
-            throw new RuntimeException("La fecha de asignación no puede ser anterior a la fecha de ingreso del activo.");
-        }
 
         if (motivo == null || motivo.trim().isEmpty()) {
             throw new RuntimeException("Debe ingresar un motivo.");
@@ -117,6 +108,14 @@ public class MovimientosService {
 
         if (tieneAsignacionActiva(activoId)) {
             throw new RuntimeException("El activo ya tiene una asignación activa.");
+        }
+
+        LocalDate fechaAsignacion = LocalDate.now();
+        if (activo.getActivoFechaIngreso() != null
+                && fechaAsignacion.isBefore(activo.getActivoFechaIngreso().toLocalDate())) {
+            throw new RuntimeException(
+                "No se puede asignar el activo porque su fecha de ingreso es posterior a la fecha actual."
+            );
         }
 
         estadoTransicionService.cambiarEstado(activoId, estadoAsignado.getEstadoId(), motivo, observacion, usuarioOperador);

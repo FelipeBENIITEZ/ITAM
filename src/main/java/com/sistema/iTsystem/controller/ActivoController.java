@@ -124,7 +124,7 @@ public class ActivoController {
                 return "redirect:/activos/" + activo.getActivoCodigo();
             }
 
-            cargarFormularioAsignacion(model, activo, asignacionActiva, null, null, null, null, null);
+            cargarFormularioAsignacion(model, activo, asignacionActiva, null, null, null, null);
             return "activos/asignar";
         } catch (Exception e) {
             flash.addFlashAttribute("error", e.getMessage());
@@ -136,7 +136,6 @@ public class ActivoController {
     public String asignarActivo(
             @PathVariable String activoCodigo,
             @RequestParam(required = false) Long usuarioId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaAsignacion,
             @RequestParam(required = false) String motivo,
             @RequestParam(required = false) String observacion,
             Principal principal,
@@ -152,7 +151,6 @@ public class ActivoController {
             movimientosService.asignarActivo(
                 activo.getActivoId(),
                 usuarioId,
-                fechaAsignacion,
                 motivo,
                 observacion,
                 usuarioOperador
@@ -168,7 +166,6 @@ public class ActivoController {
                     model,
                     activo,
                     movimientosService.obtenerAsignacionActiva(activo.getActivoId()).orElse(null),
-                    fechaAsignacion,
                     usuarioId,
                     motivo,
                     observacion,
@@ -544,34 +541,15 @@ public class ActivoController {
     }
 
     private void cargarFormularioAsignacion(Model model, Activo activo, UsuarioAsignacion asignacionActiva,
-                                            LocalDate fechaAsignacion, Long usuarioId, String motivo,
+                                            Long usuarioId, String motivo,
                                             String observacion, String error) {
-        LocalDate fechaMinimaAsignacion = activo != null && activo.getActivoFechaIngreso() != null
-            ? activo.getActivoFechaIngreso().toLocalDate()
-            : LocalDate.now();
-
         model.addAttribute("activo", activo);
         model.addAttribute("asignacionActiva", asignacionActiva);
         model.addAttribute("usuarios", movimientosService.obtenerUsuariosActivos());
-        model.addAttribute("fechaMinimaAsignacion", fechaMinimaAsignacion);
-        model.addAttribute("fechaAsignacion", obtenerFechaAsignacionInicial(fechaAsignacion, fechaMinimaAsignacion));
         model.addAttribute("usuarioId", usuarioId);
         model.addAttribute("motivo", motivo);
         model.addAttribute("observacion", observacion);
         model.addAttribute("error", error);
-    }
-
-    private LocalDate obtenerFechaAsignacionInicial(LocalDate fechaAsignacion, LocalDate fechaMinimaAsignacion) {
-        if (fechaAsignacion != null) {
-            return fechaAsignacion;
-        }
-
-        LocalDate hoy = LocalDate.now();
-        if (hoy.isBefore(fechaMinimaAsignacion)) {
-            return fechaMinimaAsignacion;
-        }
-
-        return hoy;
     }
 
     private void asignarErroresFormulario(Model model, String mensaje) {

@@ -68,14 +68,6 @@
                             </select>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Fecha de asignación *</label>
-                            <input class="form-control" type="date" name="fechaAsignacion" required
-                                   th:attr="min=${fechaMinimaAsignacion != null ? #temporals.format(fechaMinimaAsignacion, 'yyyy-MM-dd') : ''}"
-                                   th:value="${fechaAsignacion != null ? #temporals.format(fechaAsignacion, 'yyyy-MM-dd') : ''}">
-                            <div class="form-text">No puede ser anterior a la fecha de ingreso del activo.</div>
-                        </div>
-
                         <div class="col-12">
                             <label class="form-label">Motivo *</label>
                             <input class="form-control" type="text" name="motivo" required
@@ -122,6 +114,7 @@
                         <li>Se crea un registro en movimientos.</li>
                         <li>El estado del activo pasará a Asignado.</li>
                         <li>El historial del activo se registrará automáticamente.</li>
+                        <li>La fecha de asignación se registrará automáticamente al confirmar la operación.</li>
                     </ul>
                 </div>
             </div>
